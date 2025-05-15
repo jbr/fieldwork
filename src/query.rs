@@ -1,0 +1,214 @@
+use std::borrow::Cow;
+
+use crate::{
+    Field, FieldAttributes, FieldMethodAttributes, Method, StructAttributes,
+    StructMethodAttributes, DEFAULT_CHAINABLE_SET,
+};
+use syn::{Ident, Type, Visibility};
+use Method::{Get, GetMut, Set, With};
+
+#[derive(Debug)]
+pub(crate) struct Query<'a> {
+    method: &'a Method,
+    field: &'a Field,
+    struct_attributes: &'a StructAttributes,
+}
+
+impl<'a> Query<'a> {
+    pub(crate) fn field_method_attribute(&self) -> Option<&'a FieldMethodAttributes> {
+        self.field
+            .attributes
+            .method_attributes
+            .iter()
+            .find(|x| x.method == *self.method)
+    }
+
+    pub(crate) fn struct_method_attribute(&self) -> Option<&'a StructMethodAttributes> {
+        self.struct_attributes
+            .methods
+            .iter()
+            .find(|x| x.method == *self.method)
+    }
+    pub(crate) fn is_get_copy(&self) -> bool {
+        self.field_method_attribute()
+            .and_then(|fva| fva.get_copy)
+            .unwrap_or_default()
+    }
+
+    pub(crate) fn chainable_set(&self) -> bool {
+        self.method == &Set
+            && self
+                .field_method_attribute()
+                .and_then(|fva| fva.chainable_set)
+                .or(self
+                    .struct_method_attribute()
+                    .and_then(|sva| sva.chainable_set))
+                .unwrap_or(DEFAULT_CHAINABLE_SET)
+    }
+
+    pub(crate) fn vis(&self) -> Cow<'a, Visibility> {
+        if let Some(vis) = self.field_method_attribute().and_then(|x| x.vis.as_ref()) {
+            return Cow::Borrowed(vis);
+        }
+        if let Some(vis) = self.struct_method_attribute().and_then(|x| x.vis.as_ref()) {
+            return Cow::Borrowed(vis);
+        }
+        if let Some(vis) = &self.field.attributes.vis {
+            return Cow::Borrowed(vis);
+        }
+        if let Some(vis) = &self.struct_attributes.vis {
+            return Cow::Borrowed(vis);
+        }
+
+        Cow::Owned(Visibility::Public(Default::default()))
+    }
+
+    pub(crate) fn fn_ident(&self) -> Cow<'a, Ident> {
+        if let Some(fn_ident) = self
+            .field_method_attribute()
+            .and_then(|x| x.fn_ident.as_ref())
+        {
+            return Cow::Borrowed(fn_ident);
+        }
+
+        let ident = self
+            .field
+            .attributes
+            .fn_ident
+            .as_ref()
+            .unwrap_or(&self.field.ident);
+
+        if let Some(template) = self
+            .struct_method_attribute()
+            .and_then(|x| x.template.as_ref())
+        {
+            return Cow::Owned(Ident::new(
+                &template.as_str().replacen("{}", &ident.to_string(), 1),
+                self.field.ident.span(),
+            ));
+        }
+        match self.method {
+            Get => Cow::Borrowed(ident),
+            Set => Cow::Owned(Ident::new(&format!("set_{ident}"), self.field.ident.span())),
+            With => Cow::Owned(Ident::new(
+                &format!("with_{ident}"),
+                self.field.ident.span(),
+            )),
+            GetMut => Cow::Owned(Ident::new(&format!("{ident}_mut"), self.field.ident.span())),
+        }
+    }
+
+    pub(crate) fn variable_ident(&self) -> Cow<'a, Ident> {
+        Cow::Borrowed(&self.field.ident)
+    }
+
+    pub(crate) fn argument_ident(&self) -> Cow<'a, Ident> {
+        if let Some(argument_ident) = self
+            .field_method_attribute()
+            .and_then(|x| x.argument_ident.as_ref())
+        {
+            return Cow::Borrowed(argument_ident);
+        }
+
+        if let Some(argument_ident) = self.field.attributes.argument_ident.as_ref() {
+            return Cow::Borrowed(argument_ident);
+        }
+
+        Cow::Borrowed(&self.field.ident)
+    }
+
+    pub(crate) fn doc_template(&self) -> &str {
+        match self.method {
+            Get if self.is_get_copy() => " # Returns a copy of {}",
+            Get => " # Borrows {}",
+            Set if self.chainable_set() => " # Sets {}, returning `&mut Self` for chaining",
+            Set => " # Sets {}",
+            With => " # Owned chainable setter for {}, returning `Self`",
+            GetMut => " # Mutably borrow {}",
+        }
+    }
+
+    pub(crate) fn docs(&self) -> Option<Cow<'a, str>> {
+        if let Some(explicit_method_doc) =
+            self.field_method_attribute().and_then(|x| x.doc.as_ref())
+        {
+            return Some(Cow::Borrowed(explicit_method_doc));
+        };
+
+        let doc = self.field.doc.first()?;
+
+        let template = self
+            .struct_method_attribute()
+            .and_then(|x| x.doc_template.as_deref())
+            .unwrap_or(self.doc_template());
+
+        Some(Cow::Owned(template.replacen("{}", doc, 1)))
+    }
+
+    pub(crate) fn enabled(&self) -> bool {
+        let struct_method_attr = self.struct_method_attribute();
+        let field_method_attr = self.field_method_attribute();
+        let StructAttributes {
+            include, opt_in, ..
+        } = self.struct_attributes;
+        let FieldAttributes {
+            decorated, skip, ..
+        } = self.field.attributes;
+
+        if include.as_ref().is_some_and(|x| !x.contains(self.method)) {
+            field_method_attr.is_some_and(|x| !x.skip)
+        } else if *opt_in {
+            decorated
+        } else {
+            field_method_attr.is_none_or(|x| !x.skip)
+                && struct_method_attr.is_none_or(|x| !x.skip)
+                && !skip
+        }
+    }
+}
+
+pub(crate) fn resolve<'a>(
+    method: &'a Method,
+    field: &'a Field,
+    struct_attributes: &'a StructAttributes,
+) -> Option<Resolved<'a>> {
+    let query = Query {
+        method,
+        field,
+        struct_attributes,
+    };
+    if !query.enabled() {
+        return None;
+    }
+    let vis = query.vis();
+    let fn_ident = query.fn_ident();
+    let variable_ident = query.variable_ident();
+    let argument_ident = query.argument_ident();
+    let doc = query.docs();
+    let ty = &field.ty;
+    let chainable_set = query.chainable_set();
+    let get_copy = query.is_get_copy();
+
+    Some(Resolved {
+        vis,
+        fn_ident,
+        variable_ident,
+        argument_ident,
+        ty,
+        doc,
+        get_copy,
+        chainable_set,
+    })
+}
+
+#[derive(Debug)]
+pub(crate) struct Resolved<'a> {
+    pub(crate) vis: Cow<'a, Visibility>,
+    pub(crate) fn_ident: Cow<'a, Ident>,
+    pub(crate) variable_ident: Cow<'a, Ident>,
+    pub(crate) argument_ident: Cow<'a, Ident>,
+    pub(crate) ty: &'a Type,
+    pub(crate) doc: Option<Cow<'a, str>>,
+    pub(crate) get_copy: bool,
+    pub(crate) chainable_set: bool,
+}

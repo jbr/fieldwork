@@ -1,0 +1,22 @@
+[package]
+name = "fieldwork"
+version = "0.1.0"
+edition = "2024"
+description = "derivable accessors for struct fields"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/jbr/fieldwork"
+readme = "README.md"
+keywords = ["macros"]
+categories = ["macros"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.95"
+quote = "1.0.40"
+syn = { version = "2.0.101", features = ["full", "visit", "extra-traits"] }
+
+[dev-dependencies]
+macrotest = "1.1.0"
+syn = { version = "2.0.101", features = ["extra-traits"] }
