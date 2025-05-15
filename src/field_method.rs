@@ -1,6 +1,6 @@
 use syn::{
-    punctuated::Punctuated, spanned::Spanned, token::Comma, Error, Expr, ExprAssign, ExprLit,
-    ExprPath, Ident, Lit, LitBool, Visibility,
+    Error, Expr, ExprAssign, ExprLit, ExprPath, Ident, Lit, LitBool, Visibility,
+    punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
 
 use crate::Method;

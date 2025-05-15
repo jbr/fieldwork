@@ -1,8 +1,8 @@
-use syn::{
-    punctuated::Punctuated, spanned::Spanned, token::Comma, Error, Expr, ExprAssign, ExprLit,
-    ExprPath, Lit, LitBool, Visibility,
-};
 use Method::Set;
+use syn::{
+    Error, Expr, ExprAssign, ExprLit, ExprPath, Lit, LitBool, Visibility, punctuated::Punctuated,
+    spanned::Spanned, token::Comma,
+};
 
 use crate::Method;
 
@@ -64,7 +64,7 @@ impl StructMethodAttributes {
                             return Err(Error::new(
                                 expr.span(),
                                 "`chain` can only be used with setters",
-                            ))
+                            ));
                         }
                     },
 
