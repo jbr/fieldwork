@@ -12,10 +12,9 @@ env:
 jobs:
   test:
     name: Build and test
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
         rust: [nightly, stable]
 
     steps:
@@ -26,9 +25,8 @@ jobs:
         toolchain: ${{ matrix.rust }}
         override: true
 
-    - name: Rust Cache
-      uses: Swatinem/rust-cache@v2.7.3
-
+    - uses: Swatinem/rust-cache@v2.7.3
+    - uses: taiki-e/install-action@cargo-expand
     - name: Tests
       run: cargo test
       env:
@@ -61,6 +59,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@cargo-expand
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: llvm-tools-preview
