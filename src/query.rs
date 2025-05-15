@@ -1,11 +1,11 @@
 use std::borrow::Cow;
 
 use crate::{
-    Field, FieldAttributes, FieldMethodAttributes, Method, StructAttributes,
-    StructMethodAttributes, DEFAULT_CHAINABLE_SET,
+    DEFAULT_CHAINABLE_SET, Field, FieldAttributes, FieldMethodAttributes, Method, StructAttributes,
+    StructMethodAttributes,
 };
-use syn::{Ident, Type, Visibility};
 use Method::{Get, GetMut, Set, With};
+use syn::{Ident, Type, Visibility, token::Pub};
 
 #[derive(Debug)]
 pub(crate) struct Query<'a> {
@@ -60,7 +60,7 @@ impl<'a> Query<'a> {
             return Cow::Borrowed(vis);
         }
 
-        Cow::Owned(Visibility::Public(Default::default()))
+        Cow::Owned(Visibility::Public(Pub::default()))
     }
 
     pub(crate) fn fn_ident(&self) -> Cow<'a, Ident> {
@@ -133,7 +133,7 @@ impl<'a> Query<'a> {
             self.field_method_attribute().and_then(|x| x.doc.as_ref())
         {
             return Some(Cow::Borrowed(explicit_method_doc));
-        };
+        }
 
         let doc = self.field.doc.first()?;
 

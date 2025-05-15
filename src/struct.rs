@@ -1,8 +1,11 @@
 use crate::{Method, StructMethodAttributes};
 use std::collections::HashSet;
 use syn::{
-    punctuated::Punctuated, spanned::Spanned, token::Comma, Attribute, Error, Expr, ExprAssign,
-    ExprCall, ExprLit, ExprPath, Lit, Meta, Visibility, WhereClause, WherePredicate,
+    Attribute, Error, Expr, ExprAssign, ExprCall, ExprLit, ExprPath, Lit, Meta, Visibility,
+    WhereClause, WherePredicate,
+    punctuated::Punctuated,
+    spanned::Spanned,
+    token::{Comma, Where},
 };
 
 // this represents the configuration passed to #[fieldwork]
@@ -18,7 +21,7 @@ impl StructAttributes {
     pub(crate) fn build(attributes: &[Attribute]) -> syn::Result<StructAttributes> {
         let mut vis = None;
         let mut methods = Vec::new();
-        let mut include = Some(Default::default());
+        let mut include = Some(HashSet::new());
         let mut where_clause = None;
         let mut opt_in = false;
         if let Some(attr) = attributes.iter().find(|x| x.path().is_ident("fieldwork")) {
@@ -43,7 +46,7 @@ impl StructAttributes {
                                     predicates: rhs.parse_with(
                                         Punctuated::<WherePredicate, Comma>::parse_terminated,
                                     )?,
-                                    where_token: Default::default(),
+                                    where_token: Where::default(),
                                 });
                             }
 
@@ -62,7 +65,7 @@ impl StructAttributes {
                         },
 
                         Expr::Path(ExprPath { path, .. }) if path.is_ident("opt_in") => {
-                            opt_in = true
+                            opt_in = true;
                         }
 
                         Expr::Path(ExprPath { path, .. }) => {

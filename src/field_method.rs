@@ -64,7 +64,7 @@ impl FieldMethodAttributes {
                         Expr::Path(ExprPath { path: lhs, .. }),
                         Expr::Path(ExprPath { path: rhs, .. }),
                     ) if lhs.is_ident("argument") => {
-                        argument_ident = Some(rhs.require_ident().cloned()?)
+                        argument_ident = Some(rhs.require_ident().cloned()?);
                     }
 
                     (
@@ -81,7 +81,7 @@ impl FieldMethodAttributes {
                             ..
                         }),
                     ) if lhs.is_ident("chain") && method == Method::Set => {
-                        chainable_set = Some(*value)
+                        chainable_set = Some(*value);
                     }
 
                     (
@@ -113,8 +113,8 @@ impl FieldMethodAttributes {
             skip,
             fn_ident,
             argument_ident,
-            vis,
             doc,
+            vis,
             chainable_set,
             get_copy,
         })

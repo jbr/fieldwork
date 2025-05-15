@@ -1,13 +1,26 @@
+#![forbid(unsafe_code, future_incompatible)]
+#![deny(
+    missing_debug_implementations,
+    nonstandard_style,
+    missing_copy_implementations,
+    unused_qualifications,
+    missing_docs,
+    rustdoc::missing_crate_level_docs
+)]
+#![warn(clippy::pedantic)]
+
+//! docs forthcoming
+
+use Method::{Get, GetMut, Set, With};
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::{
+    Data, DeriveInput, Error, Generics, Ident, Path,
     parse::{Parse, ParseStream},
     parse_macro_input,
     spanned::Spanned,
-    Data, DeriveInput, Error, Generics, Ident, Path,
 };
-use Method::{Get, GetMut, Set, With};
 
 mod field;
 mod field_method;
@@ -17,7 +30,7 @@ mod struct_method;
 
 pub(crate) use field::{Field, FieldAttributes};
 pub(crate) use field_method::FieldMethodAttributes;
-pub(crate) use query::{resolve, Resolved};
+pub(crate) use query::{Resolved, resolve};
 pub(crate) use r#struct::StructAttributes;
 pub(crate) use struct_method::StructMethodAttributes;
 
@@ -95,6 +108,7 @@ impl Method {
     }
 }
 
+/// docs forthcoming
 #[proc_macro_derive(Fieldwork, attributes(fieldwork))]
 pub fn derive_fieldwork(input: TokenStream) -> TokenStream {
     let Struct {

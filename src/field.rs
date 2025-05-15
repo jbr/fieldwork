@@ -1,6 +1,6 @@
 use syn::{
-    punctuated::Punctuated, spanned::Spanned, token::Comma, Attribute, Error, Expr, ExprAssign,
-    ExprCall, ExprLit, ExprPath, Field as SynField, Ident, Lit, Meta, Type, Visibility,
+    Attribute, Error, Expr, ExprAssign, ExprCall, ExprLit, ExprPath, Field as SynField, Ident, Lit,
+    Meta, Type, Visibility, punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
 
 use crate::{FieldMethodAttributes, Method};
@@ -16,6 +16,7 @@ pub(crate) struct FieldAttributes {
     pub(crate) method_attributes: Vec<FieldMethodAttributes>,
 }
 
+#[allow(clippy::too_many_lines, reason = "deferred for a later refactor")]
 impl FieldAttributes {
     pub(crate) fn build(attribute: Option<&Attribute>) -> syn::Result<FieldAttributes> {
         let mut field_attributes = FieldAttributes::default();
@@ -40,7 +41,7 @@ impl FieldAttributes {
                                 Expr::Path(ExprPath { path: lhs, .. }),
                                 Expr::Path(ExprPath { path: rhs, .. }),
                             ) if lhs.is_ident("rename") => {
-                                field_attributes.fn_ident = Some(rhs.require_ident().cloned()?)
+                                field_attributes.fn_ident = Some(rhs.require_ident().cloned()?);
                             }
 
                             (
@@ -48,7 +49,7 @@ impl FieldAttributes {
                                 Expr::Path(ExprPath { path: rhs, .. }),
                             ) if lhs.is_ident("argument") => {
                                 field_attributes.argument_ident =
-                                    Some(rhs.require_ident().cloned()?)
+                                    Some(rhs.require_ident().cloned()?);
                             }
 
                             (
@@ -64,7 +65,7 @@ impl FieldAttributes {
                                     lit: Lit::Str(rhs), ..
                                 }),
                             ) if lhs.is_ident("rename") => {
-                                field_attributes.fn_ident = Some(rhs.parse()?)
+                                field_attributes.fn_ident = Some(rhs.parse()?);
                             }
 
                             (
@@ -73,7 +74,7 @@ impl FieldAttributes {
                                     lit: Lit::Str(rhs), ..
                                 }),
                             ) if lhs.is_ident("argument") => {
-                                field_attributes.argument_ident = Some(rhs.parse()?)
+                                field_attributes.argument_ident = Some(rhs.parse()?);
                             }
 
                             (
@@ -114,12 +115,12 @@ impl FieldAttributes {
                                     });
                             }
                             (_, _) => {
-                                return Err(syn::Error::new(expr.span(), "not recognized assign"));
+                                return Err(Error::new(expr.span(), "not recognized assign"));
                             }
                         },
 
                         Expr::Path(ExprPath { path, .. }) if path.is_ident("skip") => {
-                            field_attributes.skip = true
+                            field_attributes.skip = true;
                         }
 
                         Expr::Call(ExprCall { func, args, .. }) => match &**func {
@@ -127,7 +128,7 @@ impl FieldAttributes {
                                 let method = method.try_into()?;
                                 field_attributes
                                     .method_attributes
-                                    .push(FieldMethodAttributes::build(method, args)?)
+                                    .push(FieldMethodAttributes::build(method, args)?);
                             }
 
                             _ => {
@@ -170,8 +171,7 @@ impl Field {
             .filter(|doc| doc.path().is_ident("doc"))
             .filter_map(|doc| match &doc.meta.require_name_value().unwrap().value {
                 Expr::Lit(ExprLit {
-                    lit: syn::Lit::Str(s),
-                    ..
+                    lit: Lit::Str(s), ..
                 }) => Some(s.value().trim().to_string()),
                 _ => None,
             })

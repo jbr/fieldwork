@@ -80,11 +80,11 @@ impl StructMethodAttributes {
         }
 
         Ok(StructMethodAttributes {
+            method,
             vis,
             template,
-            doc_template,
             skip,
-            method,
+            doc_template,
             chainable_set,
         })
     }

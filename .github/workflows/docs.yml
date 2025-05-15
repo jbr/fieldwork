@@ -1,0 +1,44 @@
+name: docs
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  docs:
+    name: build rustdocs and put them on github pages
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        components: rustfmt, clippy
+        override: true
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2.7.3
+    - name: Build Documentation
+      run: >-
+        RUSTDOCFLAGS="-Z unstable-options --enable-index-page"
+        cargo +nightly doc
+        --all
+        --all-features
+    - name: Fix permissions
+      run: |
+        chmod -c -R +rX "./target/doc" | while read line; do
+        echo "::warning title=Invalid file permissions automatically fixed::$line"
+        done
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./target/doc
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
