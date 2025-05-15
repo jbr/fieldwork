@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/jbr/fieldwork"
 readme = "README.md"
 keywords = ["macros"]
-categories = ["macros"]
+categories = ["development-tools"]
 
 [lib]
 proc-macro = true
