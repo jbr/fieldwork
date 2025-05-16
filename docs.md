@@ -28,6 +28,7 @@ struct User {
 This generates all of the following code:
 
 ```rust
+// GENERATED
 # struct User { admin: bool, name: String }
 impl User {
     /// Returns a copy of whether this user is an admin
@@ -97,6 +98,7 @@ struct User {
 generates 
 
 ```rust
+// GENERATED
 # struct User { admin: bool, name: String }
 impl User {
     /// Borrows whether this user is an admin
@@ -130,6 +132,7 @@ struct User {
 generates:
 
 ```rust
+// GENERATED
 # struct User { admin: bool, name: String }
 impl User {
     /// Sets whether this user is an admin, returning `&mut Self` for chaining
@@ -165,6 +168,7 @@ struct User {
 generates the following impl block
 
 ```rust
+// GENERATED
 # struct User { admin: bool, name: String }
 impl User {
     /// Mutably borrow whether this user is an admin
@@ -197,6 +201,7 @@ struct User {
 ```
 
 ```rust
+// GENERATED
 # struct User { admin: bool, name: String }
 impl User {
     /// Owned chainable setter for whether this user is an admin, returning `Self`
@@ -237,9 +242,8 @@ struct Hobbit<PocketContents> {
     pocket_contents: PocketContents,
 }
 ```
-
-generates
 ```rust
+// GENERATED
 # trait Precious {}; struct Hobbit<PocketContents> { pocket_contents: PocketContents }
 impl<PocketContents> Hobbit<PocketContents>
 where
@@ -289,6 +293,7 @@ struct User {
 }
 ```
 ```rust
+// GENERATED
 # struct User { admin: bool, name: String }
 impl User {
     /// Assigns whether this user is an admin
@@ -322,6 +327,7 @@ struct User {
 ```
 
 ```rust
+// GENERATED
 # struct User { admin: bool, name: String }
 impl User {
     /// Sets whether this user is an admin, returning `&mut Self` for chaining
@@ -354,6 +360,7 @@ struct User {
 ```
 
 ```rust
+// GENERATED
 # struct User { admin: bool, name: String }
 impl User {
     /// Sets whether this user is an admin
@@ -389,6 +396,7 @@ struct User {
 ```
 
 ```rust
+// GENERATED
 # struct User { admin: bool, name: String, private: () }
 impl User {
     /// Borrows whether this user is an admin
@@ -425,6 +433,7 @@ struct User {
 ```
 
 ```rust
+// GENERATED
 # struct User { superadmin: bool }
 impl User {
     /// Borrows whether this user is an admin
@@ -454,6 +463,7 @@ struct User {
 ```
 
 ```rust
+// GENERATED
 # struct User { admin: bool }
 impl User {
     /// Sets whether this user is an admin, returning `&mut Self` for chaining
@@ -486,6 +496,7 @@ struct User {
 }
 ```
 ```rust
+// GENERATED
 # struct User { admin: bool, name: String }
 impl User {
     /// Borrows whether this user is an admin
@@ -526,6 +537,7 @@ struct User {
 ```
 
 ```rust
+// GENERATED
 # struct User { name: String, profile_thumbnail: Vec<u8> }
 impl User {
     ///Borrows the user's name
@@ -560,7 +572,9 @@ impl User {
 ### field-method level options
 
 #### `rename`
-Specify the full function name for this particular method. Note that this overrides both `template` and field-level [`rename`](#rename).
+
+Specify the full function name for this particular method. Note that this overrides both `template`
+and field-level [`rename`](#rename).
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -571,6 +585,7 @@ struct User {
 }
 ```
 ```rust
+// GENERATED
 # struct User { admin: bool }
 impl User {
     /// Borrows whether this user is an admin
@@ -605,7 +620,8 @@ struct User {
 }
 ```
 
-```
+```rust
+// GENERATED
 # struct User { admin: bool }
 impl User {
     /// Sets whether this user is an admin, returning `&mut Self` for chaining
@@ -628,6 +644,7 @@ struct User {
 ```
 
 ```rust
+// GENERATED
 # struct User { admin: bool }
 impl User {
     ///Specify whether this user can administer this system
@@ -652,6 +669,7 @@ struct User {
 ```
 
 ```rust
+// GENERATED
 # struct User { admin: bool }
 impl User {
     /// Sets whether this user is an admin
@@ -674,6 +692,7 @@ struct User {
 }
 ```
 ```rust
+// GENERATED
 # struct User { admin: bool }
 impl User {
     /// Returns a copy of whether the user is an admin
@@ -701,6 +720,7 @@ struct User {
 
 
 ```rust
+// GENERATED
 # struct User { admin: bool, name: String }
 impl User {
     /// Borrows whether this user is an admin
@@ -738,6 +758,7 @@ struct User {
 ```
 
 ```rust
+// GENERATED
 # struct User { name: String, profile_thumbnail: Vec<u8> }
 impl User {
     ///Borrows the user's name
@@ -805,6 +826,7 @@ struct User {
 }
 ```
 ```rust
+// GENERATED
 # struct User { admin: bool, name: String, private: () }
 impl User {
     ///Borrows whether this user is an admin
