@@ -24,7 +24,11 @@ struct User {
     name: String,
 
     #[fieldwork(skip)]
-    private: ()
+    private: (),
+
+    /// read-only unique identifier
+    #[fieldwork(deref = "[u8]", opt_in, get)]
+    id: Vec<u8>,
 }
 ```
 
@@ -32,7 +36,7 @@ This generates all of the following code:
 
 ```rust
 // GENERATED
-# struct User { admin: bool, name: String }
+# struct User { admin: bool, name: String, private: (), id: Vec<u8> }
 impl User {
     /**Returns a copy of whether this user is an admin
 
@@ -83,6 +87,10 @@ for historical reasons*/
     pub fn with_name(mut self, name: String) -> Self {
         self.name = name;
         self
+    }
+    ///Borrows read-only unique identifier
+    pub fn id(&self) -> &[u8] {
+        &self.id
     }
 }
 ```
@@ -824,6 +832,7 @@ as an example, `#[fieldwork(get(skip)]` to skip just the get method for the part
 It is also possible to omit the struct-level attribute and opt individual fields in with eg `#[fieldwork(get, set)]`.
 
 If you need to specify struct-level configuration in order to reduce repetition but still want to operate in an opt-in mode instead of using `skip`, fieldwork supports `opt_in` as a top level argument.
+It is also possible to specify `opt_in` at a field level, which will only include the methods specified on that field.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]

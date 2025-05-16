@@ -15,6 +15,7 @@ pub(crate) struct FieldAttributes {
     pub(crate) argument_ident: Option<Ident>,
     pub(crate) method_attributes: Vec<FieldMethodAttributes>,
     pub(crate) deref: Option<Type>,
+    pub(crate) opt_in: bool,
 }
 
 #[allow(clippy::too_many_lines, reason = "deferred for a later refactor")]
@@ -143,6 +144,9 @@ impl FieldAttributes {
 
                         Expr::Path(ExprPath { path, .. }) if path.is_ident("skip") => {
                             field_attributes.skip = true;
+                        }
+                        Expr::Path(ExprPath { path, .. }) if path.is_ident("opt_in") => {
+                            field_attributes.opt_in = true;
                         }
 
                         Expr::Path(ExprPath { path, .. }) => {

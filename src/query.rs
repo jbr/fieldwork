@@ -162,10 +162,13 @@ impl<'a> Query<'a> {
             include, opt_in, ..
         } = self.struct_attributes;
         let FieldAttributes {
-            decorated, skip, ..
+            decorated,
+            skip,
+            opt_in: field_opt_in,
+            ..
         } = self.field.attributes;
 
-        if *opt_in {
+        if *opt_in || field_opt_in {
             decorated
                 && ((self.field.attributes.method_attributes.is_empty()
                     && include.as_ref().is_some_and(|x| x.contains(self.method)))
