@@ -139,14 +139,20 @@ impl<'a> Query<'a> {
             return Some(Cow::Borrowed(explicit_method_doc));
         }
 
-        let doc = self.field.doc.first()?;
+        let first_line = self.field.doc.first()?;
 
         let template = self
             .struct_method_attribute()
             .and_then(|x| x.doc_template.as_deref())
             .unwrap_or(self.doc_template());
 
-        Some(Cow::Owned(template.replacen("{}", doc, 1)))
+        let mut doc = template.replacen("{}", first_line, 1);
+
+        if self.field.doc.len() > 1 {
+            doc.push('\n');
+            doc.push_str(&self.field.doc[1..].join("\n"));
+        }
+        Some(Cow::Owned(doc))
     }
 
     pub(crate) fn enabled(&self) -> bool {

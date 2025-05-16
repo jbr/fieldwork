@@ -12,15 +12,20 @@ struct MyStruct<T> {
     )]
     enabled: bool,
     /// it's really whatever you want
+    ///
+    /// Some more information about this type:
+    /// - it could really be anything
+    /// - we don't know much more than that
     generic: T,
 }
 
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(
-    set(doc_template = " # ssssets {}"),
+    set(doc_template = " # ssssets {}
+
+extra info here"),
     get(doc_template = "# ggggets {}"),
     with(doc_template = "# width {}"),
-    update(doc_template = "# updates {}"),
     get_mut(doc_template = "# gmut {}")
 )]
 struct DocTemplates<T> {
@@ -36,5 +41,7 @@ struct DocTemplates<T> {
     enabled: bool,
 
     /// the generic
+    ///
+    /// Some further info
     generic: T,
 }
