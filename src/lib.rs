@@ -8,8 +8,7 @@
     rustdoc::missing_crate_level_docs
 )]
 #![warn(clippy::pedantic)]
-
-//! docs forthcoming
+#![doc = include_str!("../docs.md")]
 
 use Method::{Get, GetMut, Set, With};
 use proc_macro::TokenStream;
@@ -108,7 +107,7 @@ impl Method {
     }
 }
 
-/// docs forthcoming
+/// see crate-level documentation
 #[proc_macro_derive(Fieldwork, attributes(fieldwork))]
 pub fn derive_fieldwork(input: TokenStream) -> TokenStream {
     let Struct {

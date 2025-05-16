@@ -114,17 +114,21 @@ impl<'a> Query<'a> {
             return Cow::Borrowed(argument_ident);
         }
 
+        if let Some(renamed) = self.field.attributes.fn_ident.as_ref() {
+            return Cow::Borrowed(renamed);
+        }
+
         Cow::Borrowed(&self.field.ident)
     }
 
     pub(crate) fn doc_template(&self) -> &str {
         match self.method {
-            Get if self.is_get_copy() => " # Returns a copy of {}",
-            Get => " # Borrows {}",
-            Set if self.chainable_set() => " # Sets {}, returning `&mut Self` for chaining",
-            Set => " # Sets {}",
-            With => " # Owned chainable setter for {}, returning `Self`",
-            GetMut => " # Mutably borrow {}",
+            Get if self.is_get_copy() => "Returns a copy of {}",
+            Get => "Borrows {}",
+            Set if self.chainable_set() => "Sets {}, returning `&mut Self` for chaining",
+            Set => "Sets {}",
+            With => "Owned chainable setter for {}, returning `Self`",
+            GetMut => "Mutably borrow {}",
         }
     }
 

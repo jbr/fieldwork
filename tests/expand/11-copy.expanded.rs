@@ -7,7 +7,7 @@ struct MyStruct<T> {
     generic: T,
 }
 impl<T> MyStruct<T> {
-    /// # Returns a copy of generated
+    ///Returns a copy of generated
     pub fn enabled(&self) -> bool {
         self.enabled
     }

@@ -10,39 +10,39 @@ struct MyStruct<T> {
     generic: T,
 }
 impl<T> MyStruct<T> {
-    /// # Borrows generated
+    ///Borrows generated
     pub fn is_enabled(&self) -> &bool {
         &self.enabled
     }
-    /// # Mutably borrow generated
+    ///Mutably borrow generated
     pub fn is_enabled_mut(&mut self) -> &mut bool {
         &mut self.enabled
     }
-    /// # Sets generated, returning `&mut Self` for chaining
-    pub fn set_is_enabled(&mut self, enabled: bool) -> &mut Self {
-        self.enabled = enabled;
+    ///Sets generated, returning `&mut Self` for chaining
+    pub fn set_is_enabled(&mut self, is_enabled: bool) -> &mut Self {
+        self.enabled = is_enabled;
         self
     }
-    /// # Owned chainable setter for generated, returning `Self`
+    ///Owned chainable setter for generated, returning `Self`
     #[must_use]
-    pub fn with_is_enabled(mut self, enabled: bool) -> Self {
-        self.enabled = enabled;
+    pub fn with_is_enabled(mut self, is_enabled: bool) -> Self {
+        self.enabled = is_enabled;
         self
     }
-    /// # Borrows generated
+    ///Borrows generated
     pub fn generic(&self) -> &T {
         &self.generic
     }
-    /// # Mutably borrow generated
+    ///Mutably borrow generated
     pub fn generic_mut(&mut self) -> &mut T {
         &mut self.generic
     }
-    /// # Sets generated, returning `&mut Self` for chaining
+    ///Sets generated, returning `&mut Self` for chaining
     pub fn set_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
         self
     }
-    /// # Owned chainable setter for generated, returning `Self`
+    ///Owned chainable setter for generated, returning `Self`
     #[must_use]
     pub fn with_generic(mut self, generic: T) -> Self {
         self.generic = generic;

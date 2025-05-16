@@ -8,29 +8,29 @@ struct MyStruct<T> {
     generic: T,
 }
 impl<T> MyStruct<T> {
-    /// # Borrows this number is cool
+    ///Borrows this number is cool
     pub fn number(&self) -> &usize {
         &self.number
     }
-    /// # Sets this number is cool, returning `&mut Self` for chaining
+    ///Sets this number is cool, returning `&mut Self` for chaining
     pub fn set_number(&mut self, number: usize) -> &mut Self {
         self.number = number;
         self
     }
-    /// # Borrows is this struct on or not
+    ///Borrows is this struct on or not
     pub fn enabled(&self) -> &bool {
         &self.enabled
     }
-    /// # Sets is this struct on or not, returning `&mut Self` for chaining
+    ///Sets is this struct on or not, returning `&mut Self` for chaining
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
-    /// # Borrows it's really whatever you want
+    ///Borrows it's really whatever you want
     pub fn generic(&self) -> &T {
         &self.generic
     }
-    /// # Sets it's really whatever you want, returning `&mut Self` for chaining
+    ///Sets it's really whatever you want, returning `&mut Self` for chaining
     pub fn set_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
         self

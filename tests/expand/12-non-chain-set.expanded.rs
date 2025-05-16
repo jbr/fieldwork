@@ -12,11 +12,11 @@ impl<T> MyStruct<T> {
         self.number = number;
         self
     }
-    /// # Sets generated
+    ///Sets generated
     pub fn set_enabled(&mut self, enabled: bool) {
         self.enabled = enabled;
     }
-    /// # Sets generated, returning `&mut Self` for chaining
+    ///Sets generated, returning `&mut Self` for chaining
     pub fn set_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
         self
@@ -34,11 +34,11 @@ impl<T> MyStruct2<T> {
     pub fn set_number(&mut self, number: usize) {
         self.number = number;
     }
-    /// # Sets generated
+    ///Sets generated
     pub fn set_enabled(&mut self, enabled: bool) {
         self.enabled = enabled;
     }
-    /// # Sets generated
+    ///Sets generated
     pub fn set_generic(&mut self, generic: T) {
         self.generic = generic;
     }
