@@ -169,8 +169,7 @@ impl FieldAttributes {
                                     .push(FieldMethodAttributes::build(method, args)?);
                             }
 
-                            d => {
-                                dbg!(d);
+                            _ => {
                                 return Err(Error::new(expr.span(), "not recognized call"));
                             }
                         },

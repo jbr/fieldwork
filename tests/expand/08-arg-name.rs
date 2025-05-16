@@ -8,6 +8,6 @@ struct MyStruct<T> {
     #[fieldwork(set(argument = "is_enabled_as_a_boolean"))]
     enabled: bool,
     /// the generic
-    #[fieldwork(argument = the_gen, set(argument = "the_generic"))]
+    #[fieldwork(argument = "the_gen", set(argument = the_generic))]
     generic: T,
 }

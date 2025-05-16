@@ -71,7 +71,7 @@ impl<T> MyStruct<T> {
 #[fieldwork(get(template = "get_{}"), set(template = "put_{}"))]
 struct WithTemplate<T> {
     /// this number is cool
-    #[fieldwork(rename = number_in_seconds)]
+    #[fieldwork(rename = "number_in_seconds")]
     number: usize,
     /// is this struct on or not
     #[fieldwork(get = is_it_enabled)]
