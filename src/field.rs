@@ -1,6 +1,6 @@
 use syn::{
     Attribute, Error, Expr, ExprAssign, ExprCall, ExprLit, ExprPath, Field as SynField, Ident, Lit,
-    Meta, Type, Visibility, punctuated::Punctuated, spanned::Spanned, token::Comma,
+    Meta, Type, TypePath, Visibility, punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
 
 use crate::{FieldMethodAttributes, Method};
@@ -14,6 +14,7 @@ pub(crate) struct FieldAttributes {
     pub(crate) vis: Option<Visibility>,
     pub(crate) argument_ident: Option<Ident>,
     pub(crate) method_attributes: Vec<FieldMethodAttributes>,
+    pub(crate) deref: Option<Type>,
 }
 
 #[allow(clippy::too_many_lines, reason = "deferred for a later refactor")]
@@ -54,6 +55,16 @@ impl FieldAttributes {
 
                             (
                                 Expr::Path(ExprPath { path: lhs, .. }),
+                                Expr::Path(ExprPath { path: rhs, .. }),
+                            ) if lhs.is_ident("deref") => {
+                                field_attributes.deref = Some(Type::Path(TypePath {
+                                    qself: None,
+                                    path: rhs.clone(),
+                                }));
+                            }
+
+                            (
+                                Expr::Path(ExprPath { path: lhs, .. }),
                                 Expr::Lit(ExprLit {
                                     lit: Lit::Str(rhs), ..
                                 }),
@@ -66,6 +77,15 @@ impl FieldAttributes {
                                 }),
                             ) if lhs.is_ident("rename") => {
                                 field_attributes.fn_ident = Some(rhs.parse()?);
+                            }
+
+                            (
+                                Expr::Path(ExprPath { path: lhs, .. }),
+                                Expr::Lit(ExprLit {
+                                    lit: Lit::Str(rhs), ..
+                                }),
+                            ) if lhs.is_ident("deref") => {
+                                field_attributes.deref = Some(rhs.parse()?);
                             }
 
                             (
@@ -92,6 +112,7 @@ impl FieldAttributes {
                                         doc: None,
                                         chainable_set: None,
                                         get_copy: None,
+                                        deref: None,
                                     });
                             }
 
@@ -112,6 +133,7 @@ impl FieldAttributes {
                                         doc: None,
                                         chainable_set: None,
                                         get_copy: None,
+                                        deref: None,
                                     });
                             }
                             (_, _) => {
@@ -123,6 +145,22 @@ impl FieldAttributes {
                             field_attributes.skip = true;
                         }
 
+                        Expr::Path(ExprPath { path, .. }) => {
+                            field_attributes
+                                .method_attributes
+                                .push(FieldMethodAttributes {
+                                    method: Method::try_from(path)?,
+                                    fn_ident: None,
+                                    skip: false,
+                                    argument_ident: None,
+                                    vis: None,
+                                    doc: None,
+                                    chainable_set: None,
+                                    get_copy: None,
+                                    deref: None,
+                                });
+                        }
+
                         Expr::Call(ExprCall { func, args, .. }) => match &**func {
                             Expr::Path(ExprPath { path: method, .. }) => {
                                 let method = method.try_into()?;
@@ -131,7 +169,8 @@ impl FieldAttributes {
                                     .push(FieldMethodAttributes::build(method, args)?);
                             }
 
-                            _ => {
+                            d => {
+                                dbg!(d);
                                 return Err(Error::new(expr.span(), "not recognized call"));
                             }
                         },

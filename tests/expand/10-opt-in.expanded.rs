@@ -8,6 +8,8 @@ struct MyStruct<T> {
     /// generated
     #[fieldwork]
     generic: T,
+    #[fieldwork(get)]
+    only_get: (),
 }
 impl<T> MyStruct<T> {
     ///Borrows generated
@@ -48,6 +50,9 @@ impl<T> MyStruct<T> {
         self.generic = generic;
         self
     }
+    pub fn only_get(&self) -> &() {
+        &self.only_get
+    }
 }
 #[fieldwork(opt_in, get)]
 struct OptingInPerField<T> {
@@ -60,7 +65,18 @@ struct OptingInPerField<T> {
     #[fieldwork]
     generic: T,
 }
-#[fieldwork(opt_in)]
+impl<T> OptingInPerField<T> {
+    ///Sets generated, returning `&mut Self` for chaining
+    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
+        self.enabled = enabled;
+        self
+    }
+    ///Borrows generated
+    pub fn generic(&self) -> &T {
+        &self.generic
+    }
+}
+#[fieldwork(opt_in, get(template = "get_{}"))]
 struct OptingInPerField<T> {
     /// not generated
     number: usize,
@@ -70,4 +86,20 @@ struct OptingInPerField<T> {
     /// generated
     #[fieldwork(get, set)]
     generic: T,
+}
+impl<T> OptingInPerField<T> {
+    ///Sets generated, returning `&mut Self` for chaining
+    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
+        self.enabled = enabled;
+        self
+    }
+    ///Borrows generated
+    pub fn get_generic(&self) -> &T {
+        &self.generic
+    }
+    ///Sets generated, returning `&mut Self` for chaining
+    pub fn set_generic(&mut self, generic: T) -> &mut Self {
+        self.generic = generic;
+        self
+    }
 }

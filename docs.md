@@ -6,6 +6,66 @@
 
 In Rust, manually writing getter and setter methods for struct fields can be repetitive and error-prone, especially for large structs. `fieldwork` addresses this by providing a procedural macro that automatically generates these methods based on your struct definitions.
 
+## Example to get a sense of the library
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set, get_mut, with)]
+struct User {
+    /// whether this user is an admin
+    #[fieldwork(argument = is_admin, get(copy, rename = is_admin), get_mut = is_admin_mut)]
+    admin: bool,
+
+    /// the user's name
+    name: String,
+}
+```
+
+```rust
+# struct User { admin: bool, name: String }
+impl User {
+    /// Returns a copy of whether this user is an admin
+    pub fn is_admin(&self) -> bool {
+        self.admin
+    }
+    /// Mutably borrow whether this user is an admin
+    pub fn is_admin_mut(&mut self) -> &mut bool {
+        &mut self.admin
+    }
+    /// Sets whether this user is an admin, returning `&mut Self` for chaining
+    pub fn set_admin(&mut self, is_admin: bool) -> &mut Self {
+        self.admin = is_admin;
+        self
+    }
+    /// Owned chainable setter for whether this user is an admin, returning `Self`
+    #[must_use]
+    pub fn with_admin(mut self, is_admin: bool) -> Self {
+        self.admin = is_admin;
+        self
+    }
+    /// Borrows the user's name
+    pub fn name(&self) -> &String {
+        &self.name
+    }
+    /// Mutably borrow the user's name
+    pub fn name_mut(&mut self) -> &mut String {
+        &mut self.name
+    }
+    /// Sets the user's name, returning `&mut Self` for chaining
+    pub fn set_name(&mut self, name: String) -> &mut Self {
+        self.name = name;
+        self
+    }
+    /// Owned chainable setter for the user's name, returning `Self`
+    #[must_use]
+    pub fn with_name(mut self, name: String) -> Self {
+        self.name = name;
+        self
+    }
+}
+```
+
+
 ## Methods
 
 Fieldwork supports four distinct methods: `get`, `set`, `get_mut`, and `with`.
@@ -113,9 +173,11 @@ impl User {
 ```
 
 ### `with`
-`with` provides a chainable owned setter, for situations that require returning the struct after modification.
+
+The `with` method provides a chainable owned setter, for situations that require returning the struct after modification.
 
 #### Example
+
 ```rust
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(with)]
@@ -145,74 +207,14 @@ impl User {
     }
 }
 ```
-
-
-## Combined example
-
-```rust
-#[derive(fieldwork::Fieldwork)]
-#[fieldwork(get, set, get_mut, with)]
-struct User {
-    /// whether this user is an admin
-    #[fieldwork(argument = is_admin, get(copy, rename = is_admin), get_mut = is_admin_mut)]
-    admin: bool,
-
-    /// the user's name
-    name: String,
-}
-```
-
-```rust
-# struct User { admin: bool, name: String }
-impl User {
-    /// Returns a copy of whether this user is an admin
-    pub fn is_admin(&self) -> bool {
-        self.admin
-    }
-    /// Mutably borrow whether this user is an admin
-    pub fn is_admin_mut(&mut self) -> &mut bool {
-        &mut self.admin
-    }
-    /// Sets whether this user is an admin, returning `&mut Self` for chaining
-    pub fn set_admin(&mut self, is_admin: bool) -> &mut Self {
-        self.admin = is_admin;
-        self
-    }
-    /// Owned chainable setter for whether this user is an admin, returning `Self`
-    #[must_use]
-    pub fn with_admin(mut self, is_admin: bool) -> Self {
-        self.admin = is_admin;
-        self
-    }
-    /// Borrows the user's name
-    pub fn name(&self) -> &String {
-        &self.name
-    }
-    /// Mutably borrow the user's name
-    pub fn name_mut(&mut self) -> &mut String {
-        &mut self.name
-    }
-    /// Sets the user's name, returning `&mut Self` for chaining
-    pub fn set_name(&mut self, name: String) -> &mut Self {
-        self.name = name;
-        self
-    }
-    /// Owned chainable setter for the user's name, returning `Self`
-    #[must_use]
-    pub fn with_name(mut self, name: String) -> Self {
-        self.name = name;
-        self
-    }
-}
-```
-
 ## Configuration
 
-fieldwork supports four layers of configuration, from broadest to most specific: struct level, struct-method level, field level, and field-method level. The most specific configuration always overrides.
+fieldwork supports four layers of configuration, from broadest to most specific: struct level,
+struct-method level, field level, and field-method level. The most specific configuration always
+overrides.
 
 ### struct level options
 
-<!-- #### `opt_in` -->
 #### `vis`
 Sets the visibility for all generated functions, unless otherwise overridden.
 `#[fieldwork(vis = "pub")]` is the default. For `pub(crate)`, use `#[fieldwork(vis = "pub(crate)")]`. To set private visibility, use `#[fieldwork(vis = "")]`.
@@ -501,6 +503,54 @@ impl User {
 }
 ```
 
+#### `deref`
+For `get` and `get_mut`, return this derefenced type. Some types such as `[u8]` will require quoting.
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set, get_mut)]
+struct User {
+    /// the user's name
+    #[fieldwork(deref = str)]
+    name: String,
+
+    /// a small image in jpg format
+    #[fieldwork(deref = "[u8]")]
+    profile_thumbnail: Vec<u8>,
+}
+```
+
+```rust
+# struct User { name: String, profile_thumbnail: Vec<u8> }
+impl User {
+    ///Borrows the user's name
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    ///Mutably borrow the user's name
+    pub fn name_mut(&mut self) -> &mut str {
+        &mut self.name
+    }
+    ///Sets the user's name, returning `&mut Self` for chaining
+    pub fn set_name(&mut self, name: String) -> &mut Self {
+        self.name = name;
+        self
+    }
+    ///Borrows a small image in jpg format
+    pub fn profile_thumbnail(&self) -> &[u8] {
+        &self.profile_thumbnail
+    }
+    ///Mutably borrow a small image in jpg format
+    pub fn profile_thumbnail_mut(&mut self) -> &mut [u8] {
+        &mut self.profile_thumbnail
+    }
+    ///Sets a small image in jpg format, returning `&mut Self` for chaining
+    pub fn set_profile_thumbnail(&mut self, profile_thumbnail: Vec<u8>) -> &mut Self {
+        self.profile_thumbnail = profile_thumbnail;
+        self
+    }
+}
+```
+
 ### field-method level options
 
 #### `rename`
@@ -656,6 +706,106 @@ impl User {
         &self.name
     }
     /// Sets the user's name, returning `&mut Self` for chaining
+    pub fn set_name(&mut self, name: String) -> &mut Self {
+        self.name = name;
+        self
+    }
+}
+```
+
+#### `deref`
+
+For `get` and `get_mut`, return this derefenced type for this specific method and field. Some types
+such as `[u8]` will require quoting.
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+struct User {
+    /// the user's name
+    #[fieldwork(get(deref = str), set, get_mut)]
+    name: String,
+
+    /// a small image in jpg format
+    #[fieldwork(get_mut(deref = "[u8]"), get, set)]
+    profile_thumbnail: Vec<u8>,
+}
+```
+
+```rust
+# struct User { name: String, profile_thumbnail: Vec<u8> }
+impl User {
+    ///Borrows the user's name
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    ///Mutably borrow the user's name
+    pub fn name_mut(&mut self) -> &mut String {
+        &mut self.name
+    }
+    ///Sets the user's name, returning `&mut Self` for chaining
+    pub fn set_name(&mut self, name: String) -> &mut Self {
+        self.name = name;
+        self
+    }
+    ///Borrows a small image in jpg format
+    pub fn profile_thumbnail(&self) -> &Vec<u8> {
+        &self.profile_thumbnail
+    }
+    ///Mutably borrow a small image in jpg format
+    pub fn profile_thumbnail_mut(&mut self) -> &mut [u8] {
+        &mut self.profile_thumbnail
+    }
+    ///Sets a small image in jpg format, returning `&mut Self` for chaining
+    pub fn set_profile_thumbnail(&mut self, profile_thumbnail: Vec<u8>) -> &mut Self {
+        self.profile_thumbnail = profile_thumbnail;
+        self
+    }
+}
+```
+
+
+
+## How fieldwork selects which methods to generate for which fields
+
+In order to be maximally expressive, fieldwork can operate in both opt-in and opt-out
+mode. `#[derive(fieldwork::Fieldwork)]` does nothing without at least one `#[fieldwork]`
+attribute.
+
+### Opt-out
+
+If a `#[fieldwork(get, set, with, get_mut)]` attribute is applied to the struct, it applies those
+methods to all fields that don't have `#[fieldwork(skip)]` (to skip the entire field) or, using get
+as an example, `#[fieldwork(get(skip)]` to skip just the get method for the particular field.
+
+### Opt-in
+
+It is also possible to omit the struct-level attribute and opt individual fields in with eg `#[fieldwork(get, set)]`.
+
+If you need to specify struct-level configuration in order to reduce repetition but still want to operate in an opt-in mode instead of using `skip`, fieldwork supports `opt_in` as a top level argument.
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(opt_in, get(template = "get_{}"))]
+struct User {
+    /// whether this user is an admin
+    #[fieldwork(get)]
+    admin: bool,
+
+    /// the user's name
+    #[fieldwork(set)]
+    name: String,
+
+    private: ()
+}
+```
+```rust
+# struct User { admin: bool, name: String, private: () }
+impl User {
+    ///Borrows whether this user is an admin
+    pub fn get_admin(&self) -> &bool {
+        &self.admin
+    }
+    ///Sets the user's name, returning `&mut Self` for chaining
     pub fn set_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self

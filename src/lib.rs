@@ -47,6 +47,7 @@ impl Method {
             doc,
             get_copy,
             chainable_set,
+            deref_type,
         }) = resolve(&self, field, struct_attributes)
         else {
             return quote!();
@@ -67,7 +68,7 @@ impl Method {
             Get => {
                 quote! {
                     #doc
-                    #vis fn #fn_ident(&self) -> &#ty {
+                    #vis fn #fn_ident(&self) -> &#deref_type {
                         &self.#variable_ident
                     }
                 }
@@ -99,7 +100,7 @@ impl Method {
 
             GetMut => quote! {
                 #doc
-                #vis fn #fn_ident(&mut self) -> &mut #ty {
+                #vis fn #fn_ident(&mut self) -> &mut #deref_type {
                     &mut self.#variable_ident
                 }
             },

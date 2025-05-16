@@ -1,5 +1,5 @@
 use syn::{
-    Error, Expr, ExprAssign, ExprLit, ExprPath, Ident, Lit, LitBool, Visibility,
+    Error, Expr, ExprAssign, ExprLit, ExprPath, Ident, Lit, LitBool, Type, TypePath, Visibility,
     punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
 
@@ -16,6 +16,7 @@ pub(crate) struct FieldMethodAttributes {
     pub(crate) vis: Option<Visibility>,
     pub(crate) chainable_set: Option<bool>,
     pub(crate) get_copy: Option<bool>,
+    pub(crate) deref: Option<Type>,
 }
 impl FieldMethodAttributes {
     pub(crate) fn build(
@@ -29,6 +30,7 @@ impl FieldMethodAttributes {
         let mut doc = None;
         let mut chainable_set = None;
         let mut get_copy = None;
+        let mut deref = None;
         for expr in exprs {
             match expr {
                 Expr::Assign(ExprAssign { left, right, .. }) => match (&**left, &**right) {
@@ -65,6 +67,25 @@ impl FieldMethodAttributes {
                         Expr::Path(ExprPath { path: rhs, .. }),
                     ) if lhs.is_ident("argument") => {
                         argument_ident = Some(rhs.require_ident().cloned()?);
+                    }
+
+                    (
+                        Expr::Path(ExprPath { path: lhs, .. }),
+                        Expr::Path(ExprPath { path: rhs, .. }),
+                    ) if lhs.is_ident("deref") => {
+                        deref = Some(Type::Path(TypePath {
+                            qself: None,
+                            path: rhs.clone(),
+                        }));
+                    }
+
+                    (
+                        Expr::Path(ExprPath { path: lhs, .. }),
+                        Expr::Lit(ExprLit {
+                            lit: Lit::Str(rhs), ..
+                        }),
+                    ) if lhs.is_ident("deref") => {
+                        deref = Some(rhs.parse()?);
                     }
 
                     (
@@ -117,6 +138,7 @@ impl FieldMethodAttributes {
             vis,
             chainable_set,
             get_copy,
+            deref,
         })
     }
 }

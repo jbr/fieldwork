@@ -159,15 +159,30 @@ impl<'a> Query<'a> {
             decorated, skip, ..
         } = self.field.attributes;
 
-        if include.as_ref().is_some_and(|x| !x.contains(self.method)) {
-            field_method_attr.is_some_and(|x| !x.skip)
-        } else if *opt_in {
+        if *opt_in {
             decorated
+                && ((self.field.attributes.method_attributes.is_empty()
+                    && include.as_ref().is_some_and(|x| x.contains(self.method)))
+                    || field_method_attr.is_some_and(|x| !x.skip))
+        } else if include.as_ref().is_some_and(|x| !x.contains(self.method)) {
+            field_method_attr.is_some_and(|x| !x.skip)
         } else {
             field_method_attr.is_none_or(|x| !x.skip)
                 && struct_method_attr.is_none_or(|x| !x.skip)
                 && !skip
         }
+    }
+
+    pub(crate) fn deref_type(&self) -> &'a Type {
+        self.field_method_attribute()
+            .and_then(|x| x.deref.as_ref())
+            .unwrap_or(
+                self.field
+                    .attributes
+                    .deref
+                    .as_ref()
+                    .unwrap_or(&self.field.ty),
+            )
     }
 }
 
@@ -189,6 +204,7 @@ pub(crate) fn resolve<'a>(
     let variable_ident = query.variable_ident();
     let argument_ident = query.argument_ident();
     let doc = query.docs();
+    let deref_type = query.deref_type();
     let ty = &field.ty;
     let chainable_set = query.chainable_set();
     let get_copy = query.is_get_copy();
@@ -202,6 +218,7 @@ pub(crate) fn resolve<'a>(
         doc,
         get_copy,
         chainable_set,
+        deref_type,
     })
 }
 
@@ -215,4 +232,5 @@ pub(crate) struct Resolved<'a> {
     pub(crate) doc: Option<Cow<'a, str>>,
     pub(crate) get_copy: bool,
     pub(crate) chainable_set: bool,
+    pub(crate) deref_type: &'a Type,
 }
