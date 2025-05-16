@@ -17,9 +17,15 @@ struct User {
     admin: bool,
 
     /// the user's name
+    #[fieldwork(deref = str)]
     name: String,
+
+    #[fieldwork(skip)]
+    private: ()
 }
 ```
+
+This generates all of the following code:
 
 ```rust
 # struct User { admin: bool, name: String }
@@ -44,11 +50,11 @@ impl User {
         self
     }
     /// Borrows the user's name
-    pub fn name(&self) -> &String {
+    pub fn name(&self) -> &str {
         &self.name
     }
     /// Mutably borrow the user's name
-    pub fn name_mut(&mut self) -> &mut String {
+    pub fn name_mut(&mut self) -> &mut str {
         &mut self.name
     }
     /// Sets the user's name, returning `&mut Self` for chaining
