@@ -503,6 +503,54 @@ impl User {
 }
 ```
 
+#### `deref`
+For `get` and `get_mut`, return this derefenced type. Some types such as `[u8]` will require quoting.
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set, get_mut)]
+struct User {
+    /// the user's name
+    #[fieldwork(deref = str)]
+    name: String,
+
+    /// a small image in jpg format
+    #[fieldwork(deref = "[u8]")]
+    profile_thumbnail: Vec<u8>,
+}
+```
+
+```rust
+# struct User { name: String, profile_thumbnail: Vec<u8> }
+impl User {
+    ///Borrows the user's name
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    ///Mutably borrow the user's name
+    pub fn name_mut(&mut self) -> &mut str {
+        &mut self.name
+    }
+    ///Sets the user's name, returning `&mut Self` for chaining
+    pub fn set_name(&mut self, name: String) -> &mut Self {
+        self.name = name;
+        self
+    }
+    ///Borrows a small image in jpg format
+    pub fn profile_thumbnail(&self) -> &[u8] {
+        &self.profile_thumbnail
+    }
+    ///Mutably borrow a small image in jpg format
+    pub fn profile_thumbnail_mut(&mut self) -> &mut [u8] {
+        &mut self.profile_thumbnail
+    }
+    ///Sets a small image in jpg format, returning `&mut Self` for chaining
+    pub fn set_profile_thumbnail(&mut self, profile_thumbnail: Vec<u8>) -> &mut Self {
+        self.profile_thumbnail = profile_thumbnail;
+        self
+    }
+}
+```
+
 ### field-method level options
 
 #### `rename`
@@ -664,6 +712,57 @@ impl User {
     }
 }
 ```
+
+#### `deref`
+
+For `get` and `get_mut`, return this derefenced type for this specific method and field. Some types
+such as `[u8]` will require quoting.
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+struct User {
+    /// the user's name
+    #[fieldwork(get(deref = str), set, get_mut)]
+    name: String,
+
+    /// a small image in jpg format
+    #[fieldwork(get_mut(deref = "[u8]"), get, set)]
+    profile_thumbnail: Vec<u8>,
+}
+```
+
+```rust
+# struct User { name: String, profile_thumbnail: Vec<u8> }
+impl User {
+    ///Borrows the user's name
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    ///Mutably borrow the user's name
+    pub fn name_mut(&mut self) -> &mut String {
+        &mut self.name
+    }
+    ///Sets the user's name, returning `&mut Self` for chaining
+    pub fn set_name(&mut self, name: String) -> &mut Self {
+        self.name = name;
+        self
+    }
+    ///Borrows a small image in jpg format
+    pub fn profile_thumbnail(&self) -> &Vec<u8> {
+        &self.profile_thumbnail
+    }
+    ///Mutably borrow a small image in jpg format
+    pub fn profile_thumbnail_mut(&mut self) -> &mut [u8] {
+        &mut self.profile_thumbnail
+    }
+    ///Sets a small image in jpg format, returning `&mut Self` for chaining
+    pub fn set_profile_thumbnail(&mut self, profile_thumbnail: Vec<u8>) -> &mut Self {
+        self.profile_thumbnail = profile_thumbnail;
+        self
+    }
+}
+```
+
 
 
 ## How fieldwork selects which methods to generate for which fields
