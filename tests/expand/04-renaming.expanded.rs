@@ -8,6 +8,8 @@ struct MyStruct<T> {
     /// it's really whatever you want
     #[fieldwork(argument = tee)]
     generic: T,
+    #[fieldwork(get = "get_another")]
+    another: (),
 }
 impl<T> MyStruct<T> {
     ///Borrows this number is cool
@@ -65,6 +67,21 @@ impl<T> MyStruct<T> {
     #[must_use]
     pub fn with_generic(mut self, tee: T) -> Self {
         self.generic = tee;
+        self
+    }
+    pub fn get_another(&self) -> &() {
+        &self.another
+    }
+    pub fn another_mut(&mut self) -> &mut () {
+        &mut self.another
+    }
+    pub fn set_another(&mut self, another: ()) -> &mut Self {
+        self.another = another;
+        self
+    }
+    #[must_use]
+    pub fn with_another(mut self, another: ()) -> Self {
+        self.another = another;
         self
     }
 }

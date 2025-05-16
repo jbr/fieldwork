@@ -9,6 +9,9 @@ struct MyStruct<T> {
     /// it's really whatever you want
     #[fieldwork(argument = tee)]
     generic: T,
+
+    #[fieldwork(get = "get_another")]
+    another: (),
 }
 
 #[derive(fieldwork::Fieldwork)]
