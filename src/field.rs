@@ -123,6 +123,21 @@ impl FieldAttributes {
                             field_attributes.skip = true;
                         }
 
+                        Expr::Path(ExprPath { path, .. }) => {
+                            field_attributes
+                                .method_attributes
+                                .push(FieldMethodAttributes {
+                                    method: Method::try_from(path)?,
+                                    fn_ident: None,
+                                    skip: false,
+                                    argument_ident: None,
+                                    vis: None,
+                                    doc: None,
+                                    chainable_set: None,
+                                    get_copy: None,
+                                });
+                        }
+
                         Expr::Call(ExprCall { func, args, .. }) => match &**func {
                             Expr::Path(ExprPath { path: method, .. }) => {
                                 let method = method.try_into()?;
@@ -131,7 +146,8 @@ impl FieldAttributes {
                                     .push(FieldMethodAttributes::build(method, args)?);
                             }
 
-                            _ => {
+                            d => {
+                                dbg!(d);
                                 return Err(Error::new(expr.span(), "not recognized call"));
                             }
                         },

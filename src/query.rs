@@ -159,10 +159,13 @@ impl<'a> Query<'a> {
             decorated, skip, ..
         } = self.field.attributes;
 
-        if include.as_ref().is_some_and(|x| !x.contains(self.method)) {
-            field_method_attr.is_some_and(|x| !x.skip)
-        } else if *opt_in {
+        if *opt_in {
             decorated
+                && ((self.field.attributes.method_attributes.is_empty()
+                    && include.as_ref().is_some_and(|x| x.contains(self.method)))
+                    || field_method_attr.is_some_and(|x| !x.skip))
+        } else if include.as_ref().is_some_and(|x| !x.contains(self.method)) {
+            field_method_attr.is_some_and(|x| !x.skip)
         } else {
             field_method_attr.is_none_or(|x| !x.skip)
                 && struct_method_attr.is_none_or(|x| !x.skip)

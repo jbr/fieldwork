@@ -11,6 +11,9 @@ struct MyStruct<T> {
     /// generated
     #[fieldwork]
     generic: T,
+
+    #[fieldwork(get)]
+    only_get: (),
 }
 
 #[derive(fieldwork::Fieldwork)]
@@ -29,7 +32,7 @@ struct OptingInPerField<T> {
 }
 
 #[derive(fieldwork::Fieldwork)]
-#[fieldwork(opt_in)]
+#[fieldwork(opt_in, get(template = "get_{}"))]
 struct OptingInPerField<T> {
     /// not generated
     number: usize,
