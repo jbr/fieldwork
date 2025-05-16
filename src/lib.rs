@@ -17,7 +17,6 @@ use quote::quote;
 use syn::{
     Data, DeriveInput, Error, Generics, Ident, Path,
     parse::{Parse, ParseStream},
-    parse_macro_input,
     spanned::Spanned,
 };
 
@@ -111,12 +110,18 @@ impl Method {
 /// see crate-level documentation
 #[proc_macro_derive(Fieldwork, attributes(fieldwork))]
 pub fn derive_fieldwork(input: TokenStream) -> TokenStream {
+    derive_fieldwork_internal(input.into()).into()
+}
+fn derive_fieldwork_internal(input: TokenStream2) -> TokenStream2 {
     let Struct {
         ident,
         fields,
         attributes: attrs,
         generics,
-    } = parse_macro_input!(input as Struct);
+    } = match syn::parse2(input) {
+        Ok(ok) => ok,
+        Err(e) => return e.to_compile_error(),
+    };
 
     let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
 
@@ -135,7 +140,6 @@ pub fn derive_fieldwork(input: TokenStream) -> TokenStream {
             #impls
         }
     }
-    .into()
 }
 
 impl Parse for Struct {
@@ -198,6 +202,42 @@ impl TryFrom<&Path> for Method {
             Ok(GetMut)
         } else {
             Err(Error::new(path.span(), "unrecognized method"))
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        env,
+        fs::{self, File},
+        path::Path,
+    };
+
+    use super::derive_fieldwork_internal;
+
+    #[test]
+    fn code_coverage() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests")
+            .join("expand");
+
+        for file in fs::read_dir(path).unwrap() {
+            let direntry = file.unwrap();
+            let path = direntry.path();
+            if path.extension().is_some_and(|x| x == "rs")
+                && !path.to_string_lossy().contains(".expanded")
+            {
+                let file = File::open(&path).unwrap();
+                runtime_macros::emulate_derive_macro_expansion(
+                    file,
+                    &[
+                        ("fieldwork::Fieldwork", derive_fieldwork_internal),
+                        ("Fieldwork", derive_fieldwork_internal),
+                    ],
+                )
+                .unwrap();
+            }
         }
     }
 }

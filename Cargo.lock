@@ -27,6 +27,7 @@ dependencies = [
  "macrotest",
  "proc-macro2",
  "quote",
+ "runtime-macros",
  "syn",
 ]
 
@@ -107,6 +108,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1885c039570dc00dcb4ff087a89e185fd56bae234ddc7f056a945bf36467248d"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "runtime-macros"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34bef7b9430b9f9e666d930202e1344765b623203affe2f779bcd1f269384248"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
