@@ -8,4 +8,7 @@ struct MyStruct<T> {
 
     /// generated
     generic: T,
+
+    #[fieldwork(get(copy = true))]
+    another: bool,
 }
