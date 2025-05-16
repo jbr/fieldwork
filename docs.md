@@ -31,6 +31,7 @@ struct User {
 generates 
 
 ```rust
+# struct User { admin: bool, name: String }
 impl User {
     /// Borrows whether this user is an admin
     pub fn admin(&self) -> &bool {
@@ -63,6 +64,7 @@ struct User {
 generates:
 
 ```rust
+# struct User { admin: bool, name: String }
 impl User {
     /// Sets whether this user is an admin, returning `&mut Self` for chaining
     pub fn set_admin(&mut self, admin: bool) -> &mut Self {
@@ -97,6 +99,7 @@ struct User {
 generates the following impl block
 
 ```rust
+# struct User { admin: bool, name: String }
 impl User {
     /// Mutably borrow whether this user is an admin
     pub fn admin_mut(&mut self) -> &mut bool {
@@ -126,6 +129,7 @@ struct User {
 ```
 
 ```rust
+# struct User { admin: bool, name: String }
 impl User {
     /// Owned chainable setter for whether this user is an admin, returning `Self`
     #[must_use]
@@ -159,6 +163,7 @@ struct User {
 ```
 
 ```rust
+# struct User { admin: bool, name: String }
 impl User {
     /// Returns a copy of whether this user is an admin
     pub fn is_admin(&self) -> bool {
@@ -216,6 +221,7 @@ Sets the visibility for all generated functions, unless otherwise overridden.
 This option allows you to specify a where clause for the implementation block, such as:
 
 ```rust
+# trait Precious {}
 #[derive(fieldwork::Fieldwork, Clone)]
 #[fieldwork(get, set, get_mut, with, where_clause = "PocketContents: Precious")]
 struct Hobbit<PocketContents> {
@@ -226,6 +232,7 @@ struct Hobbit<PocketContents> {
 
 generates
 ```rust
+# trait Precious {}; struct Hobbit<PocketContents> { pocket_contents: PocketContents }
 impl<PocketContents> Hobbit<PocketContents>
 where
     PocketContents: Precious,
@@ -274,6 +281,7 @@ struct User {
 }
 ```
 ```rust
+# struct User { admin: bool, name: String }
 impl User {
     /// Assigns whether this user is an admin
     pub fn set_admin(&mut self, admin: bool) -> &mut Self {
@@ -306,6 +314,7 @@ struct User {
 ```
 
 ```rust
+# struct User { admin: bool, name: String }
 impl User {
     /// Sets whether this user is an admin, returning `&mut Self` for chaining
     pub fn assign_admin(&mut self, admin: bool) -> &mut Self {
@@ -337,6 +346,7 @@ struct User {
 ```
 
 ```rust
+# struct User { admin: bool, name: String }
 impl User {
     /// Sets whether this user is an admin
     pub fn set_admin(&mut self, admin: bool) {
@@ -371,6 +381,7 @@ struct User {
 ```
 
 ```rust
+# struct User { admin: bool, name: String, private: () }
 impl User {
     /// Borrows whether this user is an admin
     pub fn admin(&self) -> &bool {
@@ -392,6 +403,7 @@ impl User {
     }
 }
 ```
+
 #### `rename`
 Change the name of this field for all generated methods.
 ```rust
@@ -405,6 +417,7 @@ struct User {
 ```
 
 ```rust
+# struct User { superadmin: bool }
 impl User {
     /// Borrows whether this user is an admin
     pub fn admin(&self) -> &bool {
@@ -433,6 +446,7 @@ struct User {
 ```
 
 ```rust
+# struct User { admin: bool }
 impl User {
     /// Sets whether this user is an admin, returning `&mut Self` for chaining
     pub fn set_admin(&mut self, is_admin: bool) -> &mut Self {
@@ -464,6 +478,7 @@ struct User {
 }
 ```
 ```rust
+# struct User { admin: bool, name: String }
 impl User {
     /// Borrows whether this user is an admin
     pub fn admin(&self) -> &bool {
@@ -500,6 +515,7 @@ struct User {
 }
 ```
 ```rust
+# struct User { admin: bool }
 impl User {
     /// Borrows whether this user is an admin
     pub fn is_an_admin(&self) -> &bool {
@@ -534,6 +550,7 @@ struct User {
 ```
 
 ```
+# struct User { admin: bool }
 impl User {
     /// Sets whether this user is an admin, returning `&mut Self` for chaining
     pub fn set_admin(&mut self, is_an_admin: bool) -> &mut Self {
@@ -555,6 +572,7 @@ struct User {
 ```
 
 ```rust
+# struct User { admin: bool }
 impl User {
     ///Specify whether this user can administer this system
     pub fn set_admin(&mut self, admin: bool) -> &mut Self {
@@ -578,6 +596,7 @@ struct User {
 ```
 
 ```rust
+# struct User { admin: bool }
 impl User {
     /// Sets whether this user is an admin
     pub fn set_admin(&mut self, admin: bool) {
@@ -599,6 +618,7 @@ struct User {
 }
 ```
 ```rust
+# struct User { admin: bool }
 impl User {
     /// Returns a copy of whether the user is an admin
     pub fn admin(&self) -> bool {
@@ -625,6 +645,7 @@ struct User {
 
 
 ```rust
+# struct User { admin: bool, name: String }
 impl User {
     /// Borrows whether this user is an admin
     pub fn admin(&self) -> &bool {
