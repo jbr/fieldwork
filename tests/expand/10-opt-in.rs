@@ -45,3 +45,11 @@ struct OptingInPerField<T> {
     #[fieldwork(get, set)]
     generic: T,
 }
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set, with, get_mut)]
+struct MyStruct {
+    number: usize,
+    #[fieldwork(opt_in, get)]
+    only_get: (),
+}

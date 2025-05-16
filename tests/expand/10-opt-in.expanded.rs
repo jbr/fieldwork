@@ -103,3 +103,29 @@ impl<T> OptingInPerField<T> {
         self
     }
 }
+#[fieldwork(get, set, with, get_mut)]
+struct MyStruct {
+    number: usize,
+    #[fieldwork(opt_in, get)]
+    only_get: (),
+}
+impl MyStruct {
+    pub fn number(&self) -> &usize {
+        &self.number
+    }
+    pub fn number_mut(&mut self) -> &mut usize {
+        &mut self.number
+    }
+    pub fn set_number(&mut self, number: usize) -> &mut Self {
+        self.number = number;
+        self
+    }
+    #[must_use]
+    pub fn with_number(mut self, number: usize) -> Self {
+        self.number = number;
+        self
+    }
+    pub fn only_get(&self) -> &() {
+        &self.only_get
+    }
+}
