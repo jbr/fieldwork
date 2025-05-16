@@ -1,10 +1,16 @@
 # fieldwork
 
-`fieldwork` is a procedural macro crate designed to automate the generation of field accessor methods for named structs. By leveraging Rust's powerful macro system, `fieldwork` reduces boilerplate code, enhances code readability, and ensures consistency across your data structures.
+`fieldwork` is a procedural macro crate designed to automate the generation of field accessor
+methods for named structs. By leveraging Rust's powerful macro system, `fieldwork` reduces
+boilerplate code, enhances code readability, and ensures consistency. Just as importantly,
+`fieldwork` intends to be fully customizable and expressive for common access patterns.
 
-## Overview
-
-In Rust, manually writing getter and setter methods for struct fields can be repetitive and error-prone, especially for large structs. `fieldwork` addresses this by providing a procedural macro that automatically generates these methods based on your struct definitions.
+Manually writing getters and setters for struct fields is repetitive, and adds to maintenance
+burden. `fieldwork` addresses this by providing a procedural macro that automatically generates
+these methods based on your struct definitions. The intent of this crate, and distinguishing
+feature, is to be as customizable and expressive as writing your own getters and setters. The crate
+succeeds if you are able to emit exactly the code that you would have manually written, but far more
+concisely.
 
 ## Example to get a sense of the library
 
