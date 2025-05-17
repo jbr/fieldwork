@@ -12,7 +12,51 @@ feature, is to be as customizable and expressive as writing your own getters and
 succeeds if you are able to emit exactly the code that you would have manually written, but far more
 concisely.
 
+## Performance
+
+The compile time cost of using a proc macro crate is always worth considering. All efforts have been
+made to keep this crate as lightweight as possible and featureful enough to be worth the tradeoff.
+
+## Testing
+
+This crate has a full suite of macro-expansion tests in
+[tests/expand](https://github.com/jbr/fieldwork/tests/expand). These tests are also used for test
+coverage.
+
+## Configuration
+
+`fieldwork` supports four layers of configuration, from broadest to most specific: [struct configuration](#struct-configuration),
+[struct method configuration](#struct-method-configuration), [field configuration](#field-configuration) and [field method configuration](#field-method-configuration). The most specific configuration always
+has precedence.
+
+
+## Quick Links (TOC)
+
+
+[**Methods**](#methods): [`get`](#get), [`set`](#set), [`get_mut`](#get_mut), [`with`](#with)
+
+[**Struct configuration**](#struct-configuration): [`vis`](#struct-vis),
+[`where_clause`](#struct-where-clause)
+
+[**Struct method configuration**](#struct-method-configuration):
+[`doc_template`](#struct-method-doc-template), [`template`](#struct-method-template),
+[`chain`](#struct-method-chain)
+
+[**Field configuration**](#field-configuration): [`skip`](#field-skip), [`rename`](#field-rename),
+[`argument`](#field-argument), [`vis`](#field-vis), [`deref`](#field-deref)
+
+[**Field method configuration**](#field-method-configuration): [`rename`](#field-method-rename),
+[`argument`](#field-method-rename), [`doc`](#field-method-doc), [`chain`](#field-method-chain),
+[`copy`](#field-method-copy), [`skip`](#field-method-skip), [`deref`](#field-method-deref)
+
+[How fieldwork selects which methods to generate for which
+fields](#how-fieldwork-selects-which-methods-to-generate-for-which-fields)
+
+
 ## Example to get a sense of the library
+
+
+This contrived example intentionally exercises a number of configuration options in order to demonstrate capabilities. Most real-world usage will not require this much configuration.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -101,6 +145,7 @@ for historical reasons*/
 }
 ```
 
+<br/><hr/><br/>
 
 ## Methods
 
@@ -247,19 +292,21 @@ impl User {
     }
 }
 ```
-## Configuration
 
-fieldwork supports four layers of configuration, from broadest to most specific: struct level,
-struct-method level, field level, and field-method level. The most specific configuration always
-overrides.
+<br/><hr/><br/>
 
-### struct level options
+### Struct Configuration
 
-#### `vis`
+<h4 id="struct-vis">
+<code>vis</code>
+</h4>
 Sets the visibility for all generated functions, unless otherwise overridden.
 `#[fieldwork(vis = "pub")]` is the default. For `pub(crate)`, use `#[fieldwork(vis = "pub(crate)")]`. To set private visibility, use `#[fieldwork(vis = "")]`.
 
-#### `where_clause`
+<h4 id="struct-where-clause">
+<code>where_clause</code>
+</h4>
+
 This option allows you to specify a where clause for the implementation block, such as:
 
 ```rust
@@ -300,15 +347,19 @@ where
 }
 ```
 
-### struct-method level
+<br/><hr/><br/>
 
-#### `vis`
+### Struct Method Configuration
 
-Override the struct-level definition for a specific method.
-`#[vis = "pub(crate), get(vis = "pub"), set, get_mut]` uses `pub(crate)` for all methods other than get.
+<h4 id="struct-method-vis"><code>vis</code></h4>
 
-#### `doc_template`
-Override the default documentation template for the specific method. Let's say we want our documentation to say "assigns" instead of "sets":
+Override the struct-level definition for a specific method.  `#[vis = "pub(crate)", get(vis =
+"pub"), set, get_mut]` uses `pub(crate)` for all methods other than get, which uses "pub".
+
+<h4 id="struct-method-doc-template"><code>doc_template</code></h4>
+
+Override the default documentation template for the specific method. Let's say we want our
+documentation to say "assigns" instead of "sets":
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -340,7 +391,8 @@ impl User {
 
 
 
-#### `template`
+<h4 id="struct-method-template"><code>template</code></h4>
+
 Override the method naming for all generated functions of this type. Let's say we want our set signature to be `assign_admin` instead of `set_admin` and `assign_name`:
 
 ```rust
@@ -372,7 +424,7 @@ impl User {
 }
 ```
 
-#### `chain` (`set` only)
+<h4 id="struct-method-chain"><code>chain</code> (<code>set</code> only)</h4>
 
 As discussed in the [Set](#set) section above, set returns `&mut Self` by default. To disable this, specify `chain = false`:
 
@@ -403,10 +455,12 @@ impl User {
 }
 ```
 
+<br/><hr/><br/>
 
-### field level options
+### Field Configuration
 
-#### `skip`
+<h4 id="field-skip"><code>skip</code></h4>
+
 Omit this field from all generated functions.
 
 ```rust
@@ -449,8 +503,10 @@ impl User {
 }
 ```
 
-#### `rename`
+<h4 id="field-rename"><code>rename</code></h4>
+
 Change the name of this field for all generated methods.
+
 ```rust
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set)]
@@ -477,7 +533,7 @@ impl User {
 }
 ```
 
-#### `argument`
+<h4 id="field-argument"><code>argument</code></h4>
 
 Change the name of the argument for `with` and `set`. This is occasionally important for rustdocs and lsp.
 
@@ -509,7 +565,8 @@ impl User {
 }
 ```
 
-#### `vis`
+<h4 id="field-vis"><code>vis</code></h4>
+
 Change the visibility for all generated methods for a specific field
 
 ```rust
@@ -549,8 +606,10 @@ impl User {
 }
 ```
 
-#### `deref`
+<h4 id="field-deref"><code>deref</code></h4>
+
 For `get` and `get_mut`, return this derefenced type. Some types such as `[u8]` will require quoting.
+
 ```rust
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set, get_mut)]
@@ -598,9 +657,11 @@ impl User {
 }
 ```
 
-### field-method level options
+<br/><hr/><br/>
 
-#### `rename`
+### Field Method Configuration
+
+<h4 id="field-method-rename"><code>rename</code></h4>
 
 Specify the full function name for this particular method. Note that this overrides both `template`
 and field-level [`rename`](#rename).
@@ -636,7 +697,7 @@ struct User {
 ```
 
 
-#### `argument`
+<h4 id="field-method-argument"><code>argument</code></h4>
 
 Specify the name of the argument for this specific method and field.
 
@@ -661,7 +722,8 @@ impl User {
 }
 ```
 
-#### `doc`
+<h4 id="field-method-doc"><code>doc</code></h4>
+
 Override the documentation for this specific method and field.
 
 ```rust
@@ -684,8 +746,8 @@ impl User {
 }
 ```
 
+<h4 id="field-method-chain"><code>chain</code> (<code>set</code> only)</h4>
 
-#### `chain` (`set` only)
 To return `()` from this specific `set` method instead of `&mut Self`, provide `chain = false`.
 
 ```rust
@@ -708,7 +770,7 @@ impl User {
 }
 ```
 
-#### `copy` (`get` only)
+<h4 id="field-method-copy"><code>copy</code> (<code>get</code> only)</h4>
 
 Sometimes it is more useful to return a `Copy` of the returned type instead of a borrow. To opt into this behavior for a specific field, use `#[fieldwork(get(copy))]`:
 
@@ -731,7 +793,8 @@ impl User {
 }
 ```
 
-#### `skip`
+<h4 id="field-method-skip"><code>skip</code></h4>
+
 Omit this field from the particular method.
 
 ```rust
@@ -768,7 +831,7 @@ impl User {
 }
 ```
 
-#### `deref`
+<h4 id="field-method-deref"><code>deref</code></h4>
 
 For `get` and `get_mut`, return this derefenced type for this specific method and field. Some types
 such as `[u8]` will require quoting.
@@ -819,6 +882,7 @@ impl User {
 }
 ```
 
+<br/><hr/><br/>
 
 
 ## How fieldwork selects which methods to generate for which fields
