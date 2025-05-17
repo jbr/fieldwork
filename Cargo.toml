@@ -9,13 +9,16 @@ readme = "README.md"
 keywords = ["macros"]
 categories = ["development-tools"]
 
+[features]
+debug = ["syn/extra-traits"]
+
 [lib]
 proc-macro = true
 
 [dependencies]
 proc-macro2 = "1.0.95"
 quote = "1.0.40"
-syn = { version = "2.0.101", features = ["full", "visit", "extra-traits"] }
+syn = { version = "2.0.101", features = ["full"] }
 
 [dev-dependencies]
 macrotest = { version = "1.1.0" }

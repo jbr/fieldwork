@@ -172,7 +172,7 @@ impl Parse for Struct {
 }
 
 // this represents the struct that we called derive on
-#[derive(Debug)]
+#[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Struct {
     pub(crate) ident: Ident,
     pub(crate) fields: Vec<Field>,
@@ -180,7 +180,7 @@ pub(crate) struct Struct {
     pub(crate) generics: Generics,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
+#[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub(crate) enum Method {
     Get,
     Set,

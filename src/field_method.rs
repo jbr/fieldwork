@@ -6,7 +6,7 @@ use syn::{
 use crate::Method;
 
 // this represents the configuration for the field, for a particular method
-#[derive(Debug)]
+#[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct FieldMethodAttributes {
     pub(crate) method: Method,
     pub(crate) skip: bool,
