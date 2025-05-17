@@ -20,14 +20,15 @@ made to keep this crate as lightweight as possible and featureful enough to be w
 ## Testing
 
 This crate has a full suite of macro-expansion tests in
-[tests/expand](https://github.com/jbr/fieldwork/tests/expand). These tests are also used for test
-coverage.
+[tests/expand](https://github.com/jbr/fieldwork/tree/main/tests/expand). These tests are also used
+for test coverage.
 
 ## Configuration
 
-`fieldwork` supports four layers of configuration, from broadest to most specific: [struct configuration](#struct-configuration),
-[struct method configuration](#struct-method-configuration), [field configuration](#field-configuration) and [field method configuration](#field-method-configuration). The most specific configuration always
-has precedence.
+`fieldwork` supports four layers of configuration, from broadest to most specific: [struct
+configuration](#struct-configuration), [struct method configuration](#struct-method-configuration),
+[field configuration](#field-configuration) and [field method
+configuration](#field-method-configuration). The most specific configuration always has precedence.
 
 
 ## Quick Links (TOC)
@@ -56,7 +57,8 @@ fields](#how-fieldwork-selects-which-methods-to-generate-for-which-fields)
 ## Example to get a sense of the library
 
 
-This contrived example intentionally exercises a number of configuration options in order to demonstrate capabilities. Most real-world usage will not require this much configuration.
+This contrived example intentionally exercises a number of configuration options in order to
+demonstrate capabilities. Most real-world usage will not require this much configuration.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -153,7 +155,8 @@ Fieldwork supports four distinct methods: `get`, `set`, `get_mut`, and `with`.
 
 ### `get`
 
-Borrows the field. This can also be used to return a copy of the field using the `#[fieldwork(get(copy))]` annotation on a field.
+Borrows the field. This can also be used to return a copy of the field using the
+`#[fieldwork(get(copy))]` annotation on a field.
 
 #### Example:
 
@@ -188,7 +191,8 @@ impl User {
 
 ### `set`
 
-By default, set returns `&mut self` for chainable setters. If you would prefer to return `()`, use `#[fieldwork(set(chain = false))]` on the struct or an individual field.
+By default, set returns `&mut self` for chainable setters. If you would prefer to return `()`, use
+`#[fieldwork(set(chain = false))]` on the struct or an individual field.
 
 #### Example
 
@@ -258,7 +262,8 @@ impl User {
 
 ### `with`
 
-The `with` method provides a chainable owned setter, for situations that require returning the struct after modification.
+The `with` method provides a chainable owned setter, for situations that require returning the
+struct after modification.
 
 #### Example
 
@@ -297,11 +302,9 @@ impl User {
 
 ### Struct Configuration
 
-<h4 id="struct-vis">
-<code>vis</code>
-</h4>
-Sets the visibility for all generated functions, unless otherwise overridden.
-`#[fieldwork(vis = "pub")]` is the default. For `pub(crate)`, use `#[fieldwork(vis = "pub(crate)")]`. To set private visibility, use `#[fieldwork(vis = "")]`.
+<h4 id="struct-vis"> <code>vis</code> </h4> Sets the visibility for all generated functions, unless
+otherwise overridden.  `#[fieldwork(vis = "pub")]` is the default. For `pub(crate)`, use
+`#[fieldwork(vis = "pub(crate)")]`. To set private visibility, use `#[fieldwork(vis = "")]`.
 
 <h4 id="struct-where-clause">
 <code>where_clause</code>
@@ -393,7 +396,8 @@ impl User {
 
 <h4 id="struct-method-template"><code>template</code></h4>
 
-Override the method naming for all generated functions of this type. Let's say we want our set signature to be `assign_admin` instead of `set_admin` and `assign_name`:
+Override the method naming for all generated functions of this type. Let's say we want our set
+signature to be `assign_admin` instead of `set_admin` and `assign_name`:
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -426,7 +430,8 @@ impl User {
 
 <h4 id="struct-method-chain"><code>chain</code> (<code>set</code> only)</h4>
 
-As discussed in the [Set](#set) section above, set returns `&mut Self` by default. To disable this, specify `chain = false`:
+As discussed in the [Set](#set) section above, set returns `&mut Self` by default. To disable this,
+specify `chain = false`:
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -535,7 +540,8 @@ impl User {
 
 <h4 id="field-argument"><code>argument</code></h4>
 
-Change the name of the argument for `with` and `set`. This is occasionally important for rustdocs and lsp.
+Change the name of the argument for `with` and `set`. This is occasionally important for rustdocs
+and lsp.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -608,7 +614,8 @@ impl User {
 
 <h4 id="field-deref"><code>deref</code></h4>
 
-For `get` and `get_mut`, return this derefenced type. Some types such as `[u8]` will require quoting.
+For `get` and `get_mut`, return this derefenced type. Some types such as `[u8]` will require
+quoting.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -685,7 +692,8 @@ impl User {
 }
 ```
 
-If there are no other configuration options needed, this can be provided with the following shortcut (generates the same code as the above):
+If there are no other configuration options needed, this can be provided with the following shortcut
+(generates the same code as the above):
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -772,7 +780,8 @@ impl User {
 
 <h4 id="field-method-copy"><code>copy</code> (<code>get</code> only)</h4>
 
-Sometimes it is more useful to return a `Copy` of the returned type instead of a borrow. To opt into this behavior for a specific field, use `#[fieldwork(get(copy))]`:
+Sometimes it is more useful to return a `Copy` of the returned type instead of a borrow. To opt into
+this behavior for a specific field, use `#[fieldwork(get(copy))]`:
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -899,10 +908,13 @@ as an example, `#[fieldwork(get(skip)]` to skip just the get method for the part
 
 ### Opt-in
 
-It is also possible to omit the struct-level attribute and opt individual fields in with eg `#[fieldwork(get, set)]`.
+It is also possible to omit the struct-level attribute and opt individual fields in with eg
+`#[fieldwork(get, set)]`.
 
-If you need to specify struct-level configuration in order to reduce repetition but still want to operate in an opt-in mode instead of using `skip`, fieldwork supports `opt_in` as a top level argument.
-It is also possible to specify `opt_in` at a field level, which will only include the methods specified on that field.
+If you need to specify struct-level configuration in order to reduce repetition but still want to
+operate in an opt-in mode instead of using `skip`, fieldwork supports `opt_in` as a top level
+argument.  It is also possible to specify `opt_in` at a field level, which will only include the
+methods specified on that field.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
