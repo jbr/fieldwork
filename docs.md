@@ -1,4 +1,4 @@
-# fieldwork
+# ⛏️ fieldwork - field accessor generation
 
 `fieldwork` is a procedural macro crate designed to automate the generation of field accessor
 methods for named structs. By leveraging Rust's powerful macro system, `fieldwork` reduces
@@ -18,6 +18,14 @@ The compile time cost of using a proc macro crate is always worth considering. A
 made to keep this crate as lightweight as possible and featureful enough to be worth the tradeoff.
 
 ## Testing
+
+[![ci][ci-badge]][ci] [![codecov][codecov-badge]][codecov]
+
+[ci]: https://github.com/jbr/fieldwork/actions?query=workflow%3ACI
+[ci-badge]: https://github.com/jbr/fieldwork/workflows/CI/badge.svg
+[codecov-badge]: https://codecov.io/gh/jbr/fieldwork/graph/badge.svg?token=tlWtminkYf
+[codecov]: https://codecov.io/gh/jbr/fieldwork
+
 
 This crate has a full suite of macro-expansion tests in
 [tests/expand](https://github.com/jbr/fieldwork/tree/main/tests/expand). These tests are also used
@@ -946,3 +954,18 @@ impl User {
     }
 }
 ```
+
+## License
+
+<sup>
+Licensed under either of <a href="LICENSE-APACHE">Apache License, Version
+2.0</a> or <a href="LICENSE-MIT">MIT license</a> at your option.
+</sup>
+
+---
+
+<sub>
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in this crate by you, as defined in the Apache-2.0 license, shall
+be dual licensed as above, without any additional terms or conditions.
+</sub>
