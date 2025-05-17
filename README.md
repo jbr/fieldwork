@@ -1,4 +1,4 @@
-# 📚 fieldwork – field accessor generation
+# ⛏️ fieldwork – field accessor generation
 
 [![crates.io version badge][version-badge]][crate]
 
@@ -41,7 +41,6 @@ for test coverage.
 View the docs for main on github at [docs.md](https://github.com/jbr/fieldwork/blob/main/docs.md),
 or on github pages in [rustdoc format](https://jbr.github.io/fieldwork/fieldwork/).  The most recent
 release can always be viewed at [docs.rs](https://docs.rs/fieldwork).
-
 
 ## Safety
 This crate uses `#![deny(unsafe_code)]`.
