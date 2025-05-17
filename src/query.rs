@@ -7,7 +7,7 @@ use crate::{
 use Method::{Get, GetMut, Set, With};
 use syn::{Ident, Type, Visibility, token::Pub};
 
-#[derive(Debug)]
+#[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Query<'a> {
     method: &'a Method,
     field: &'a Field,
@@ -231,7 +231,7 @@ pub(crate) fn resolve<'a>(
     })
 }
 
-#[derive(Debug)]
+#[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Resolved<'a> {
     pub(crate) vis: Cow<'a, Visibility>,
     pub(crate) fn_ident: Cow<'a, Ident>,

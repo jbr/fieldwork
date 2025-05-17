@@ -6,7 +6,8 @@ use syn::{
 use crate::{FieldMethodAttributes, Method};
 
 // this represents the configuration for the field
-#[derive(Debug, Default)]
+#[derive(Default)]
+#[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct FieldAttributes {
     pub(crate) decorated: bool,
     pub(crate) skip: bool,
@@ -191,7 +192,7 @@ impl FieldAttributes {
     }
 }
 // this represents a field within a struct that Access has been derived for
-#[derive(Debug)]
+#[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Field {
     pub(crate) ident: Ident,
     pub(crate) ty: Type,

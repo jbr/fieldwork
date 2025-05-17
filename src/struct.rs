@@ -9,7 +9,7 @@ use syn::{
 };
 
 // this represents the configuration passed to #[fieldwork]
-#[derive(Debug)]
+#[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct StructAttributes {
     pub(crate) vis: Option<Visibility>,
     pub(crate) methods: Vec<StructMethodAttributes>,
@@ -79,10 +79,7 @@ impl StructAttributes {
                     }
                 }
             } else {
-                return Err(Error::new(
-                    attr.span(),
-                    format!("unexpected meta type {:?}", attr.meta),
-                ));
+                return Err(Error::new(attr.span(), "unexpected attribute format"));
             }
         }
 

@@ -7,7 +7,8 @@ use syn::{
 use crate::Method;
 
 // this represents the configuration passed to #[fieldwork] for a particular method
-#[derive(Debug)]
+
+#[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct StructMethodAttributes {
     pub(crate) method: Method,
     pub(crate) vis: Option<Visibility>,
