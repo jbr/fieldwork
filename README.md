@@ -1,21 +1,9 @@
 # 📚 fieldwork – field accessor generation
 
-* [API Docs][docs] [![docs.rs docs][docs-badge]][docs]
-* [Releases][releases] [![crates.io version][version-badge]][crate]
-* [Contributing][contributing]
-* [CI ![CI][ci-badge]][ci]
-* [API docs for main][main-docs]
-* [![codecov](https://codecov.io/gh/jbr/fieldwork/graph/badge.svg?token=tlWtminkYf)](https://codecov.io/gh/jbr/fieldwork)
+[![crates.io version badge][version-badge]][crate]
 
-[ci]: https://github.com/jbr/fieldwork/actions?query=workflow%3ACI
-[ci-badge]: https://github.com/jbr/fieldwork/workflows/CI/badge.svg
-[releases]: https://github.com/jbr/fieldwork/releases
-[docs]: https://docs.rs/fieldwork
-[contributing]: https://github.com/jbr/fieldwork/blob/main/.github/CONTRIBUTING.md
-[crate]: https://crates.io/crates/fieldwork
-[docs-badge]: https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square
 [version-badge]: https://img.shields.io/crates/v/fieldwork.svg?style=flat-square
-[main-docs]: https://jbr.github.io/fieldwork/fieldwork/
+[crate]: https://crates.io/crates/fieldwork
 
 `fieldwork` is a procedural macro crate designed to automate the generation of field accessor
 methods for named structs. By leveraging Rust's powerful macro system, `fieldwork` reduces
@@ -36,14 +24,23 @@ made to keep this crate as lightweight as possible and featureful enough to be w
 
 ## Testing
 
+[![ci][ci-badge]][ci] [![codecov][codecov-badge]][codecov]
+
+[ci]: https://github.com/jbr/fieldwork/actions?query=workflow%3ACI
+[ci-badge]: https://github.com/jbr/fieldwork/workflows/CI/badge.svg
+[codecov-badge]: https://codecov.io/gh/jbr/fieldwork/graph/badge.svg?token=tlWtminkYf
+[codecov]: https://codecov.io/gh/jbr/fieldwork
+
+
 This crate has a full suite of macro-expansion tests in
 [tests/expand](https://github.com/jbr/fieldwork/tree/main/tests/expand). These tests are also used
 for test coverage.
 
 ## Documentation
 
-View the docs on github at [docs.md](https://github.com/jbr/fieldwork/blob/main/docs.md) or on
-[docs.rs](https://docs.rs/fieldwork)
+View the docs for main on github at [docs.md](https://github.com/jbr/fieldwork/blob/main/docs.md),
+or on github pages in [rustdoc format](https://jbr.github.io/fieldwork/fieldwork/).  The most recent
+release can always be viewed at [docs.rs](https://docs.rs/fieldwork).
 
 
 ## Safety
