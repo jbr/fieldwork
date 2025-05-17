@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5](https://github.com/jbr/fieldwork/compare/v0.1.4...v0.1.5) - 2025-05-17
+
+### Other
+
+- better emoji
+- make readme links less ugly
+- improve caching of convco bin
+- improve readme, fix link to tests in docs
+
 ## [0.1.4](https://github.com/jbr/fieldwork/compare/v0.1.3...v0.1.4) - 2025-05-17
 
 ### Added
