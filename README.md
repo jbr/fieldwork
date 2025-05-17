@@ -17,6 +17,35 @@
 [version-badge]: https://img.shields.io/crates/v/fieldwork.svg?style=flat-square
 [main-docs]: https://jbr.github.io/fieldwork/fieldwork/
 
+`fieldwork` is a procedural macro crate designed to automate the generation of field accessor
+methods for named structs. By leveraging Rust's powerful macro system, `fieldwork` reduces
+boilerplate code, enhances code readability, and ensures consistency. Just as importantly,
+`fieldwork` intends to be fully customizable and expressive for common access patterns.
+
+Manually writing getters and setters for struct fields is repetitive, and adds to maintenance
+burden. `fieldwork` addresses this by providing a procedural macro that automatically generates
+these methods based on your struct definitions. The intent of this crate, and distinguishing
+feature, is to be as customizable and expressive as writing your own getters and setters. The crate
+succeeds if you are able to emit exactly the code that you would have manually written, but far more
+concisely.
+
+## Performance
+
+The compile time cost of using a proc macro crate is always worth considering. All efforts have been
+made to keep this crate as lightweight as possible and featureful enough to be worth the tradeoff.
+
+## Testing
+
+This crate has a full suite of macro-expansion tests in
+[tests/expand](https://github.com/jbr/fieldwork/tree/main/tests/expand). These tests are also used
+for test coverage.
+
+## Documentation
+
+View the docs on github at [docs.md](https://github.com/jbr/fieldwork/blob/main/docs.md) or on
+[docs.rs](https://docs.rs/fieldwork)
+
+
 ## Safety
 This crate uses `#![deny(unsafe_code)]`.
 
