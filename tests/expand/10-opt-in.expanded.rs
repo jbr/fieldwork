@@ -12,9 +12,9 @@ struct MyStruct<T> {
     only_get: (),
 }
 impl<T> MyStruct<T> {
-    ///Borrows generated
-    pub fn is_enabled(&self) -> &bool {
-        &self.enabled
+    ///Returns a copy of generated
+    pub fn is_enabled(&self) -> bool {
+        self.enabled
     }
     ///Mutably borrow generated
     pub fn is_enabled_mut(&mut self) -> &mut bool {

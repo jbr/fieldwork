@@ -4,11 +4,7 @@ struct User {
     ///
     /// Note that this is distinct from the notion of group administration,
     /// for historical reasons
-    #[fieldwork(
-        argument = is_admin,
-        get(copy, rename = is_admin),
-        get_mut = is_admin_mut
-    )]
+    #[fieldwork(argument = is_admin, get = is_admin, get_mut = is_admin_mut)]
     admin: bool,
     /// the user's name
     name: String,

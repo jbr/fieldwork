@@ -7,7 +7,7 @@ struct User {
     /// for historical reasons
     #[fieldwork(
         argument = is_admin,
-        get(copy, rename = is_admin),
+        get = is_admin,
         get_mut = is_admin_mut
     )]
     admin: bool,

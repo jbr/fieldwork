@@ -1,14 +1,14 @@
 #[derive(fieldwork::Fieldwork)]
-struct MyStruct<T> {
+struct MyStruct<T: Copy> {
     number: usize,
 
     /// generated
-    #[fieldwork(get(copy))]
     enabled: bool,
 
+    #[fieldwork(get(copy))]
     /// generated
     generic: T,
 
     #[fieldwork(get(copy = true))]
-    another: bool,
+    another: usize,
 }

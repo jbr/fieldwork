@@ -31,9 +31,9 @@ impl<T> MyStruct<T> {
         self.number = number_in_seconds;
         self
     }
-    ///Borrows is this struct on or not
-    pub fn enabled(&self) -> &bool {
-        &self.enabled
+    ///Returns a copy of is this struct on or not
+    pub fn enabled(&self) -> bool {
+        self.enabled
     }
     ///Mutably borrow is this struct on or not
     pub fn enabled_mut(&mut self) -> &mut bool {
@@ -107,9 +107,9 @@ impl<T> WithTemplate<T> {
         self.number = number_in_seconds;
         self
     }
-    ///Borrows is this struct on or not
-    pub fn is_it_enabled(&self) -> &bool {
-        &self.enabled
+    ///Returns a copy of is this struct on or not
+    pub fn is_it_enabled(&self) -> bool {
+        self.enabled
     }
     ///Sets is this struct on or not, returning `&mut Self` for chaining
     pub fn put_enabled(&mut self, enabled: bool) -> &mut Self {

@@ -17,6 +17,7 @@ pub(crate) struct StructMethodAttributes {
     pub(crate) chainable_set: Option<bool>,
     pub(crate) option_handling: Option<bool>,
     pub(crate) auto_deref: Option<bool>,
+    pub(crate) auto_copy: Option<bool>,
 }
 
 impl StructMethodAttributes {
@@ -30,6 +31,7 @@ impl StructMethodAttributes {
             chainable_set: None,
             option_handling: None,
             auto_deref: None,
+            auto_copy: None,
         }
     }
 
@@ -88,6 +90,7 @@ impl StructMethodAttributes {
     ) -> syn::Result<()> {
         match (lhs, self.method) {
             ("chain", Method::Set) => self.chainable_set = Some(value),
+            ("copy", Method::Get) => self.auto_copy = Some(value),
             ("skip", _) => self.skip = value,
             ("option", _) => self.option_handling = Some(value),
             ("deref", _) => self.auto_deref = Some(value),
