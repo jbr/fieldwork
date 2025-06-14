@@ -214,8 +214,8 @@ impl<'a> Query<'a> {
         self.field_method_attribute()
             .and_then(|x| x.deref.as_ref())
             .or(self.field.attributes.deref.as_ref())
-            .map(Cow::Borrowed)
             .map(strip_ref)
+            .map(Cow::Borrowed)
             .or_else(|| self.auto_deref(&self.field.ty))
     }
 
@@ -262,9 +262,19 @@ impl<'a> Query<'a> {
             .then_some(())?;
 
         let ty = extract_option_type(&self.field.ty)?;
-        self.auto_deref(ty)
-            .map(OptionHandling::Deref)
-            .or_else(|| Some(OptionHandling::Ref(strip_ref(Cow::Borrowed(ty)))))
+
+        if let Some(deref_ty) = self
+            .field_method_attribute()
+            .and_then(|x| x.deref.as_ref())
+            .or(self.field.attributes.deref.as_ref())
+        {
+            let deref_ty = extract_option_type(deref_ty)?;
+            Some(OptionHandling::Deref(Cow::Borrowed(deref_ty)))
+        } else {
+            self.auto_deref(ty)
+                .map(OptionHandling::Deref)
+                .or_else(|| Some(OptionHandling::Ref(Cow::Borrowed(strip_ref(ty)))))
+        }
     }
 }
 
