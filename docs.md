@@ -205,9 +205,10 @@ for example, a field that contains a `String` will return `&str` from `get` or `
 
 ### Common copy types are detected by default
 
-Currently this is just for `bool`, but will likely expand to other types. Almost always, if a getter
-returns a `&bool` the user will want to dereference that immediately, so by default `get` returns
-`bool` by copy. This behavior can be opted out of at the struct method level with
+The current list of types that are detected are: `bool` and references (any type that starts with
+`&`). but will likely expand to other types. Almost always, if a getter returns a `&bool` or
+`&&static str` or `&&'a T`, the caller will want to dereference that immediately, so by default
+`get` returns those types by copy. This behavior can be opted out of at the struct method level with
 `#[fieldwork(get(copy = false))]` or at the field method level with the same invocation.
 
 ### Options are returned as_ref or as_deref by default
