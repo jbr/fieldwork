@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/jbr/fieldwork/compare/v0.1.5...v0.2.0) - 2025-06-14
+
+### Added
+
+- [**breaking**] add Option detection
+
+### Other
+
+- update readme
+- *(deps)* update swatinem/rust-cache action to v2.7.8
+- add example to readme
+
 ## [0.1.5](https://github.com/jbr/fieldwork/compare/v0.1.4...v0.1.5) - 2025-05-17
 
 ### Other
