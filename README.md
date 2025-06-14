@@ -62,18 +62,16 @@ struct User {
     admin: bool,
 
     /// the user's name
-    #[fieldwork(deref = str)]
     name: String,
 
     /// the user's favorite color, if set
-    #[fieldwork(deref = str)]
     favorite_color: Option<String>,
 
     #[fieldwork(skip)]
     private: (),
 
     /// read-only unique identifier
-    #[fieldwork(deref = "[u8]", opt_in, get)]
+    #[fieldwork(opt_in, get)]
     id: Vec<u8>,
 }
 ```
@@ -82,6 +80,7 @@ This generates all of the following code:
 
 ```rust
 // GENERATED
+
 impl User {
     /**Returns a copy of whether this user is an admin
 

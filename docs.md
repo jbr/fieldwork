@@ -12,6 +12,9 @@ feature, is to be as customizable and expressive as writing your own getters and
 succeeds if you are able to emit exactly the code that you would have manually written, but far more
 concisely.
 
+Although this crate is fully configurable and these docs carefully describe the many configuration
+settings, wherever possible, fieldwork tries to express common patterns as the default.
+
 ## Performance
 
 The compile time cost of using a proc macro crate is always worth considering. All efforts have been
@@ -80,18 +83,16 @@ struct User {
     admin: bool,
 
     /// the user's name
-    #[fieldwork(deref = str)]
     name: String,
 
     /// the user's favorite color, if set
-    #[fieldwork(deref = str)]
     favorite_color: Option<String>,
 
     #[fieldwork(skip)]
     private: (),
 
     /// read-only unique identifier
-    #[fieldwork(deref = "[u8]", opt_in, get)]
+    #[fieldwork(opt_in, get)]
     id: Vec<u8>,
 }
 ```
@@ -99,8 +100,8 @@ struct User {
 This generates all of the following code:
 
 ```rust
-// GENERATED
 # struct User { admin: bool, name: String, favorite_color: Option<String>, private: (), id: Vec<u8> }
+// GENERATED
 impl User {
     /**Returns a copy of whether this user is an admin
 
@@ -178,6 +179,40 @@ for historical reasons*/
 }
 ```
 
+
+<br/><hr/><br/>
+
+## General notes and configuration
+
+### Fieldwork has four configuration levels that cascade
+
+Configuration at each field method inherits from the field's configuration, the struct configuration
+for that method, and the struct's top level configuration. The most specific configuration always
+takes precedence. The intent of this approach is to avoid duplication and do what you intend.
+
+### Boolean handling
+
+`#[fieldwork(option = true)]` is the same as `#[fieldwork(option)]` and this is the case anywhere
+booleans are accepted.
+
+### Type quoting
+
+Some types will need to be quoted if they contain lifetimes, brackets, or generics. Simple path
+types like `std::sync::Arc` do not need to be quoted.
+
+### Common dereference types are detected by default
+
+The current list of types that are detected are: `String`, `Vec`, `Box`, `Arc`, `Rc`, and `Cow`. So
+for example, a field that contains a `String` will return `&str` from `get` or `&mut str` from
+`get_mut` by default. This behavior can be opted out of, at any configuration level.
+
+### Options are returned as_ref or as_deref by default
+
+By default, fieldwork detects Options and calls as_deref or as_ref on them, so instead of getting
+`&Option<String>`, you get `Option<&str>` by default. It is possible to opt out of the option
+detection behavior and the deref detection behavior distinctly, so you can have it return
+`Option<&String>` or `&Option<String>`, at any configuration level.
+
 <br/><hr/><br/>
 
 ## Methods
@@ -199,14 +234,12 @@ struct User {
     admin: bool,
 
     /// the user's name
-    #[fieldwork(deref = str)]
     name: String,
 
     /// the user's age, if set
     age: Option<u8>,
 
     /// favorite color, if set
-    #[fieldwork(deref = str)]
     favorite_color: Option<String>
 }
 ```
@@ -289,14 +322,12 @@ struct User {
     admin: bool,
 
     /// the user's name
-    #[fieldwork(deref = str)]
     name: String,
 
     /// the user's age, if set
     age: Option<u8>,
 
     /// favorite color, if set
-    #[fieldwork(deref = str)]
     favorite_color: Option<String>
 }
 ```
@@ -444,6 +475,37 @@ impl User {
 }
 ```
 
+<h4 id="struct-deref">
+<code>deref</code>
+</h4>
+
+Opt out of auto-deref at the struct level with `deref = false`. See the Deref section for more
+information.
+
+```rust
+#[derive(fieldwork::Fieldwork, Clone)]
+#[fieldwork(get, get_mut, deref = false)]
+struct User {
+    // the user's name
+    name: String
+}
+```
+```rust
+// GENERATED
+# struct User { name: String }
+impl User {
+    pub fn name(&self) -> &String {
+        &self.name
+    }
+    pub fn name_mut(&mut self) -> &mut String {
+        &mut self.name
+    }
+}
+```
+
+
+
+
 <br/><hr/><br/>
 
 ### Struct Method Configuration
@@ -560,6 +622,34 @@ Opt out of Option detection with `option = false`, or if it has been opted out a
 opt back in with `option` or `option = true` for a single method, as in `get(option)` or
 `get_mut(option = true)`. See [option](#struct-option) above for more information.
 
+
+<h4 id="struct-method-deref">
+<code>deref</code>
+</h4>
+
+Opt out of auto-deref at the struct method level with `deref = false`. See the Deref section for more
+information.
+
+```rust
+#[derive(fieldwork::Fieldwork, Clone)]
+#[fieldwork(get, get_mut(deref = false))]
+struct User {
+    // the user's name
+    name: String
+}
+```
+```rust
+// GENERATED
+# struct User { name: String }
+impl User {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    pub fn name_mut(&mut self) -> &mut String {
+        &mut self.name
+    }
+}
+```
 
 <br/><hr/><br/>
 
@@ -715,52 +805,53 @@ impl User {
 
 <h4 id="field-deref"><code>deref</code></h4>
 
-For `get` and `get_mut`, return this derefenced type. Some types such as `[u8]` will require
+If set to `true`, this opts the field into deref detection for common types if the struct or struct-method have turned `deref = false`.
+If set to `false`, this opts the specific field out of deref detection for common types, borrowing the owned type.
+If set to a specific type, dereference to the specific type. Some types such as `[u8]` will require
 quoting.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
-#[fieldwork(get, set, get_mut)]
+#[fieldwork(get, get_mut)]
 struct User {
     /// the user's name
-    #[fieldwork(deref = str)]
     name: String,
 
     /// a small image in jpg format
     #[fieldwork(deref = "[u8]")]
     profile_thumbnail: Vec<u8>,
+
+    // opt out of deref detection so we can use the arc directly
+    #[fieldwork(deref = false)]
+    an_arc: std::sync::Arc<()>,
 }
 ```
 
 ```rust
 // GENERATED
-# struct User { name: String, profile_thumbnail: Vec<u8> }
+# struct User { name: String, profile_thumbnail: Vec<u8>, an_arc: std::sync::Arc<()> }
 impl User {
     ///Borrows the user's name
     pub fn name(&self) -> &str {
-        &self.name
+        &*self.name
     }
     ///Mutably borrow the user's name
     pub fn name_mut(&mut self) -> &mut str {
-        &mut self.name
-    }
-    ///Sets the user's name, returning `&mut Self` for chaining
-    pub fn set_name(&mut self, name: String) -> &mut Self {
-        self.name = name;
-        self
+        &mut *self.name
     }
     ///Borrows a small image in jpg format
     pub fn profile_thumbnail(&self) -> &[u8] {
-        &self.profile_thumbnail
+        &*self.profile_thumbnail
     }
     ///Mutably borrow a small image in jpg format
     pub fn profile_thumbnail_mut(&mut self) -> &mut [u8] {
-        &mut self.profile_thumbnail
+        &mut *self.profile_thumbnail
     }
-    ///Sets a small image in jpg format, returning `&mut Self` for chaining
-    pub fn set_profile_thumbnail(&mut self, profile_thumbnail: Vec<u8>) -> &mut Self {
-        self.profile_thumbnail = profile_thumbnail;
-        self
+    pub fn an_arc(&self) -> &std::sync::Arc<()> {
+        &self.an_arc
+    }
+    pub fn an_arc_mut(&mut self) -> &mut std::sync::Arc<()> {
+        &mut self.an_arc
     }
 }
 ```
@@ -953,17 +1044,19 @@ impl User {
 <h4 id="field-method-deref"><code>deref</code></h4>
 
 For `get` and `get_mut`, return this derefenced type for this specific method and field. Some types
-such as `[u8]` will require quoting.
+such as `[u8]` will require quoting. This can also be set to true or false to opt in or out of deref
+detection for common types.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
+#[fieldwork(deref = false)]
 struct User {
     /// the user's name
     #[fieldwork(get(deref = str), set, get_mut)]
     name: String,
 
     /// a small image in jpg format
-    #[fieldwork(get_mut(deref = "[u8]"), get, set)]
+    #[fieldwork(get_mut(deref = true), get, set)]
     profile_thumbnail: Vec<u8>,
 }
 ```

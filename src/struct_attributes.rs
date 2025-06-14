@@ -19,6 +19,7 @@ pub(crate) struct StructAttributes {
     pub(crate) where_clause: Option<WhereClause>,
     pub(crate) opt_in: bool,
     pub(crate) option_handling: Option<bool>,
+    pub(crate) auto_deref: Option<bool>,
 }
 impl StructAttributes {
     pub(crate) fn build(attributes: &[Attribute]) -> syn::Result<Self> {
@@ -107,6 +108,7 @@ impl StructAttributes {
         match lhs {
             "option" => self.option_handling = Some(value),
             "opt_in" => self.opt_in = value,
+            "deref" => self.auto_deref = Some(value),
             other if value => {
                 let method = Method::from_str_with_span(other, span)?;
                 self.include.insert(method);

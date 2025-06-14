@@ -16,6 +16,7 @@ pub(crate) struct StructMethodAttributes {
     pub(crate) doc_template: Option<String>,
     pub(crate) chainable_set: Option<bool>,
     pub(crate) option_handling: Option<bool>,
+    pub(crate) auto_deref: Option<bool>,
 }
 
 impl StructMethodAttributes {
@@ -28,6 +29,7 @@ impl StructMethodAttributes {
             doc_template: None,
             chainable_set: None,
             option_handling: None,
+            auto_deref: None,
         }
     }
 
@@ -88,6 +90,7 @@ impl StructMethodAttributes {
             ("chain", Method::Set) => self.chainable_set = Some(value),
             ("skip", _) => self.skip = value,
             ("option", _) => self.option_handling = Some(value),
+            ("deref", _) => self.auto_deref = Some(value),
             _ => return Err(Error::new(span, "not recognized")),
         }
         Ok(())

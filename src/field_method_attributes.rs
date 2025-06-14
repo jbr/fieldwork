@@ -20,6 +20,7 @@ pub(crate) struct FieldMethodAttributes {
     pub(crate) get_copy: Option<bool>,
     pub(crate) deref: Option<Type>,
     pub(crate) option_handling: Option<bool>,
+    pub(crate) auto_deref: Option<bool>,
 }
 
 impl FieldMethodAttributes {
@@ -35,6 +36,7 @@ impl FieldMethodAttributes {
             deref: None,
             skip: false,
             option_handling: None,
+            auto_deref: None,
         }
     }
 
@@ -107,6 +109,7 @@ impl FieldMethodAttributes {
             ("copy", Method::Get) => self.get_copy = Some(value),
             ("skip", _) => self.skip = value,
             ("option", _) => self.option_handling = Some(value),
+            ("deref", _) => self.auto_deref = Some(value),
             _ => return Err(Error::new(span, "not recognized")),
         }
 

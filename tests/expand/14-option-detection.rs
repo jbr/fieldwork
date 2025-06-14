@@ -51,3 +51,15 @@ struct OptionOnlyForGet {
     #[fieldwork(get_mut(option), get(option = false))]
     option_detection_only_get_mut: Option<()>,
 }
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut, option = false, deref = false)]
+struct OptionAndDerefInteraction {
+    a: Option<String>,
+    #[fieldwork(option)]
+    b: Option<String>,
+    #[fieldwork(option, deref)]
+    c: Option<String>,
+    #[fieldwork(deref)]
+    d: Option<String>, // remains Option<String>
+}

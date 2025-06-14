@@ -14,6 +14,7 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 
+mod deref_handling;
 mod field;
 mod field_attributes;
 mod field_method_attributes;
@@ -40,6 +41,7 @@ pub(crate) use struct_method_attributes::StructMethodAttributes;
 
 const DEFAULT_CHAINABLE_SET: bool = true;
 const DEFAULT_OPTION_HANDLING: bool = true;
+const DEFAULT_AUTO_DEREF: bool = true;
 
 /// see crate-level documentation
 #[proc_macro_derive(Fieldwork, attributes(fieldwork))]

@@ -20,6 +20,7 @@ pub(crate) struct FieldAttributes {
     pub(crate) deref: Option<Type>,
     pub(crate) opt_in: bool,
     pub(crate) option_handling: Option<bool>,
+    pub(crate) auto_deref: Option<bool>,
 }
 
 impl FieldAttributes {
@@ -142,6 +143,7 @@ impl FieldAttributes {
             "option" => self.option_handling = Some(value),
             "opt_in" => self.opt_in = value,
             "skip" => self.skip = value,
+            "deref" => self.auto_deref = Some(value),
             other if value => {
                 self.method_attributes.push(FieldMethodAttributes::new(
                     Method::from_str_with_span(other, span)?,

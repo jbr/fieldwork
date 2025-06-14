@@ -1,9 +1,10 @@
 use std::borrow::Cow;
 
 use crate::{
-    DEFAULT_CHAINABLE_SET, DEFAULT_OPTION_HANDLING, Field, FieldAttributes, FieldMethodAttributes,
-    Method, Resolved, StructAttributes, StructMethodAttributes,
-    option_handling::{extract_option_type, strip_option_and_ref, strip_ref},
+    DEFAULT_AUTO_DEREF, DEFAULT_CHAINABLE_SET, DEFAULT_OPTION_HANDLING, Field, FieldAttributes,
+    FieldMethodAttributes, Method, Resolved, StructAttributes, StructMethodAttributes,
+    deref_handling::auto_deref,
+    option_handling::{extract_option_type, strip_ref},
 };
 use Method::{Get, GetMut, Set, With};
 use syn::{Ident, Type, Visibility, token::Pub};
@@ -28,7 +29,7 @@ impl<'a> Query<'a> {
         }
     }
 
-    pub(crate) fn field_method_attribute(&self) -> Option<&'a FieldMethodAttributes> {
+    fn field_method_attribute(&self) -> Option<&'a FieldMethodAttributes> {
         self.field
             .attributes
             .method_attributes
@@ -36,19 +37,19 @@ impl<'a> Query<'a> {
             .find(|x| x.method == *self.method)
     }
 
-    pub(crate) fn struct_method_attribute(&self) -> Option<&'a StructMethodAttributes> {
+    fn struct_method_attribute(&self) -> Option<&'a StructMethodAttributes> {
         self.struct_attributes
             .methods
             .iter()
             .find(|x| x.method == *self.method)
     }
-    pub(crate) fn is_get_copy(&self) -> bool {
+    fn is_get_copy(&self) -> bool {
         self.field_method_attribute()
             .and_then(|fva| fva.get_copy)
             .unwrap_or_default()
     }
 
-    pub(crate) fn chainable_set(&self) -> bool {
+    fn chainable_set(&self) -> bool {
         self.method == &Set
             && self
                 .field_method_attribute()
@@ -59,7 +60,7 @@ impl<'a> Query<'a> {
                 .unwrap_or(DEFAULT_CHAINABLE_SET)
     }
 
-    pub(crate) fn vis(&self) -> Cow<'a, Visibility> {
+    fn vis(&self) -> Cow<'a, Visibility> {
         if let Some(vis) = self.field_method_attribute().and_then(|x| x.vis.as_ref()) {
             return Cow::Borrowed(vis);
         }
@@ -76,7 +77,7 @@ impl<'a> Query<'a> {
         Cow::Owned(Visibility::Public(Pub::default()))
     }
 
-    pub(crate) fn fn_ident(&self) -> Cow<'a, Ident> {
+    fn fn_ident(&self) -> Cow<'a, Ident> {
         if let Some(fn_ident) = self
             .field_method_attribute()
             .and_then(|x| x.fn_ident.as_ref())
@@ -111,11 +112,11 @@ impl<'a> Query<'a> {
         }
     }
 
-    pub(crate) fn variable_ident(&self) -> Cow<'a, Ident> {
+    fn variable_ident(&self) -> Cow<'a, Ident> {
         Cow::Borrowed(&self.field.ident)
     }
 
-    pub(crate) fn argument_ident(&self) -> Cow<'a, Ident> {
+    fn argument_ident(&self) -> Cow<'a, Ident> {
         if let Some(argument_ident) = self
             .field_method_attribute()
             .and_then(|x| x.argument_ident.as_ref())
@@ -134,7 +135,7 @@ impl<'a> Query<'a> {
         Cow::Borrowed(&self.field.ident)
     }
 
-    pub(crate) fn doc_template(&self) -> &str {
+    fn doc_template(&self) -> &str {
         match self.method {
             Get if self.is_get_copy() => "Returns a copy of {}",
             Get => "Borrows {}",
@@ -145,7 +146,7 @@ impl<'a> Query<'a> {
         }
     }
 
-    pub(crate) fn docs(&self) -> Option<Cow<'a, str>> {
+    fn docs(&self) -> Option<Cow<'a, str>> {
         if let Some(explicit_method_doc) =
             self.field_method_attribute().and_then(|x| x.doc.as_ref())
         {
@@ -168,7 +169,7 @@ impl<'a> Query<'a> {
         Some(Cow::Owned(doc))
     }
 
-    pub(crate) fn enabled(&self) -> bool {
+    fn enabled(&self) -> bool {
         let struct_method_attr = self.struct_method_attribute();
         let field_method_attr = self.field_method_attribute();
         let StructAttributes {
@@ -195,11 +196,27 @@ impl<'a> Query<'a> {
         }
     }
 
-    pub(crate) fn deref_type(&self) -> Option<&'a Type> {
+    fn auto_deref(&self, ty: &'a Type) -> Option<Cow<'a, Type>> {
+        let enabled = [
+            self.field_method_attribute().and_then(|x| x.auto_deref),
+            self.field.attributes.auto_deref,
+            self.struct_method_attribute().and_then(|x| x.auto_deref),
+            self.struct_attributes.auto_deref,
+        ]
+        .into_iter()
+        .find_map(|x| x)
+        .unwrap_or(DEFAULT_AUTO_DEREF);
+
+        if enabled { auto_deref(ty) } else { None }
+    }
+
+    fn deref_type(&self) -> Option<Cow<'a, Type>> {
         self.field_method_attribute()
             .and_then(|x| x.deref.as_ref())
             .or(self.field.attributes.deref.as_ref())
+            .map(Cow::Borrowed)
             .map(strip_ref)
+            .or_else(|| self.auto_deref(&self.field.ty))
     }
 
     pub(crate) fn resolve(&self) -> Option<Resolved<'a>> {
@@ -244,16 +261,17 @@ impl<'a> Query<'a> {
             .unwrap_or(DEFAULT_OPTION_HANDLING)
             .then_some(())?;
 
-        let ty = extract_option_type(&self.field.ty)?;
-        self.deref_type()
-            .map(strip_option_and_ref)
+        let Cow::Borrowed(ty) = extract_option_type(Cow::Borrowed(&self.field.ty))? else {
+            return None;
+        };
+        self.auto_deref(ty)
             .map(OptionHandling::Deref)
-            .or_else(|| Some(OptionHandling::Ref(strip_ref(ty))))
+            .or_else(|| Some(OptionHandling::Ref(strip_ref(Cow::Borrowed(ty)))))
     }
 }
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) enum OptionHandling<'a> {
-    Ref(&'a Type),
-    Deref(&'a Type),
+    Ref(Cow<'a, Type>),
+    Deref(Cow<'a, Type>),
 }

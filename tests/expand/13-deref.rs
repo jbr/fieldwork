@@ -1,19 +1,14 @@
 #[derive(fieldwork::Fieldwork)]
 struct User {
-    /// the user's name
-    #[fieldwork(deref = str, get, set, get_mut)]
-    name: String,
-
-    #[fieldwork(deref = "[u8]", get, set, get_mut)]
-    arr: Vec<u8>,
+    #[fieldwork(deref = DerefType, get, set, get_mut)]
+    deref_both: OwnedType,
 }
 
 #[derive(fieldwork::Fieldwork)]
 struct OnlyDerefForMethods {
-    /// the user's name
-    #[fieldwork(get(deref = str), set, get_mut)]
-    name: String,
+    #[fieldwork(get(deref = DerefType), set, get_mut)]
+    deref_for_get_only: OwnedType,
 
-    #[fieldwork(get, set, get_mut(deref = "[u8]"))]
-    arr: Vec<u8>,
+    #[fieldwork(get, set, get_mut(deref = "DerefType"))]
+    deref_for_get_mut_only: OwnedType,
 }

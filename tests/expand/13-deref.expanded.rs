@@ -1,64 +1,50 @@
 struct User {
-    /// the user's name
-    #[fieldwork(deref = str, get, set, get_mut)]
-    name: String,
-    #[fieldwork(deref = "[u8]", get, set, get_mut)]
-    arr: Vec<u8>,
+    #[fieldwork(deref = DerefType, get, set, get_mut)]
+    deref_both: OwnedType,
 }
 impl User {
-    ///Borrows the user's name
-    pub fn name(&self) -> &str {
-        &*self.name
+    pub fn deref_both(&self) -> &DerefType {
+        &*self.deref_both
     }
-    ///Mutably borrow the user's name
-    pub fn name_mut(&mut self) -> &mut str {
-        &mut *self.name
+    pub fn deref_both_mut(&mut self) -> &mut DerefType {
+        &mut *self.deref_both
     }
-    ///Sets the user's name, returning `&mut Self` for chaining
-    pub fn set_name(&mut self, name: String) -> &mut Self {
-        self.name = name;
-        self
-    }
-    pub fn arr(&self) -> &[u8] {
-        &*self.arr
-    }
-    pub fn arr_mut(&mut self) -> &mut [u8] {
-        &mut *self.arr
-    }
-    pub fn set_arr(&mut self, arr: Vec<u8>) -> &mut Self {
-        self.arr = arr;
+    pub fn set_deref_both(&mut self, deref_both: OwnedType) -> &mut Self {
+        self.deref_both = deref_both;
         self
     }
 }
 struct OnlyDerefForMethods {
-    /// the user's name
-    #[fieldwork(get(deref = str), set, get_mut)]
-    name: String,
-    #[fieldwork(get, set, get_mut(deref = "[u8]"))]
-    arr: Vec<u8>,
+    #[fieldwork(get(deref = DerefType), set, get_mut)]
+    deref_for_get_only: OwnedType,
+    #[fieldwork(get, set, get_mut(deref = "DerefType"))]
+    deref_for_get_mut_only: OwnedType,
 }
 impl OnlyDerefForMethods {
-    ///Borrows the user's name
-    pub fn name(&self) -> &str {
-        &*self.name
+    pub fn deref_for_get_only(&self) -> &DerefType {
+        &*self.deref_for_get_only
     }
-    ///Mutably borrow the user's name
-    pub fn name_mut(&mut self) -> &mut String {
-        &mut self.name
+    pub fn deref_for_get_only_mut(&mut self) -> &mut OwnedType {
+        &mut self.deref_for_get_only
     }
-    ///Sets the user's name, returning `&mut Self` for chaining
-    pub fn set_name(&mut self, name: String) -> &mut Self {
-        self.name = name;
+    pub fn set_deref_for_get_only(
+        &mut self,
+        deref_for_get_only: OwnedType,
+    ) -> &mut Self {
+        self.deref_for_get_only = deref_for_get_only;
         self
     }
-    pub fn arr(&self) -> &Vec<u8> {
-        &self.arr
+    pub fn deref_for_get_mut_only(&self) -> &OwnedType {
+        &self.deref_for_get_mut_only
     }
-    pub fn arr_mut(&mut self) -> &mut [u8] {
-        &mut *self.arr
+    pub fn deref_for_get_mut_only_mut(&mut self) -> &mut DerefType {
+        &mut *self.deref_for_get_mut_only
     }
-    pub fn set_arr(&mut self, arr: Vec<u8>) -> &mut Self {
-        self.arr = arr;
+    pub fn set_deref_for_get_mut_only(
+        &mut self,
+        deref_for_get_mut_only: OwnedType,
+    ) -> &mut Self {
+        self.deref_for_get_mut_only = deref_for_get_mut_only;
         self
     }
 }
