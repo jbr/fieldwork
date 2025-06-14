@@ -30,9 +30,9 @@ where
         self.number = number;
         self
     }
-    ///Borrows is this struct on or not
-    pub fn enabled(&self) -> &bool {
-        &self.enabled
+    ///Returns a copy of is this struct on or not
+    pub fn enabled(&self) -> bool {
+        self.enabled
     }
     ///Mutably borrow is this struct on or not
     pub fn enabled_mut(&mut self) -> &mut bool {

@@ -68,9 +68,6 @@ fields](#how-fieldwork-selects-which-methods-to-generate-for-which-fields)
 ## Example to get a sense of the library
 
 
-This contrived example intentionally exercises a number of configuration options in order to
-demonstrate capabilities. Most real-world usage will not require this much configuration.
-
 ```rust
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set, get_mut, with)]
@@ -79,7 +76,7 @@ struct User {
     ///
     /// Note that this is distinct from the notion of group administration,
     /// for historical reasons
-    #[fieldwork(argument = is_admin, get(copy, rename = is_admin), get_mut = is_admin_mut)]
+    #[fieldwork(argument = is_admin, get = is_admin, get_mut = is_admin_mut)]
     admin: bool,
 
     /// the user's name
@@ -206,6 +203,13 @@ The current list of types that are detected are: `String`, `Vec`, `Box`, `Arc`, 
 for example, a field that contains a `String` will return `&str` from `get` or `&mut str` from
 `get_mut` by default. This behavior can be opted out of, at any configuration level.
 
+### Common copy types are detected by default
+
+Currently this is just for `bool`, but will likely expand to other types. Almost always, if a getter
+returns a `&bool` the user will want to dereference that immediately, so by default `get` returns
+`bool` by copy. This behavior can be opted out of at the struct method level with
+`#[fieldwork(get(copy = false))]` or at the field method level with the same invocation.
+
 ### Options are returned as_ref or as_deref by default
 
 By default, fieldwork detects Options and calls as_deref or as_ref on them, so instead of getting
@@ -222,7 +226,7 @@ Fieldwork supports four distinct methods: `get`, `set`, `get_mut`, and `with`.
 ### `get`
 
 Borrows the field. This can also be used to return a copy of the field using the
-`#[fieldwork(get(copy))]` annotation on a field.
+`#[fieldwork(get(copy))]` annotation on a field, or when common copy types are detected (see above).
 
 #### Example:
 
@@ -250,9 +254,9 @@ generates
 // GENERATED
 # struct User { admin: bool, name: String, age: Option<u8>, favorite_color: Option<String> }
 impl User {
-    ///Borrows whether this user is an admin
-    pub fn admin(&self) -> &bool {
-        &self.admin
+    ///Returns a copy of whether this user is an admin
+    pub fn admin(&self) -> bool {
+        self.admin
     }
     ///Borrows the user's name
     pub fn name(&self) -> &str {
@@ -651,6 +655,39 @@ impl User {
 }
 ```
 
+
+<h4 id="struct-method-copy"><code>copy</code> (<code>get</code> only)</h4>
+
+By default, common Copy types such as bool will be returned by copy instead of by reference. To opt
+out of this behavior for a whole struct, use `#[fieldwork(get(copy = false))]`.
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get(copy = false))]
+struct Collection {
+    /// length
+    len: usize,
+
+    /// enabled
+    enabled: bool,
+}
+```
+```rust
+// GENERATED
+# struct Collection { len: usize, enabled: bool }
+impl Collection {
+    ///Borrows length
+    pub fn len(&self) -> &usize {
+        &self.len
+    }
+    ///Borrows enabled
+    pub fn enabled(&self) -> &bool {
+        &self.enabled
+    }
+}
+```
+
+
 <br/><hr/><br/>
 
 ### Field Configuration
@@ -678,9 +715,9 @@ struct User {
 // GENERATED
 # struct User { admin: bool, name: String, private: () }
 impl User {
-    /// Borrows whether this user is an admin
-    pub fn admin(&self) -> &bool {
-        &self.admin
+    /// Returns a copy of whether this user is an admin
+    pub fn admin(&self) -> bool {
+        self.admin
     }
     /// Sets whether this user is an admin, returning `&mut Self` for chaining
     pub fn set_admin(&mut self, admin: bool) -> &mut Self {
@@ -717,9 +754,9 @@ struct User {
 // GENERATED
 # struct User { superadmin: bool }
 impl User {
-    /// Borrows whether this user is an admin
-    pub fn admin(&self) -> &bool {
-        &self.superadmin
+    /// Returns a copy of whether this user is an admin
+    pub fn admin(&self) -> bool {
+        self.superadmin
     }
     /// Sets whether this user is an admin, returning `&mut Self` for chaining
     pub fn set_admin(&mut self, admin: bool) -> &mut Self {
@@ -782,9 +819,9 @@ struct User {
 // GENERATED
 # struct User { admin: bool, name: String }
 impl User {
-    /// Borrows whether this user is an admin
-    pub fn admin(&self) -> &bool {
-        &self.admin
+    /// Returns a copy of whether this user is an admin
+    pub fn admin(&self) -> bool {
+        self.admin
     }
     /// Sets whether this user is an admin, returning `&mut Self` for chaining
     pub fn set_admin(&mut self, admin: bool) -> &mut Self {
@@ -886,9 +923,9 @@ struct User {
 // GENERATED
 # struct User { admin: bool }
 impl User {
-    /// Borrows whether this user is an admin
-    pub fn is_an_admin(&self) -> &bool {
-        &self.admin
+    /// Returns a copy of whether this user is an admin
+    pub fn is_an_admin(&self) -> bool {
+        self.admin
     }
 }
 ```
@@ -982,23 +1019,24 @@ impl User {
 <h4 id="field-method-copy"><code>copy</code> (<code>get</code> only)</h4>
 
 Sometimes it is more useful to return a `Copy` of the returned type instead of a borrow. To opt into
-this behavior for a specific field, use `#[fieldwork(get(copy))]`:
+this behavior for a specific field, use `#[fieldwork(get(copy))]`. To opt out of default copy
+behavior for common types such as `bool`, use `#[fieldwork(get(copy = false))]`.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
-struct User {
-    /// whether the user is an admin
+struct Collection {
+    /// length
     #[fieldwork(get(copy))]
-    admin: bool,
+    len: usize,
 }
 ```
 ```rust
 // GENERATED
-# struct User { admin: bool }
-impl User {
-    /// Returns a copy of whether the user is an admin
-    pub fn admin(&self) -> bool {
-        self.admin
+# struct Collection { len: usize }
+impl Collection {
+    /// Returns a copy of length
+    pub fn len(&self) -> usize {
+        self.len
     }
 }
 ```
@@ -1025,9 +1063,9 @@ struct User {
 // GENERATED
 # struct User { admin: bool, name: String }
 impl User {
-    /// Borrows whether this user is an admin
-    pub fn admin(&self) -> &bool {
-        &self.admin
+    /// Returns a copy of whether this user is an admin
+    pub fn admin(&self) -> bool {
+        self.admin
     }
     /// Borrows the user's name
     pub fn name(&self) -> &String {
@@ -1148,9 +1186,9 @@ struct User {
 // GENERATED
 # struct User { admin: bool, name: String, private: () }
 impl User {
-    ///Borrows whether this user is an admin
-    pub fn get_admin(&self) -> &bool {
-        &self.admin
+    ///Returns a copy of whether this user is an admin
+    pub fn get_admin(&self) -> bool {
+        self.admin
     }
     ///Sets the user's name, returning `&mut Self` for chaining
     pub fn set_name(&mut self, name: String) -> &mut Self {

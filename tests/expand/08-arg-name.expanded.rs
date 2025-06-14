@@ -30,9 +30,9 @@ impl<T> MyStruct<T> {
         self.number = the_number;
         self
     }
-    ///Borrows whether something is enabled
-    pub fn enabled(&self) -> &bool {
-        &self.enabled
+    ///Returns a copy of whether something is enabled
+    pub fn enabled(&self) -> bool {
+        self.enabled
     }
     ///Mutably borrow whether something is enabled
     pub fn enabled_mut(&mut self) -> &mut bool {

@@ -17,9 +17,9 @@ impl<T> MyStruct<T> {
         self.number = number;
         self
     }
-    ///Borrows is this struct on or not
-    pub fn enabled(&self) -> &bool {
-        &self.enabled
+    ///Returns a copy of is this struct on or not
+    pub fn enabled(&self) -> bool {
+        self.enabled
     }
     ///Sets is this struct on or not, returning `&mut Self` for chaining
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {

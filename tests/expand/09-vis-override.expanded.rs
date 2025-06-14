@@ -23,18 +23,18 @@ impl MyStruct {
         self.number = number;
         self
     }
-    ///Borrows this one overrides only the getter to be fully pub
-    pub fn enabled(&self) -> &bool {
-        &self.enabled
+    ///Returns a copy of this one overrides only the getter to be fully pub
+    pub fn enabled(&self) -> bool {
+        self.enabled
     }
     ///Sets this one overrides only the getter to be fully pub, returning `&mut Self` for chaining
     pub(crate) fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
-    ///Borrows this one overrides only the getter to be private (no `pub`)
-    fn active(&self) -> &bool {
-        &self.active
+    ///Returns a copy of this one overrides only the getter to be private (no `pub`)
+    fn active(&self) -> bool {
+        self.active
     }
     ///Sets this one overrides only the getter to be private (no `pub`), returning `&mut Self` for chaining
     pub(crate) fn set_active(&mut self, active: bool) -> &mut Self {
@@ -81,18 +81,18 @@ impl MyStruct2 {
         self.number = number;
         self
     }
-    ///Borrows this one overrides only the getter to be fully pub
-    pub(crate) fn enabled(&self) -> &bool {
-        &self.enabled
+    ///Returns a copy of this one overrides only the getter to be fully pub
+    pub(crate) fn enabled(&self) -> bool {
+        self.enabled
     }
     ///Sets this one overrides only the getter to be fully pub, returning `&mut Self` for chaining
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
-    ///Borrows this one overrides only the getter to be private (no `pub`)
-    fn active(&self) -> &bool {
-        &self.active
+    ///Returns a copy of this one overrides only the getter to be private (no `pub`)
+    fn active(&self) -> bool {
+        self.active
     }
     ///Sets this one overrides only the getter to be private (no `pub`), returning `&mut Self` for chaining
     pub fn set_active(&mut self, active: bool) -> &mut Self {

@@ -47,9 +47,6 @@ This crate uses `#![deny(unsafe_code)]`.
 
 ## Example to get a sense of the library
 
-This contrived example intentionally exercises a number of configuration options in order to
-demonstrate capabilities. Most real-world usage will not require this much configuration.
-
 ```rust
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set, get_mut, with)]
@@ -58,7 +55,7 @@ struct User {
     ///
     /// Note that this is distinct from the notion of group administration,
     /// for historical reasons
-    #[fieldwork(argument = is_admin, get(copy, rename = is_admin), get_mut = is_admin_mut)]
+    #[fieldwork(argument = is_admin, get = is_admin, get_mut = is_admin_mut)]
     admin: bool,
 
     /// the user's name

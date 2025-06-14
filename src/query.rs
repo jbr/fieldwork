@@ -1,8 +1,10 @@
 use std::borrow::Cow;
 
 use crate::{
-    DEFAULT_AUTO_DEREF, DEFAULT_CHAINABLE_SET, DEFAULT_OPTION_HANDLING, Field, FieldAttributes,
-    FieldMethodAttributes, Method, Resolved, StructAttributes, StructMethodAttributes,
+    DEFAULT_AUTO_COPY, DEFAULT_AUTO_DEREF, DEFAULT_CHAINABLE_SET, DEFAULT_OPTION_HANDLING, Field,
+    FieldAttributes, FieldMethodAttributes, Method, Resolved, StructAttributes,
+    StructMethodAttributes,
+    copy_detection::enable_copy_for_type,
     deref_handling::auto_deref,
     option_handling::{extract_option_type, strip_ref},
 };
@@ -43,10 +45,16 @@ impl<'a> Query<'a> {
             .iter()
             .find(|x| x.method == *self.method)
     }
+
     fn is_get_copy(&self) -> bool {
-        self.field_method_attribute()
-            .and_then(|fva| fva.get_copy)
-            .unwrap_or_default()
+        if let Some(field_copy) = self.field_method_attribute().and_then(|fva| fva.get_copy) {
+            return field_copy;
+        }
+
+        self.struct_method_attribute()
+            .and_then(|x| x.auto_copy)
+            .unwrap_or(DEFAULT_AUTO_COPY)
+            && enable_copy_for_type(&self.field.ty)
     }
 
     fn chainable_set(&self) -> bool {
