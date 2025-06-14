@@ -261,9 +261,7 @@ impl<'a> Query<'a> {
             .unwrap_or(DEFAULT_OPTION_HANDLING)
             .then_some(())?;
 
-        let Cow::Borrowed(ty) = extract_option_type(Cow::Borrowed(&self.field.ty))? else {
-            return None;
-        };
+        let ty = extract_option_type(&self.field.ty)?;
         self.auto_deref(ty)
             .map(OptionHandling::Deref)
             .or_else(|| Some(OptionHandling::Ref(strip_ref(Cow::Borrowed(ty)))))

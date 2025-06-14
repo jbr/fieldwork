@@ -2,12 +2,12 @@ use std::borrow::Cow;
 
 use syn::{GenericArgument, Path, PathArguments, Type, TypePath, TypeReference};
 
-pub(crate) fn extract_option_type(ty: Cow<'_, Type>) -> Option<Cow<'_, Type>> {
+pub(crate) fn extract_option_type(ty: &Type) -> Option<&Type> {
     match ty {
-        Cow::Borrowed(Type::Path(TypePath {
+        Type::Path(TypePath {
             path: Path { segments, .. },
             ..
-        })) => {
+        }) => {
             let last_segment = segments.last()?;
             if last_segment.ident != "Option" {
                 return None;
@@ -20,27 +20,13 @@ pub(crate) fn extract_option_type(ty: Cow<'_, Type>) -> Option<Cow<'_, Type>> {
             let Some(GenericArgument::Type(inner_type)) = bracketed_args.args.first() else {
                 return None;
             };
-            Some(strip_ref(Cow::Borrowed(inner_type)))
-        }
-
-        Cow::Owned(Type::Path(TypePath {
-            path: Path { segments, .. },
-            ..
-        })) => {
-            let last_segment = segments.last()?;
-            if last_segment.ident != "Option" {
-                return None;
-            }
-
-            let PathArguments::AngleBracketed(ref bracketed_args) = last_segment.arguments else {
+            let Cow::Borrowed(b) = strip_ref(Cow::Borrowed(inner_type)) else {
                 return None;
             };
 
-            let Some(GenericArgument::Type(inner_type)) = bracketed_args.args.first() else {
-                return None;
-            };
-            Some(strip_ref(Cow::Owned(inner_type.clone())))
+            return Some(b);
         }
+
         _ => None,
     }
 }
