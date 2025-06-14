@@ -16,7 +16,7 @@ pub(crate) struct Resolved<'a> {
     pub(crate) doc: Option<Cow<'a, str>>,
     pub(crate) get_copy: bool,
     pub(crate) chainable_set: bool,
-    pub(crate) deref_type: Option<&'a Type>,
+    pub(crate) deref_type: Option<Cow<'a, Type>>,
     pub(crate) option_handling: Option<OptionHandling<'a>>,
 }
 

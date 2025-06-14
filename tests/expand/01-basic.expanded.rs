@@ -1,68 +1,97 @@
-#[fieldwork(get, set, with, get_mut)]
-struct MyStruct<T> {
-    /// the number
-    number: usize,
-    /// whether something is enabled
-    enabled: bool,
-    /// the generic
-    generic: T,
+#[fieldwork(get, set, get_mut, with)]
+struct User {
+    /// whether this user is an admin
+    ///
+    /// Note that this is distinct from the notion of group administration,
+    /// for historical reasons
+    #[fieldwork(
+        argument = is_admin,
+        get(copy, rename = is_admin),
+        get_mut = is_admin_mut
+    )]
+    admin: bool,
+    /// the user's name
+    name: String,
+    /// the user's favorite color, if set
+    favorite_color: Option<String>,
+    #[fieldwork(skip)]
+    private: (),
+    /// read-only unique identifier
+    #[fieldwork(opt_in, get)]
+    id: Vec<u8>,
 }
-impl<T> MyStruct<T> {
-    ///Borrows the number
-    pub fn number(&self) -> &usize {
-        &self.number
+impl User {
+    /**Returns a copy of whether this user is an admin
+
+Note that this is distinct from the notion of group administration,
+for historical reasons*/
+    pub fn is_admin(&self) -> bool {
+        self.admin
     }
-    ///Mutably borrow the number
-    pub fn number_mut(&mut self) -> &mut usize {
-        &mut self.number
+    /**Mutably borrow whether this user is an admin
+
+Note that this is distinct from the notion of group administration,
+for historical reasons*/
+    pub fn is_admin_mut(&mut self) -> &mut bool {
+        &mut self.admin
     }
-    ///Sets the number, returning `&mut Self` for chaining
-    pub fn set_number(&mut self, number: usize) -> &mut Self {
-        self.number = number;
+    /**Sets whether this user is an admin, returning `&mut Self` for chaining
+
+Note that this is distinct from the notion of group administration,
+for historical reasons*/
+    pub fn set_admin(&mut self, is_admin: bool) -> &mut Self {
+        self.admin = is_admin;
         self
     }
-    ///Owned chainable setter for the number, returning `Self`
+    /**Owned chainable setter for whether this user is an admin, returning `Self`
+
+Note that this is distinct from the notion of group administration,
+for historical reasons*/
     #[must_use]
-    pub fn with_number(mut self, number: usize) -> Self {
-        self.number = number;
+    pub fn with_admin(mut self, is_admin: bool) -> Self {
+        self.admin = is_admin;
         self
     }
-    ///Borrows whether something is enabled
-    pub fn enabled(&self) -> &bool {
-        &self.enabled
+    ///Borrows the user's name
+    pub fn name(&self) -> &str {
+        &*self.name
     }
-    ///Mutably borrow whether something is enabled
-    pub fn enabled_mut(&mut self) -> &mut bool {
-        &mut self.enabled
+    ///Mutably borrow the user's name
+    pub fn name_mut(&mut self) -> &mut str {
+        &mut *self.name
     }
-    ///Sets whether something is enabled, returning `&mut Self` for chaining
-    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
-        self.enabled = enabled;
+    ///Sets the user's name, returning `&mut Self` for chaining
+    pub fn set_name(&mut self, name: String) -> &mut Self {
+        self.name = name;
         self
     }
-    ///Owned chainable setter for whether something is enabled, returning `Self`
+    ///Owned chainable setter for the user's name, returning `Self`
     #[must_use]
-    pub fn with_enabled(mut self, enabled: bool) -> Self {
-        self.enabled = enabled;
+    pub fn with_name(mut self, name: String) -> Self {
+        self.name = name;
         self
     }
-    ///Borrows the generic
-    pub fn generic(&self) -> &T {
-        &self.generic
+    ///Borrows the user's favorite color, if set
+    pub fn favorite_color(&self) -> Option<&str> {
+        self.favorite_color.as_deref()
     }
-    ///Mutably borrow the generic
-    pub fn generic_mut(&mut self) -> &mut T {
-        &mut self.generic
+    ///Mutably borrow the user's favorite color, if set
+    pub fn favorite_color_mut(&mut self) -> Option<&mut str> {
+        self.favorite_color.as_deref_mut()
     }
-    ///Sets the generic, returning `&mut Self` for chaining
-    pub fn set_generic(&mut self, generic: T) -> &mut Self {
-        self.generic = generic;
+    ///Sets the user's favorite color, if set, returning `&mut Self` for chaining
+    pub fn set_favorite_color(&mut self, favorite_color: Option<String>) -> &mut Self {
+        self.favorite_color = favorite_color;
         self
     }
-    ///Owned chainable setter for the generic, returning `Self`
+    ///Owned chainable setter for the user's favorite color, if set, returning `Self`
     #[must_use]
-    pub fn with_generic(mut self, generic: T) -> Self {
-        self.generic = generic;
+    pub fn with_favorite_color(mut self, favorite_color: Option<String>) -> Self {
+        self.favorite_color = favorite_color;
         self
+    }
+    ///Borrows read-only unique identifier
+    pub fn id(&self) -> &[u8] {
+        &*self.id
     }
 }
