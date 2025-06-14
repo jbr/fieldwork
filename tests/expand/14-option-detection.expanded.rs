@@ -17,11 +17,11 @@ impl OptionBehavior {
     pub fn option_deref_mut(&mut self) -> Option<&mut str> {
         self.option_deref.as_deref_mut()
     }
-    pub fn option_deref_other_style(&self) -> Option<&str> {
-        self.option_deref_other_style.as_deref()
+    pub fn option_deref_other_style(&self) -> &str {
+        &*self.option_deref_other_style
     }
-    pub fn option_deref_other_style_mut(&mut self) -> Option<&mut str> {
-        self.option_deref_other_style.as_deref_mut()
+    pub fn option_deref_other_style_mut(&mut self) -> &mut str {
+        &mut *self.option_deref_other_style
     }
     pub fn no_option_detection(&self) -> &Option<String> {
         &self.no_option_detection
@@ -61,11 +61,11 @@ impl OptInOption {
     pub fn option_deref_mut(&mut self) -> Option<&mut str> {
         self.option_deref.as_deref_mut()
     }
-    pub fn option_deref_other_style(&self) -> Option<&str> {
-        self.option_deref_other_style.as_deref()
+    pub fn option_deref_other_style(&self) -> &str {
+        &*self.option_deref_other_style
     }
-    pub fn option_deref_other_style_mut(&mut self) -> Option<&mut str> {
-        self.option_deref_other_style.as_deref_mut()
+    pub fn option_deref_other_style_mut(&mut self) -> &mut str {
+        &mut *self.option_deref_other_style
     }
     pub fn option_detection(&self) -> Option<&str> {
         self.option_detection.as_deref()
@@ -105,8 +105,8 @@ impl OptionOnlyForGet {
     pub fn no_option_detection_mut(&mut self) -> &mut Option<()> {
         &mut self.no_option_detection
     }
-    pub fn option_deref(&self) -> Option<&str> {
-        self.option_deref.as_deref()
+    pub fn option_deref(&self) -> &str {
+        &*self.option_deref
     }
     pub fn option_deref_mut(&mut self) -> &mut Option<String> {
         &mut self.option_deref
@@ -139,6 +139,8 @@ struct OptionAndDerefInteraction {
     c: Option<String>,
     #[fieldwork(deref)]
     d: Option<String>,
+    #[fieldwork(option, deref = "Option<&CustomDeref>")]
+    e: Option<CustomOwned>,
 }
 impl OptionAndDerefInteraction {
     pub fn a(&self) -> &Option<String> {
@@ -164,5 +166,11 @@ impl OptionAndDerefInteraction {
     }
     pub fn d_mut(&mut self) -> &mut Option<String> {
         &mut self.d
+    }
+    pub fn e(&self) -> Option<&CustomDeref> {
+        self.e.as_deref()
+    }
+    pub fn e_mut(&mut self) -> Option<&mut CustomDeref> {
+        self.e.as_deref_mut()
     }
 }

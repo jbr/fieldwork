@@ -62,4 +62,6 @@ struct OptionAndDerefInteraction {
     c: Option<String>,
     #[fieldwork(deref)]
     d: Option<String>, // remains Option<String>
+    #[fieldwork(option, deref = "Option<&CustomDeref>")]
+    e: Option<CustomOwned>,
 }
