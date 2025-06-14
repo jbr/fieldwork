@@ -83,6 +83,10 @@ struct User {
     #[fieldwork(deref = str)]
     name: String,
 
+    /// the user's favorite color, if set
+    #[fieldwork(deref = str)]
+    favorite_color: Option<String>,
+
     #[fieldwork(skip)]
     private: (),
 
@@ -96,7 +100,7 @@ This generates all of the following code:
 
 ```rust
 // GENERATED
-# struct User { admin: bool, name: String, private: (), id: Vec<u8> }
+# struct User { admin: bool, name: String, favorite_color: Option<String>, private: (), id: Vec<u8> }
 impl User {
     /**Returns a copy of whether this user is an admin
 
@@ -131,11 +135,11 @@ for historical reasons*/
     }
     ///Borrows the user's name
     pub fn name(&self) -> &str {
-        &self.name
+        &*self.name
     }
     ///Mutably borrow the user's name
     pub fn name_mut(&mut self) -> &mut str {
-        &mut self.name
+        &mut *self.name
     }
     ///Sets the user's name, returning `&mut Self` for chaining
     pub fn set_name(&mut self, name: String) -> &mut Self {
@@ -148,9 +152,28 @@ for historical reasons*/
         self.name = name;
         self
     }
+    ///Borrows the user's favorite color, if set
+    pub fn favorite_color(&self) -> Option<&str> {
+        self.favorite_color.as_deref()
+    }
+    ///Mutably borrow the user's favorite color, if set
+    pub fn favorite_color_mut(&mut self) -> Option<&mut str> {
+        self.favorite_color.as_deref_mut()
+    }
+    ///Sets the user's favorite color, if set, returning `&mut Self` for chaining
+    pub fn set_favorite_color(&mut self, favorite_color: Option<String>) -> &mut Self {
+        self.favorite_color = favorite_color;
+        self
+    }
+    ///Owned chainable setter for the user's favorite color, if set, returning `Self`
+    #[must_use]
+    pub fn with_favorite_color(mut self, favorite_color: Option<String>) -> Self {
+        self.favorite_color = favorite_color;
+        self
+    }
     ///Borrows read-only unique identifier
     pub fn id(&self) -> &[u8] {
-        &self.id
+        &*self.id
     }
 }
 ```
@@ -176,7 +199,15 @@ struct User {
     admin: bool,
 
     /// the user's name
-    name: String
+    #[fieldwork(deref = str)]
+    name: String,
+
+    /// the user's age, if set
+    age: Option<u8>,
+
+    /// favorite color, if set
+    #[fieldwork(deref = str)]
+    favorite_color: Option<String>
 }
 ```
 
@@ -184,18 +215,28 @@ generates
 
 ```rust
 // GENERATED
-# struct User { admin: bool, name: String }
+# struct User { admin: bool, name: String, age: Option<u8>, favorite_color: Option<String> }
 impl User {
-    /// Borrows whether this user is an admin
+    ///Borrows whether this user is an admin
     pub fn admin(&self) -> &bool {
         &self.admin
     }
-    /// Borrows the user's name
-    pub fn name(&self) -> &String {
-        &self.name
+    ///Borrows the user's name
+    pub fn name(&self) -> &str {
+        &*self.name
+    }
+    ///Borrows the user's age, if set
+    pub fn age(&self) -> Option<&u8> {
+        self.age.as_ref()
+    }
+    ///Borrows favorite color, if set
+    pub fn favorite_color(&self) -> Option<&str> {
+        self.favorite_color.as_deref()
     }
 }
 ```
+
+
 
 ### `set`
 
@@ -248,22 +289,38 @@ struct User {
     admin: bool,
 
     /// the user's name
+    #[fieldwork(deref = str)]
     name: String,
+
+    /// the user's age, if set
+    age: Option<u8>,
+
+    /// favorite color, if set
+    #[fieldwork(deref = str)]
+    favorite_color: Option<String>
 }
 ```
 generates the following impl block
 
 ```rust
 // GENERATED
-# struct User { admin: bool, name: String }
+# struct User { admin: bool, name: String, age: Option<u8>, favorite_color: Option<String> }
 impl User {
-    /// Mutably borrow whether this user is an admin
+    ///Mutably borrow whether this user is an admin
     pub fn admin_mut(&mut self) -> &mut bool {
         &mut self.admin
     }
-    /// Mutably borrow the user's name
-    pub fn name_mut(&mut self) -> &mut String {
-        &mut self.name
+    ///Mutably borrow the user's name
+    pub fn name_mut(&mut self) -> &mut str {
+        &mut *self.name
+    }
+    ///Mutably borrow the user's age, if set
+    pub fn age_mut(&mut self) -> Option<&mut u8> {
+        self.age.as_mut()
+    }
+    ///Mutably borrow favorite color, if set
+    pub fn favorite_color_mut(&mut self) -> Option<&mut str> {
+        self.favorite_color.as_deref_mut()
     }
 }
 ```
@@ -354,6 +411,35 @@ where
     pub fn with_pocket_contents(mut self, pocket_contents: PocketContents) -> Self {
         self.pocket_contents = pocket_contents;
         self
+    }
+}
+```
+
+<h4 id="struct-option">
+<code>option</code>
+</h4>
+
+Opt out of Option detection with `option = false`. Instead of `get` returning `Option<&T>` and
+`get_mut` returning `Option<&mut T>`, `get` returns `&Option<T>` and `get_mut` returns `&mut
+Option<T>`. Default behavior is for Option detection to be enabled at the struct level.
+
+```rust
+#[derive(fieldwork::Fieldwork, Clone)]
+#[fieldwork(get, get_mut, option = false)]
+struct User {
+    // the user's name
+    name: Option<String>
+}
+```
+```rust
+// GENERATED
+# struct User { name: Option<String> }
+impl User {
+    pub fn name(&self) -> &Option<String> {
+        &self.name
+    }
+    pub fn name_mut(&mut self) -> &mut Option<String> {
+        &mut self.name
     }
 }
 ```
@@ -467,6 +553,13 @@ impl User {
     }
 }
 ```
+
+<h4 id="struct-method-option"><code>option</code></h4>
+
+Opt out of Option detection with `option = false`, or if it has been opted out at the struct level,
+opt back in with `option` or `option = true` for a single method, as in `get(option)` or
+`get_mut(option = true)`. See [option](#struct-option) above for more information.
+
 
 <br/><hr/><br/>
 
@@ -671,6 +764,15 @@ impl User {
     }
 }
 ```
+
+
+<h4 id="field-option"><code>option</code></h4>
+
+Opt out of Option detection for this field with `option = false`, or if it has been opted out at the
+struct or struct method level, opt back in with `option` or `option = true` for a single field, as
+in `#[fieldwork(option)]` or `#[fieldwork(option = true)]`. See [option](#struct-option) above for
+more information.
+
 
 <br/><hr/><br/>
 
@@ -898,6 +1000,16 @@ impl User {
     }
 }
 ```
+
+
+<h4 id="field-method-option"><code>option</code></h4>
+
+Opt out of Option detection for this field and method with `#[fieldwork(option = false)]`, or if it
+has been opted out at the struct, struct method, or field level, opt back in with `option` or
+`option = true` for a single field and method, as in `#[fieldwork(get(option))]` or
+`#[fieldwork(get_mut(option = true))]`. See [option](#struct-option) above for more information.
+
+
 
 <br/><hr/><br/>
 

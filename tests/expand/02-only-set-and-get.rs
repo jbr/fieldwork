@@ -1,5 +1,5 @@
 #[derive(fieldwork::Fieldwork)]
-#[fieldwork(set, get)]
+#[fieldwork(set, get = true)]
 struct MyStruct<T> {
     /// this number is cool
     number: usize,

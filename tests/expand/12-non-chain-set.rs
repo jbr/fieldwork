@@ -3,21 +3,23 @@
 struct MyStruct<T> {
     number: usize,
 
-    /// generated
+    /// opting out
     #[fieldwork(set(chain = false))]
     enabled: bool,
 
-    /// generated
     generic: T,
 }
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(set(chain = false))]
 struct MyStruct2<T> {
+    /// opted out at struct-method level
     number: usize,
 
-    /// generated
+    #[fieldwork(set(chain = true))]
+    /// opting back in
     enabled: bool,
 
-    /// generated
+    #[fieldwork(set(chain))]
+    /// opting back in
     generic: T,
 }
