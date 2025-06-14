@@ -1,10 +1,9 @@
 #[fieldwork(set)]
 struct MyStruct<T> {
     number: usize,
-    /// generated
+    /// opting out
     #[fieldwork(set(chain = false))]
     enabled: bool,
-    /// generated
     generic: T,
 }
 impl<T> MyStruct<T> {
@@ -12,11 +11,10 @@ impl<T> MyStruct<T> {
         self.number = number;
         self
     }
-    ///Sets generated
+    ///Sets opting out
     pub fn set_enabled(&mut self, enabled: bool) {
         self.enabled = enabled;
     }
-    ///Sets generated, returning `&mut Self` for chaining
     pub fn set_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
         self
@@ -24,22 +22,28 @@ impl<T> MyStruct<T> {
 }
 #[fieldwork(set(chain = false))]
 struct MyStruct2<T> {
+    /// opted out at struct-method level
     number: usize,
-    /// generated
+    #[fieldwork(set(chain = true))]
+    /// opting back in
     enabled: bool,
-    /// generated
+    #[fieldwork(set(chain))]
+    /// opting back in
     generic: T,
 }
 impl<T> MyStruct2<T> {
+    ///Sets opted out at struct-method level
     pub fn set_number(&mut self, number: usize) {
         self.number = number;
     }
-    ///Sets generated
-    pub fn set_enabled(&mut self, enabled: bool) {
+    ///Sets opting back in, returning `&mut Self` for chaining
+    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
+        self
     }
-    ///Sets generated
-    pub fn set_generic(&mut self, generic: T) {
+    ///Sets opting back in, returning `&mut Self` for chaining
+    pub fn set_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
+        self
     }
 }

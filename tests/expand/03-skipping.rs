@@ -4,9 +4,10 @@ struct MyStruct<T> {
     /// this number is cool
     number: usize,
     /// is this struct on or not
+    #[fieldwork(skip)]
     enabled: bool,
     /// it's really whatever you want
-    #[fieldwork(skip)]
+    #[fieldwork(skip = true)]
     generic: T,
 }
 
@@ -16,7 +17,7 @@ struct SetAndGet<T> {
     /// this number is cool
     number: usize,
     /// is this struct on or not
-    #[fieldwork(get(skip))]
+    #[fieldwork(get(skip = true))]
     enabled: bool,
     /// it's really whatever you want
     #[fieldwork(set(skip))]

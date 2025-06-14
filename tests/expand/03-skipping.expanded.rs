@@ -3,9 +3,10 @@ struct MyStruct<T> {
     /// this number is cool
     number: usize,
     /// is this struct on or not
+    #[fieldwork(skip)]
     enabled: bool,
     /// it's really whatever you want
-    #[fieldwork(skip)]
+    #[fieldwork(skip = true)]
     generic: T,
 }
 impl<T> MyStruct<T> {
@@ -28,32 +29,13 @@ impl<T> MyStruct<T> {
         self.number = number;
         self
     }
-    ///Borrows is this struct on or not
-    pub fn enabled(&self) -> &bool {
-        &self.enabled
-    }
-    ///Mutably borrow is this struct on or not
-    pub fn enabled_mut(&mut self) -> &mut bool {
-        &mut self.enabled
-    }
-    ///Sets is this struct on or not, returning `&mut Self` for chaining
-    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
-        self.enabled = enabled;
-        self
-    }
-    ///Owned chainable setter for is this struct on or not, returning `Self`
-    #[must_use]
-    pub fn with_enabled(mut self, enabled: bool) -> Self {
-        self.enabled = enabled;
-        self
-    }
 }
 #[fieldwork(set, get)]
 struct SetAndGet<T> {
     /// this number is cool
     number: usize,
     /// is this struct on or not
-    #[fieldwork(get(skip))]
+    #[fieldwork(get(skip = true))]
     enabled: bool,
     /// it's really whatever you want
     #[fieldwork(set(skip))]

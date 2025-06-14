@@ -23,7 +23,7 @@ struct OptingInPerField<T> {
     number: usize,
 
     /// generated
-    #[fieldwork(set, get(skip))]
+    #[fieldwork(set = true, get(skip))]
     enabled: bool,
 
     /// generated
@@ -42,7 +42,7 @@ struct OptingInPerField<T> {
     enabled: bool,
 
     /// generated
-    #[fieldwork(get, set)]
+    #[fieldwork(get, set = true)]
     generic: T,
 }
 
@@ -50,6 +50,6 @@ struct OptingInPerField<T> {
 #[fieldwork(get, set, with, get_mut)]
 struct MyStruct {
     number: usize,
-    #[fieldwork(opt_in, get)]
+    #[fieldwork(opt_in = true, get)]
     only_get: (),
 }

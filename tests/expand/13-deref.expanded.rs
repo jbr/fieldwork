@@ -8,11 +8,11 @@ struct User {
 impl User {
     ///Borrows the user's name
     pub fn name(&self) -> &str {
-        &self.name
+        &*self.name
     }
     ///Mutably borrow the user's name
     pub fn name_mut(&mut self) -> &mut str {
-        &mut self.name
+        &mut *self.name
     }
     ///Sets the user's name, returning `&mut Self` for chaining
     pub fn set_name(&mut self, name: String) -> &mut Self {
@@ -20,10 +20,10 @@ impl User {
         self
     }
     pub fn arr(&self) -> &[u8] {
-        &self.arr
+        &*self.arr
     }
     pub fn arr_mut(&mut self) -> &mut [u8] {
-        &mut self.arr
+        &mut *self.arr
     }
     pub fn set_arr(&mut self, arr: Vec<u8>) -> &mut Self {
         self.arr = arr;
@@ -40,7 +40,7 @@ struct OnlyDerefForMethods {
 impl OnlyDerefForMethods {
     ///Borrows the user's name
     pub fn name(&self) -> &str {
-        &self.name
+        &*self.name
     }
     ///Mutably borrow the user's name
     pub fn name_mut(&mut self) -> &mut String {
@@ -55,7 +55,7 @@ impl OnlyDerefForMethods {
         &self.arr
     }
     pub fn arr_mut(&mut self) -> &mut [u8] {
-        &mut self.arr
+        &mut *self.arr
     }
     pub fn set_arr(&mut self, arr: Vec<u8>) -> &mut Self {
         self.arr = arr;

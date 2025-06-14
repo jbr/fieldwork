@@ -1,8 +1,9 @@
 use std::borrow::Cow;
 
 use crate::{
-    DEFAULT_CHAINABLE_SET, Field, FieldAttributes, FieldMethodAttributes, Method, StructAttributes,
-    StructMethodAttributes,
+    DEFAULT_CHAINABLE_SET, DEFAULT_OPTION_HANDLING, Field, FieldAttributes, FieldMethodAttributes,
+    Method, Resolved, StructAttributes, StructMethodAttributes,
+    option_handling::{extract_option_type, strip_option_and_ref, strip_ref},
 };
 use Method::{Get, GetMut, Set, With};
 use syn::{Ident, Type, Visibility, token::Pub};
@@ -15,6 +16,18 @@ pub(crate) struct Query<'a> {
 }
 
 impl<'a> Query<'a> {
+    pub(crate) fn new(
+        method: &'a Method,
+        field: &'a Field,
+        struct_attributes: &'a StructAttributes,
+    ) -> Self {
+        Self {
+            method,
+            field,
+            struct_attributes,
+        }
+    }
+
     pub(crate) fn field_method_attribute(&self) -> Option<&'a FieldMethodAttributes> {
         self.field
             .attributes
@@ -171,9 +184,9 @@ impl<'a> Query<'a> {
         if *opt_in || field_opt_in {
             decorated
                 && ((self.field.attributes.method_attributes.is_empty()
-                    && include.as_ref().is_some_and(|x| x.contains(self.method)))
+                    && include.contains(self.method))
                     || field_method_attr.is_some_and(|x| !x.skip))
-        } else if include.as_ref().is_some_and(|x| !x.contains(self.method)) {
+        } else if !include.contains(self.method) {
             field_method_attr.is_some_and(|x| !x.skip)
         } else {
             field_method_attr.is_none_or(|x| !x.skip)
@@ -182,64 +195,65 @@ impl<'a> Query<'a> {
         }
     }
 
-    pub(crate) fn deref_type(&self) -> &'a Type {
+    pub(crate) fn deref_type(&self) -> Option<&'a Type> {
         self.field_method_attribute()
             .and_then(|x| x.deref.as_ref())
-            .unwrap_or(
-                self.field
-                    .attributes
-                    .deref
-                    .as_ref()
-                    .unwrap_or(&self.field.ty),
-            )
+            .or(self.field.attributes.deref.as_ref())
+            .map(strip_ref)
     }
-}
 
-pub(crate) fn resolve<'a>(
-    method: &'a Method,
-    field: &'a Field,
-    struct_attributes: &'a StructAttributes,
-) -> Option<Resolved<'a>> {
-    let query = Query {
-        method,
-        field,
-        struct_attributes,
-    };
-    if !query.enabled() {
-        return None;
+    pub(crate) fn resolve(&self) -> Option<Resolved<'a>> {
+        if !self.enabled() {
+            return None;
+        }
+        let method = *self.method;
+        let vis = self.vis();
+        let fn_ident = self.fn_ident();
+        let variable_ident = self.variable_ident();
+        let argument_ident = self.argument_ident();
+        let doc = self.docs();
+        let deref_type = self.deref_type();
+        let ty = &self.field.ty;
+        let chainable_set = self.chainable_set();
+        let get_copy = self.is_get_copy();
+        let option_handling = self.option_handling();
+
+        Some(Resolved {
+            method,
+            vis,
+            fn_ident,
+            variable_ident,
+            argument_ident,
+            ty,
+            doc,
+            get_copy,
+            chainable_set,
+            deref_type,
+            option_handling,
+        })
     }
-    let vis = query.vis();
-    let fn_ident = query.fn_ident();
-    let variable_ident = query.variable_ident();
-    let argument_ident = query.argument_ident();
-    let doc = query.docs();
-    let deref_type = query.deref_type();
-    let ty = &field.ty;
-    let chainable_set = query.chainable_set();
-    let get_copy = query.is_get_copy();
 
-    Some(Resolved {
-        vis,
-        fn_ident,
-        variable_ident,
-        argument_ident,
-        ty,
-        doc,
-        get_copy,
-        chainable_set,
-        deref_type,
-    })
+    fn option_handling(&self) -> Option<OptionHandling<'a>> {
+        self.field_method_attribute()
+            .and_then(|x| x.option_handling)
+            .or(self.field.attributes.option_handling)
+            .or(self
+                .struct_method_attribute()
+                .and_then(|sma| sma.option_handling))
+            .or(self.struct_attributes.option_handling)
+            .unwrap_or(DEFAULT_OPTION_HANDLING)
+            .then_some(())?;
+
+        let ty = extract_option_type(&self.field.ty)?;
+        self.deref_type()
+            .map(strip_option_and_ref)
+            .map(OptionHandling::Deref)
+            .or_else(|| Some(OptionHandling::Ref(strip_ref(ty))))
+    }
 }
 
 #[cfg_attr(feature = "debug", derive(Debug))]
-pub(crate) struct Resolved<'a> {
-    pub(crate) vis: Cow<'a, Visibility>,
-    pub(crate) fn_ident: Cow<'a, Ident>,
-    pub(crate) variable_ident: Cow<'a, Ident>,
-    pub(crate) argument_ident: Cow<'a, Ident>,
-    pub(crate) ty: &'a Type,
-    pub(crate) doc: Option<Cow<'a, str>>,
-    pub(crate) get_copy: bool,
-    pub(crate) chainable_set: bool,
-    pub(crate) deref_type: &'a Type,
+pub(crate) enum OptionHandling<'a> {
+    Ref(&'a Type),
+    Deref(&'a Type),
 }
