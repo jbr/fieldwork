@@ -44,6 +44,7 @@ const DEFAULT_CHAINABLE_SET: bool = true;
 const DEFAULT_OPTION_HANDLING: bool = true;
 const DEFAULT_AUTO_DEREF: bool = true;
 const DEFAULT_AUTO_COPY: bool = true;
+const DEFAULT_RENAME_PREDICATES: bool = false;
 
 /// see crate-level documentation
 #[proc_macro_derive(Fieldwork, attributes(fieldwork))]

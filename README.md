@@ -49,13 +49,12 @@ This crate uses `#![deny(unsafe_code)]`.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
-#[fieldwork(get, set, get_mut, with)]
+#[fieldwork(get, set, get_mut, with, rename_predicates)]
 struct User {
     /// whether this user is an admin
     ///
     /// Note that this is distinct from the notion of group administration,
     /// for historical reasons
-    #[fieldwork(argument = is_admin, get = is_admin, get_mut = is_admin_mut)]
     admin: bool,
 
     /// the user's name
@@ -90,15 +89,15 @@ for historical reasons*/
 
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
-    pub fn is_admin_mut(&mut self) -> &mut bool {
+    pub fn admin_mut(&mut self) -> &mut bool {
         &mut self.admin
     }
     /**Sets whether this user is an admin, returning `&mut Self` for chaining
 
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
-    pub fn set_admin(&mut self, is_admin: bool) -> &mut Self {
-        self.admin = is_admin;
+    pub fn set_admin(&mut self, admin: bool) -> &mut Self {
+        self.admin = admin;
         self
     }
     /**Owned chainable setter for whether this user is an admin, returning `Self`
@@ -106,8 +105,8 @@ for historical reasons*/
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
     #[must_use]
-    pub fn with_admin(mut self, is_admin: bool) -> Self {
-        self.admin = is_admin;
+    pub fn with_admin(mut self, admin: bool) -> Self {
+        self.admin = admin;
         self
     }
     ///Borrows the user's name
@@ -153,6 +152,7 @@ for historical reasons*/
         &*self.id
     }
 }
+
 ```
 
 

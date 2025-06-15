@@ -69,15 +69,13 @@ fields](#how-fieldwork-selects-which-methods-to-generate-for-which-fields)
 
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
-#[fieldwork(get, set, get_mut, with)]
+#[fieldwork(get, set, get_mut, with, rename_predicates)]
 struct User {
     /// whether this user is an admin
     ///
     /// Note that this is distinct from the notion of group administration,
     /// for historical reasons
-    #[fieldwork(argument = is_admin, get = is_admin, get_mut = is_admin_mut)]
     admin: bool,
 
     /// the user's name
@@ -112,15 +110,15 @@ for historical reasons*/
 
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
-    pub fn is_admin_mut(&mut self) -> &mut bool {
+    pub fn admin_mut(&mut self) -> &mut bool {
         &mut self.admin
     }
     /**Sets whether this user is an admin, returning `&mut Self` for chaining
 
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
-    pub fn set_admin(&mut self, is_admin: bool) -> &mut Self {
-        self.admin = is_admin;
+    pub fn set_admin(&mut self, admin: bool) -> &mut Self {
+        self.admin = admin;
         self
     }
     /**Owned chainable setter for whether this user is an admin, returning `Self`
@@ -128,8 +126,8 @@ for historical reasons*/
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
     #[must_use]
-    pub fn with_admin(mut self, is_admin: bool) -> Self {
-        self.admin = is_admin;
+    pub fn with_admin(mut self, admin: bool) -> Self {
+        self.admin = admin;
         self
     }
     ///Borrows the user's name
@@ -234,7 +232,6 @@ Borrows the field. This can also be used to return a copy of the field using the
 #### Example:
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get)]
 struct User {
@@ -278,8 +275,6 @@ impl User {
 
 ```
 
-
-
 ### `set`
 
 By default, set returns `&mut self` for chainable setters. If you would prefer to return `()`, use
@@ -288,7 +283,6 @@ By default, set returns `&mut self` for chainable setters. If you would prefer t
 #### Example
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(set)]
 struct User {
@@ -326,7 +320,6 @@ impl User {
 #### Example
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get_mut)]
 struct User {
@@ -377,7 +370,6 @@ struct after modification.
 #### Example
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(with)]
 struct User {
@@ -424,7 +416,6 @@ otherwise overridden.  `#[fieldwork(vis = "pub")]` is the default. For `pub(crat
 This option allows you to specify a where clause for the implementation block, such as:
 
 ```rust
-# // fieldwork-docs-expand
 # trait Precious {}
 #[derive(fieldwork::Fieldwork, Clone)]
 #[fieldwork(get, set, get_mut, with, where_clause = "PocketContents: Precious")]
@@ -473,7 +464,6 @@ Opt out of Option detection with `option = false`. Instead of `get` returning `O
 Option<T>`. Default behavior is for Option detection to be enabled at the struct level.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork, Clone)]
 #[fieldwork(get, get_mut, option = false)]
 struct User {
@@ -503,7 +493,6 @@ Opt out of auto-deref at the struct level with `deref = false`. See the Deref se
 information.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork, Clone)]
 #[fieldwork(get, get_mut, deref = false)]
 struct User {
@@ -520,6 +509,34 @@ impl User {
     }
     pub fn name_mut(&mut self) -> &mut String {
         &mut self.name
+    }
+}
+
+```
+
+<h4 id="struct-rename_predicates">
+<code>rename_predicates</code>
+</h4>
+
+Rename all bool-returning methods to `is_{}` at the struct level with `rename_predicates` or
+`rename_predicates = true`.
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut, rename_predicates)]
+struct User {
+    admin: bool
+}
+```
+```rust
+// GENERATED
+# struct User { admin: bool, }
+impl User {
+    pub fn is_admin(&self) -> bool {
+        self.admin
+    }
+    pub fn admin_mut(&mut self) -> &mut bool {
+        &mut self.admin
     }
 }
 
@@ -543,7 +560,6 @@ Override the default documentation template for the specific method. Let's say w
 documentation to say "assigns" instead of "sets":
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(set(doc_template = "Assigns {}"))]
 struct User {
@@ -580,7 +596,6 @@ Override the method naming for all generated functions of this type. Let's say w
 signature to be `assign_admin` instead of `set_admin` and `assign_name`:
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(set(template = "assign_{}"))]
 struct User {
@@ -616,7 +631,6 @@ As discussed in the [Set](#set) section above, set returns `&mut Self` by defaul
 specify `chain = false`:
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(set(chain = false))]
 struct User {
@@ -659,7 +673,6 @@ Opt out of auto-deref at the struct method level with `deref = false`. See the D
 information.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork, Clone)]
 #[fieldwork(get, get_mut(deref = false))]
 struct User {
@@ -688,7 +701,6 @@ By default, common Copy types such as bool will be returned by copy instead of b
 out of this behavior for a whole struct, use `#[fieldwork(get(copy = false))]`.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get(copy = false))]
 struct Collection {
@@ -715,7 +727,6 @@ impl Collection {
 
 ```
 
-
 <br/><hr/><br/>
 
 ### Field Configuration
@@ -725,7 +736,6 @@ impl Collection {
 Omit this field from all generated functions.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set)]
 struct User {
@@ -771,7 +781,6 @@ impl User {
 Change the name of this field for all generated methods.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set)]
 struct User {
@@ -804,7 +813,6 @@ Change the name of the argument for `with` and `set`. This is occasionally impor
 and lsp.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(with, set)]
 struct User {
@@ -838,7 +846,6 @@ impl User {
 Change the visibility for all generated methods for a specific field
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set)]
 struct User {
@@ -884,7 +891,6 @@ If set to a specific type, dereference to the specific type. Some types such as 
 quoting.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, get_mut)]
 struct User {
@@ -950,7 +956,6 @@ Specify the full function name for this particular method. Note that this overri
 and field-level [`rename`](#rename).
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 struct User {
     #[fieldwork(get(rename = is_an_admin))]
@@ -973,7 +978,6 @@ impl User {
 If there are no other configuration options needed, this can be provided with the following shortcut:
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 struct User {
     #[fieldwork(get = is_an_admin)]
@@ -1000,7 +1004,6 @@ impl User {
 Specify the name of the argument for this specific method and field.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 struct User {
     #[fieldwork(set(argument = is_an_admin))]
@@ -1027,7 +1030,6 @@ impl User {
 Override the documentation for this specific method and field.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 struct User {
     #[fieldwork(set(doc = "Specify whether this user can administer this system"))]
@@ -1053,7 +1055,6 @@ impl User {
 To return `()` from this specific `set` method instead of `&mut Self`, provide `chain = false`.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 struct User {
     /// whether this user is an admin
@@ -1081,7 +1082,6 @@ this behavior for a specific field, use `#[fieldwork(get(copy))]`. To opt out of
 behavior for common types such as `bool`, use `#[fieldwork(get(copy = false))]`.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 struct Collection {
     /// length
@@ -1106,7 +1106,6 @@ impl Collection {
 Omit this field from the particular method.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set)]
 struct User {
@@ -1148,7 +1147,6 @@ such as `[u8]` will require quoting. This can also be set to true or false to op
 detection for common types.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(deref = false)]
 struct User {
@@ -1232,7 +1230,6 @@ argument.  It is also possible to specify `opt_in` at a field level, which will 
 methods specified on that field.
 
 ```rust
-# // fieldwork-docs-expand
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(opt_in, get(template = "get_{}"))]
 struct User {
