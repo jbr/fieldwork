@@ -8,9 +8,9 @@ struct MyStruct<T> {
     generic: T,
 }
 impl<T> MyStruct<T> {
-    ///Borrows this number is cool
-    pub fn number(&self) -> &usize {
-        &self.number
+    ///Returns a copy of this number is cool
+    pub fn number(&self) -> usize {
+        self.number
     }
     ///Sets this number is cool, returning `&mut Self` for chaining
     pub fn set_number(&mut self, number: usize) -> &mut Self {

@@ -110,8 +110,8 @@ struct MyStruct {
     only_get: (),
 }
 impl MyStruct {
-    pub fn number(&self) -> &usize {
-        &self.number
+    pub fn number(&self) -> usize {
+        self.number
     }
     pub fn number_mut(&mut self) -> &mut usize {
         &mut self.number

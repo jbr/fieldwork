@@ -3,11 +3,9 @@
 struct MyStruct<T: Copy> {
     number: usize,
 
-    /// generated
     enabled: bool,
 
     #[fieldwork(get(copy))]
-    /// generated
     generic: T,
 
     #[fieldwork(get(copy = true))]
@@ -17,7 +15,9 @@ struct MyStruct<T: Copy> {
 }
 
 #[derive(fieldwork::Fieldwork)]
+#[fieldwork(get)]
 struct HoldsAReference<'a> {
-    #[fieldwork(get)]
     name: &'a str,
+
+    mut_ref_not_copy: &'a mut (),
 }

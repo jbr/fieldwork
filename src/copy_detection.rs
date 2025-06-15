@@ -1,4 +1,4 @@
-use syn::{Path, Type, TypePath};
+use syn::{Path, Type, TypePath, TypeReference};
 
 pub(crate) fn enable_copy_for_type(ty: &Type) -> bool {
     match ty {
@@ -12,10 +12,12 @@ pub(crate) fn enable_copy_for_type(ty: &Type) -> bool {
 
             let ident = &last_segment.ident;
 
-            ident == "bool"
+            ident == "bool" || ident == "usize" || ident == "u8"
         }
 
-        Type::Reference(_) => true,
+        Type::Reference(TypeReference {
+            mutability: None, ..
+        }) => true,
 
         _ => false,
     }

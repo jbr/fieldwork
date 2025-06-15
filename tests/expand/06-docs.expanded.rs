@@ -18,9 +18,9 @@ struct MyStruct<T> {
     generic: T,
 }
 impl<T> MyStruct<T> {
-    ///Borrows this number is cool
-    pub fn number_in_seconds(&self) -> &usize {
-        &self.number
+    ///Returns a copy of this number is cool
+    pub fn number_in_seconds(&self) -> usize {
+        self.number
     }
     ///Mutably borrow this number is cool
     pub fn number_in_seconds_mut(&mut self) -> &mut usize {
@@ -117,8 +117,8 @@ struct DocTemplates<T> {
 }
 impl<T> DocTemplates<T> {
     ///# ggggets the cool number
-    pub fn number(&self) -> &usize {
-        &self.number
+    pub fn number(&self) -> usize {
+        self.number
     }
     ///# gmut the cool number
     pub fn number_mut(&mut self) -> &mut usize {
