@@ -31,7 +31,7 @@ where
         self
     }
     ///Returns a copy of is this struct on or not
-    pub fn enabled(&self) -> bool {
+    pub fn is_enabled(&self) -> bool {
         self.enabled
     }
     ///Mutably borrow is this struct on or not

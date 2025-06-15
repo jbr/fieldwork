@@ -1,4 +1,4 @@
-#[fieldwork(get(template = "get_{}"), set, with, get_mut)]
+#[fieldwork(get(template = "get_{}"), set(template = "assign_{}"), with, get_mut)]
 struct MyStruct<T> {
     /// this number is cool
     #[fieldwork(rename = number_in_seconds)]
@@ -18,7 +18,7 @@ impl<T> MyStruct<T> {
         &mut self.number
     }
     ///Sets this number is cool, returning `&mut Self` for chaining
-    pub fn set_number_in_seconds(&mut self, number_in_seconds: usize) -> &mut Self {
+    pub fn assign_number_in_seconds(&mut self, number_in_seconds: usize) -> &mut Self {
         self.number = number_in_seconds;
         self
     }
@@ -37,7 +37,7 @@ impl<T> MyStruct<T> {
         &mut self.enabled
     }
     ///Sets is this struct on or not, returning `&mut Self` for chaining
-    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
+    pub fn assign_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
@@ -56,7 +56,7 @@ impl<T> MyStruct<T> {
         &mut self.generic
     }
     ///Sets it's really whatever you want, returning `&mut Self` for chaining
-    pub fn set_generic(&mut self, generic: T) -> &mut Self {
+    pub fn assign_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
         self
     }

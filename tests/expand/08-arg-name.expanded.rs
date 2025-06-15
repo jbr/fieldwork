@@ -31,7 +31,7 @@ impl<T> MyStruct<T> {
         self
     }
     ///Returns a copy of whether something is enabled
-    pub fn enabled(&self) -> bool {
+    pub fn is_enabled(&self) -> bool {
         self.enabled
     }
     ///Mutably borrow whether something is enabled

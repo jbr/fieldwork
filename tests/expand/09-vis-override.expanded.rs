@@ -24,7 +24,7 @@ impl MyStruct {
         self
     }
     ///Returns a copy of this one overrides only the getter to be fully pub
-    pub fn enabled(&self) -> bool {
+    pub fn is_enabled(&self) -> bool {
         self.enabled
     }
     ///Sets this one overrides only the getter to be fully pub, returning `&mut Self` for chaining
@@ -33,7 +33,7 @@ impl MyStruct {
         self
     }
     ///Returns a copy of this one overrides only the getter to be private (no `pub`)
-    fn active(&self) -> bool {
+    fn is_active(&self) -> bool {
         self.active
     }
     ///Sets this one overrides only the getter to be private (no `pub`), returning `&mut Self` for chaining
@@ -82,7 +82,7 @@ impl MyStruct2 {
         self
     }
     ///Returns a copy of this one overrides only the getter to be fully pub
-    pub(crate) fn enabled(&self) -> bool {
+    pub(crate) fn is_enabled(&self) -> bool {
         self.enabled
     }
     ///Sets this one overrides only the getter to be fully pub, returning `&mut Self` for chaining
@@ -91,7 +91,7 @@ impl MyStruct2 {
         self
     }
     ///Returns a copy of this one overrides only the getter to be private (no `pub`)
-    fn active(&self) -> bool {
+    fn is_active(&self) -> bool {
         self.active
     }
     ///Sets this one overrides only the getter to be private (no `pub`), returning `&mut Self` for chaining

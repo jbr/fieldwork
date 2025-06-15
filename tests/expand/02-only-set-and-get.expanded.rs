@@ -18,7 +18,7 @@ impl<T> MyStruct<T> {
         self
     }
     ///Returns a copy of is this struct on or not
-    pub fn enabled(&self) -> bool {
+    pub fn is_enabled(&self) -> bool {
         self.enabled
     }
     ///Sets is this struct on or not, returning `&mut Self` for chaining

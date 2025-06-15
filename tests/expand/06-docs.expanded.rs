@@ -38,7 +38,7 @@ impl<T> MyStruct<T> {
         self
     }
     ///get whether it's enabled
-    pub fn enabled(&self) -> bool {
+    pub fn is_enabled(&self) -> bool {
         self.enabled
     }
     ///mutably borrow enabled
@@ -138,7 +138,7 @@ extra info here*/
         self
     }
     ///get whether it's enabled
-    pub fn enabled(&self) -> bool {
+    pub fn is_enabled(&self) -> bool {
         self.enabled
     }
     ///mutably borrow enabled
