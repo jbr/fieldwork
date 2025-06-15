@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/jbr/fieldwork/compare/v0.2.0...v0.3.0) - 2025-06-15
+
+### Added
+
+- [**breaking**] add usize and u8 to copy detection
+- [**breaking**] copy type detection now includes references
+- [**breaking**] auto enable copy for common types (currently just bool)
+- [**breaking**] Deref detection for common types
+
+### Fixed
+
+- add missing support for specifying a custom deref type within an option.
+- remove Cow handling in extract_option_type
+
 ## [0.2.0](https://github.com/jbr/fieldwork/compare/v0.1.5...v0.2.0) - 2025-06-14
 
 ### Added
