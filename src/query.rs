@@ -1,10 +1,10 @@
 use std::borrow::Cow;
 
 use crate::{
-    DEFAULT_AUTO_COPY, DEFAULT_AUTO_DEREF, DEFAULT_CHAINABLE_SET, DEFAULT_OPTION_HANDLING, Field,
-    FieldAttributes, FieldMethodAttributes, Method, Resolved, StructAttributes,
-    StructMethodAttributes,
-    copy_detection::enable_copy_for_type,
+    DEFAULT_AUTO_COPY, DEFAULT_AUTO_DEREF, DEFAULT_CHAINABLE_SET, DEFAULT_OPTION_HANDLING,
+    DEFAULT_RENAME_PREDICATES, Field, FieldAttributes, FieldMethodAttributes, Method, Resolved,
+    StructAttributes, StructMethodAttributes,
+    copy_detection::{enable_copy_for_type, is_type},
     deref_handling::auto_deref,
     option_handling::{extract_option_type, strip_ref},
 };
@@ -85,6 +85,20 @@ impl<'a> Query<'a> {
         Cow::Owned(Visibility::Public(Pub::default()))
     }
 
+    fn rename_predicates(&self) -> bool {
+        [
+            self.field_method_attribute()
+                .and_then(|x| x.rename_predicates),
+            self.field.attributes.rename_predicates,
+            self.struct_method_attribute()
+                .and_then(|x| x.rename_predicates),
+            self.struct_attributes.rename_predicates,
+        ]
+        .into_iter()
+        .find_map(|x| x)
+        .unwrap_or(DEFAULT_RENAME_PREDICATES)
+    }
+
     fn fn_ident(&self) -> Cow<'a, Ident> {
         if let Some(fn_ident) = self
             .field_method_attribute()
@@ -109,7 +123,11 @@ impl<'a> Query<'a> {
                 self.field.ident.span(),
             ));
         }
+
         match self.method {
+            Get if self.rename_predicates() && is_type(&self.field.ty, "bool") => {
+                Cow::Owned(Ident::new(&format!("is_{ident}"), self.field.ident.span()))
+            }
             Get => Cow::Borrowed(ident),
             Set => Cow::Owned(Ident::new(&format!("set_{ident}"), self.field.ident.span())),
             With => Cow::Owned(Ident::new(

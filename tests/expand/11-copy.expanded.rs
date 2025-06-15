@@ -12,7 +12,7 @@ impl<T: Copy> MyStruct<T> {
     pub fn number(&self) -> usize {
         self.number
     }
-    pub fn enabled(&self) -> bool {
+    pub fn is_enabled(&self) -> bool {
         self.enabled
     }
     pub fn generic(&self) -> T {

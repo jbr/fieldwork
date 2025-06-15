@@ -76,7 +76,6 @@ struct User {
     ///
     /// Note that this is distinct from the notion of group administration,
     /// for historical reasons
-    #[fieldwork(argument = is_admin, get = is_admin, get_mut = is_admin_mut)]
     admin: bool,
 
     /// the user's name
@@ -111,15 +110,15 @@ for historical reasons*/
 
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
-    pub fn is_admin_mut(&mut self) -> &mut bool {
+    pub fn admin_mut(&mut self) -> &mut bool {
         &mut self.admin
     }
     /**Sets whether this user is an admin, returning `&mut Self` for chaining
 
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
-    pub fn set_admin(&mut self, is_admin: bool) -> &mut Self {
-        self.admin = is_admin;
+    pub fn set_admin(&mut self, admin: bool) -> &mut Self {
+        self.admin = admin;
         self
     }
     /**Owned chainable setter for whether this user is an admin, returning `Self`
@@ -127,8 +126,8 @@ for historical reasons*/
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
     #[must_use]
-    pub fn with_admin(mut self, is_admin: bool) -> Self {
-        self.admin = is_admin;
+    pub fn with_admin(mut self, admin: bool) -> Self {
+        self.admin = admin;
         self
     }
     ///Borrows the user's name
@@ -256,7 +255,7 @@ generates
 # struct User { admin: bool, name: String, age: Option<u8>, favorite_color: Option<String> }
 impl User {
     ///Returns a copy of whether this user is an admin
-    pub fn admin(&self) -> bool {
+    pub fn is_admin(&self) -> bool {
         self.admin
     }
     ///Borrows the user's name
@@ -274,6 +273,8 @@ impl User {
 }
 ```
 
+Note that the `get` method for `admin` is renamed to `is_admin` because it returns `bool`. To opt
+out of this behavior, set `rename_predicates = false` at any configuration level.
 
 
 ### `set`
@@ -508,6 +509,29 @@ impl User {
 }
 ```
 
+<h4 id="struct-rename_predicates">
+<code>rename_predicates</code>
+</h4>
+
+Opt out of predicate renaming to is_{} at the struct level with `rename_predicates = false`.
+
+```rust
+#[derive(fieldwork::Fieldwork, Clone)]
+#[fieldwork(get, get_mut, rename_predicates = false)]
+struct User {
+    admin: bool
+}
+```
+```rust
+// GENERATED
+# struct User { admin: bool }
+impl User {
+    pub fn admin(&self) -> bool {
+        self.admin
+    }
+}
+```
+
 
 
 
@@ -687,7 +711,6 @@ impl Collection {
     }
 }
 ```
-
 
 <br/><hr/><br/>
 
@@ -902,6 +925,32 @@ struct or struct method level, opt back in with `option` or `option = true` for 
 in `#[fieldwork(option)]` or `#[fieldwork(option = true)]`. See [option](#struct-option) above for
 more information.
 
+
+<h4 id="field-rename_predicates">
+<code>rename_predicates</code>
+</h4>
+
+Opt out of predicate renaming to is_{} at the field level with `rename_predicates = false`, or opt
+back in for a specific field if it has been disabled at the struct level. Note that this only
+impacts `get`.
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get)]
+struct User {
+    #[fieldwork(rename_predicates = false)]
+    needs_update: bool
+}
+```
+```rust
+// GENERATED
+# struct User { needs_update: bool }
+impl User {
+    pub fn needs_update(&self) -> bool {
+        self.needs_update
+    }
+}
+```
 
 <br/><hr/><br/>
 

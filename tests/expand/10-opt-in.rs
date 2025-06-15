@@ -5,7 +5,7 @@ struct MyStruct<T> {
     number: usize,
 
     /// generated
-    #[fieldwork(rename = is_enabled)]
+    #[fieldwork]
     enabled: bool,
 
     /// generated

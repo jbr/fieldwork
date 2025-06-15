@@ -21,6 +21,7 @@ pub(crate) struct FieldMethodAttributes {
     pub(crate) deref: Option<Type>,
     pub(crate) option_handling: Option<bool>,
     pub(crate) auto_deref: Option<bool>,
+    pub(crate) rename_predicates: Option<bool>,
 }
 
 impl FieldMethodAttributes {
@@ -37,6 +38,7 @@ impl FieldMethodAttributes {
             skip: false,
             option_handling: None,
             auto_deref: None,
+            rename_predicates: None,
         }
     }
 
@@ -110,6 +112,7 @@ impl FieldMethodAttributes {
             ("skip", _) => self.skip = value,
             ("option", _) => self.option_handling = Some(value),
             ("deref", _) => self.auto_deref = Some(value),
+            ("rename_predicate" | "rename_predicates", _) => self.rename_predicates = Some(value),
             _ => return Err(Error::new(span, "not recognized")),
         }
 

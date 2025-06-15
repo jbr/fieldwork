@@ -1,5 +1,5 @@
 #[derive(fieldwork::Fieldwork)]
-#[fieldwork(get(template = "get_{}"), set, with, get_mut)]
+#[fieldwork(get(template = "get_{}"), set(template = "assign_{}"), with, get_mut)]
 struct MyStruct<T> {
     /// this number is cool
     #[fieldwork(rename = number_in_seconds)]
