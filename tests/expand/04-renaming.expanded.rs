@@ -12,9 +12,9 @@ struct MyStruct<T> {
     another: (),
 }
 impl<T> MyStruct<T> {
-    ///Borrows this number is cool
-    pub fn number_in_seconds(&self) -> &usize {
-        &self.number
+    ///Returns a copy of this number is cool
+    pub fn number_in_seconds(&self) -> usize {
+        self.number
     }
     ///Mutably borrow this number is cool
     pub fn number_in_seconds_mut(&mut self) -> &mut usize {
@@ -98,9 +98,9 @@ struct WithTemplate<T> {
     generic: T,
 }
 impl<T> WithTemplate<T> {
-    ///Borrows this number is cool
-    pub fn get_number_in_seconds(&self) -> &usize {
-        &self.number
+    ///Returns a copy of this number is cool
+    pub fn get_number_in_seconds(&self) -> usize {
+        self.number
     }
     ///Sets this number is cool, returning `&mut Self` for chaining
     pub fn put_number_in_seconds(&mut self, number_in_seconds: usize) -> &mut Self {

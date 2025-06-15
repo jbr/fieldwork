@@ -10,9 +10,9 @@ struct MyStruct<T> {
     generic: T,
 }
 impl<T> MyStruct<T> {
-    ///Borrows this number is cool
-    pub fn number(&self) -> &usize {
-        &self.number
+    ///Returns a copy of this number is cool
+    pub fn number(&self) -> usize {
+        self.number
     }
     ///Mutably borrow this number is cool
     pub fn number_mut(&mut self) -> &mut usize {
@@ -42,9 +42,9 @@ struct SetAndGet<T> {
     generic: T,
 }
 impl<T> SetAndGet<T> {
-    ///Borrows this number is cool
-    pub fn number(&self) -> &usize {
-        &self.number
+    ///Returns a copy of this number is cool
+    pub fn number(&self) -> usize {
+        self.number
     }
     ///Sets this number is cool, returning `&mut Self` for chaining
     pub fn set_number(&mut self, number: usize) -> &mut Self {

@@ -14,9 +14,9 @@ struct MyStruct {
     double_override: (),
 }
 impl MyStruct {
-    ///Borrows default visibility (should be `pub(crate)`)
-    pub(crate) fn number(&self) -> &usize {
-        &self.number
+    ///Returns a copy of default visibility (should be `pub(crate)`)
+    pub(crate) fn number(&self) -> usize {
+        self.number
     }
     ///Sets default visibility (should be `pub(crate)`), returning `&mut Self` for chaining
     pub(crate) fn set_number(&mut self, number: usize) -> &mut Self {
@@ -72,9 +72,9 @@ struct MyStruct2 {
     method_override_field: (),
 }
 impl MyStruct2 {
-    ///Borrows default visibility
-    pub fn number(&self) -> &usize {
-        &self.number
+    ///Returns a copy of default visibility
+    pub fn number(&self) -> usize {
+        self.number
     }
     ///Sets default visibility, returning `&mut Self` for chaining
     pub fn set_number(&mut self, number: usize) -> &mut Self {

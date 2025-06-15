@@ -11,9 +11,9 @@ struct MyStruct<T> {
     generic: T,
 }
 impl<T> MyStruct<T> {
-    ///Borrows the number
-    pub fn number(&self) -> &usize {
-        &self.number
+    ///Returns a copy of the number
+    pub fn number(&self) -> usize {
+        self.number
     }
     ///Mutably borrow the number
     pub fn number_mut(&mut self) -> &mut usize {

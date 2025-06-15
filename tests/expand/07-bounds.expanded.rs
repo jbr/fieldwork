@@ -11,9 +11,9 @@ impl<T> MyStruct<T>
 where
     T: Clone,
 {
-    ///Borrows this number is cool
-    pub fn number(&self) -> &usize {
-        &self.number
+    ///Returns a copy of this number is cool
+    pub fn number(&self) -> usize {
+        self.number
     }
     ///Mutably borrow this number is cool
     pub fn number_mut(&mut self) -> &mut usize {
