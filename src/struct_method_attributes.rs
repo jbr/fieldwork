@@ -19,6 +19,7 @@ pub(crate) struct StructMethodAttributes {
     pub(crate) auto_deref: Option<bool>,
     pub(crate) auto_copy: Option<bool>,
     pub(crate) rename_predicates: Option<bool>,
+    pub(crate) option_set_some: Option<bool>,
 }
 
 impl StructMethodAttributes {
@@ -34,6 +35,7 @@ impl StructMethodAttributes {
             auto_deref: None,
             auto_copy: None,
             rename_predicates: None,
+            option_set_some: None,
         }
     }
 
@@ -90,13 +92,14 @@ impl StructMethodAttributes {
         lhs: &str,
         value: bool,
     ) -> syn::Result<()> {
-        match (lhs, self.method) {
-            ("chain", Method::Set) => self.chainable_set = Some(value),
-            ("copy", Method::Get) => self.auto_copy = Some(value),
-            ("rename_predicate" | "rename_predicates", _) => self.rename_predicates = Some(value),
-            ("skip", _) => self.skip = value,
-            ("option_borrow_inner", _) => self.option_handling = Some(value),
-            ("deref", _) => self.auto_deref = Some(value),
+        match lhs {
+            "chain" => self.chainable_set = Some(value),
+            "copy" => self.auto_copy = Some(value),
+            "skip" => self.skip = value,
+            "rename_predicate" | "rename_predicates" => self.rename_predicates = Some(value),
+            "deref" => self.auto_deref = Some(value),
+            "option_borrow_inner" => self.option_handling = Some(value),
+            "option_set_some" => self.option_set_some = Some(value),
             _ => return Err(Error::new(span, "not recognized")),
         }
         Ok(())

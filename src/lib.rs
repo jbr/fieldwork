@@ -45,6 +45,7 @@ const DEFAULT_OPTION_HANDLING: bool = true;
 const DEFAULT_AUTO_DEREF: bool = true;
 const DEFAULT_AUTO_COPY: bool = true;
 const DEFAULT_RENAME_PREDICATES: bool = false;
+const DEFAULT_OPTION_SET_SOME: bool = false;
 
 /// see crate-level documentation
 #[proc_macro_derive(Fieldwork, attributes(fieldwork))]

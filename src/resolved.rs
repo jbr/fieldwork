@@ -3,7 +3,7 @@ use Method::{Get, GetMut, Set, With};
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use std::borrow::Cow;
-use syn::{Ident, Type, Visibility};
+use syn::{Expr, Ident, Type, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Resolved<'a> {
@@ -18,6 +18,8 @@ pub(crate) struct Resolved<'a> {
     pub(crate) chainable_set: bool,
     pub(crate) deref_type: Option<Cow<'a, Type>>,
     pub(crate) option_handling: Option<OptionHandling<'a>>,
+    pub(crate) assigned_value: Expr,
+    pub(crate) argument_ty: Cow<'a, Type>,
 }
 
 impl Resolved<'_> {
@@ -80,9 +82,10 @@ impl Resolved<'_> {
             fn_ident,
             variable_ident,
             argument_ident,
-            ty,
             doc,
             chainable_set,
+            argument_ty,
+            assigned_value,
             ..
         } = self;
         let doc = doc.as_deref().map(|d| quote!(#[doc = #d]));
@@ -90,16 +93,16 @@ impl Resolved<'_> {
         if *chainable_set {
             quote! {
                 #doc
-                #vis fn #fn_ident(&mut self, #argument_ident: #ty) -> &mut Self {
-                    self.#variable_ident = #argument_ident;
+                #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) -> &mut Self {
+                    self.#variable_ident = #assigned_value;
                     self
                 }
             }
         } else {
             quote! {
                 #doc
-                #vis fn #fn_ident(&mut self, #argument_ident: #ty) {
-                    self.#variable_ident = #argument_ident;
+                #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) {
+                    self.#variable_ident = #assigned_value;
                 }
             }
         }
@@ -156,16 +159,17 @@ impl Resolved<'_> {
             fn_ident,
             variable_ident,
             argument_ident,
-            ty,
             doc,
+            argument_ty,
+            assigned_value,
             ..
         } = self;
         let doc = doc.as_deref().map(|d| quote!(#[doc = #d]));
         quote! {
             #doc
             #[must_use]
-            #vis fn #fn_ident(mut self, #argument_ident: #ty) -> Self {
-                self.#variable_ident = #argument_ident;
+            #vis fn #fn_ident(mut self, #argument_ident: #argument_ty) -> Self {
+                self.#variable_ident = #assigned_value;
                 self
             }
         }
