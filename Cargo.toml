@@ -1,3 +1,6 @@
+[workspace]
+members = [".", "docs-gen"]
+
 [package]
 name = "fieldwork"
 version = "0.3.0"
@@ -14,6 +17,7 @@ debug = ["syn/extra-traits"]
 
 [lib]
 proc-macro = true
+
 
 [dependencies]
 proc-macro2 = "1.0.95"
