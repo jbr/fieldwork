@@ -1,0 +1,13 @@
+[package]
+name = "docs-gen"
+version = "0.1.0"
+edition = "2021"
+description = "Documentation generation tool for fieldwork"
+publish = false
+
+[dependencies]
+fieldwork = { path = ".." }
+prettyplease = "0.2.35"
+quote = "1.0.40"
+regex = "1.11.1"
+syn = { version = "2.0.104", features = ["full", "extra-traits"] }
