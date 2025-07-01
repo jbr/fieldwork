@@ -58,7 +58,7 @@ impl CommonSettings {
             "into" => self.into = Some(value),
             "copy" => self.get_copy = Some(value),
             "chain" => self.chainable_set = Some(value),
-            "option_borrow_inner" => self.option_borrow_inner = Some(value),
+            "option" | "option_borrow_inner" => self.option_borrow_inner = Some(value),
             "opt_in" => self.opt_in = value,
             "skip" => self.skip = value,
             "deref" => self.auto_deref = Some(value),

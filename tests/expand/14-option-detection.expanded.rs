@@ -174,3 +174,17 @@ impl OptionAndDerefInteraction {
         self.e.as_deref_mut()
     }
 }
+#[fieldwork(get, option = false)]
+struct BackwardsCompat {
+    #[fieldwork(option)]
+    borrow_inner: Option<()>,
+    not_borrow_inner: Option<String>,
+}
+impl BackwardsCompat {
+    pub fn borrow_inner(&self) -> Option<&()> {
+        self.borrow_inner.as_ref()
+    }
+    pub fn not_borrow_inner(&self) -> &Option<String> {
+        &self.not_borrow_inner
+    }
+}
