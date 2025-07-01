@@ -1,28 +1,22 @@
 use proc_macro2::Span;
 use syn::{
     Attribute, Error, Expr, ExprAssign, ExprCall, ExprLit, ExprPath, Ident, Lit, LitBool, LitStr,
-    Meta, MetaList, Path, Type, TypePath, Visibility, punctuated::Punctuated, spanned::Spanned,
-    token::Comma,
+    Meta, MetaList, Path, Type, TypePath, punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
 
-use crate::{FieldMethodAttributes, Method};
+use crate::{CommonSettings, FieldMethodAttributes, Method};
 
 // this represents the configuration for the field
 #[derive(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct FieldAttributes {
     pub(crate) decorated: bool,
-    pub(crate) skip: bool,
     pub(crate) fn_ident: Option<Ident>,
-    pub(crate) vis: Option<Visibility>,
     pub(crate) argument_ident: Option<Ident>,
     pub(crate) method_attributes: Vec<FieldMethodAttributes>,
     pub(crate) deref: Option<Type>,
-    pub(crate) opt_in: bool,
-    pub(crate) option_borrow_inner: Option<bool>,
-    pub(crate) auto_deref: Option<bool>,
-    pub(crate) rename_predicates: Option<bool>,
-    pub(crate) option_set_some: Option<bool>,
+
+    pub(crate) common_settings: CommonSettings,
 }
 
 impl FieldAttributes {
@@ -104,16 +98,17 @@ impl FieldAttributes {
     }
 
     fn handle_assign_str_lit(&mut self, span: Span, lhs: &str, rhs: &LitStr) -> Result<(), Error> {
-        match lhs {
-            "vis" => self.vis = Some(rhs.parse()?),
-            "rename" => self.fn_ident = Some(rhs.parse()?),
-            "deref" => self.deref = Some(rhs.parse()?),
-            "argument" => self.argument_ident = Some(rhs.parse()?),
-            _ => {
-                self.method_attributes.push(FieldMethodAttributes::new(
-                    Method::from_str_with_span(lhs, span)?,
-                    Some(rhs.parse()?),
-                ));
+        if !self.common_settings.handle_assign_str_lit(lhs, rhs)? {
+            match lhs {
+                "rename" => self.fn_ident = Some(rhs.parse()?),
+                "deref" => self.deref = Some(rhs.parse()?),
+                "argument" => self.argument_ident = Some(rhs.parse()?),
+                _ => {
+                    self.method_attributes.push(FieldMethodAttributes::new(
+                        Method::from_str_with_span(lhs, span)?,
+                        Some(rhs.parse()?),
+                    ));
+                }
             }
         }
         Ok(())
@@ -141,21 +136,16 @@ impl FieldAttributes {
     }
 
     fn handle_assign_bool_lit(&mut self, span: Span, lhs: &str, value: bool) -> Result<(), Error> {
-        match lhs {
-            "option_borrow_inner" => self.option_borrow_inner = Some(value),
-            "opt_in" => self.opt_in = value,
-            "skip" => self.skip = value,
-            "deref" => self.auto_deref = Some(value),
-            "rename_predicate" | "rename_predicates" => self.rename_predicates = Some(value),
-            "option_set_some" => self.option_set_some = Some(value),
-            other if value => {
-                self.method_attributes.push(FieldMethodAttributes::new(
-                    Method::from_str_with_span(other, span)?,
-                    None,
-                ));
-            }
-            _ => return Err(Error::new(span, "not recognized")),
+        if self.common_settings.handle_assign_bool_lit(lhs, value) {
+            Ok(())
+        } else if value {
+            self.method_attributes.push(FieldMethodAttributes::new(
+                Method::from_str_with_span(lhs, span)?,
+                None,
+            ));
+            Ok(())
+        } else {
+            Err(Error::new(span, "not recognized"))
         }
-        Ok(())
     }
 }

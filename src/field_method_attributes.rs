@@ -2,27 +2,21 @@ use proc_macro2::Span;
 use std::string::ToString;
 use syn::{
     Error, Expr, ExprAssign, ExprLit, ExprPath, Ident, Lit, LitBool, LitStr, Path, Type, TypePath,
-    Visibility, punctuated::Punctuated, spanned::Spanned, token::Comma,
+    punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
 
-use crate::Method;
+use crate::{CommonSettings, Method};
 
 // this represents the configuration for the field, for a particular method
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct FieldMethodAttributes {
     pub(crate) method: Method,
-    pub(crate) skip: bool,
     pub(crate) fn_ident: Option<Ident>,
     pub(crate) argument_ident: Option<Ident>,
     pub(crate) doc: Option<String>,
-    pub(crate) vis: Option<Visibility>,
-    pub(crate) chainable_set: Option<bool>,
-    pub(crate) get_copy: Option<bool>,
     pub(crate) deref: Option<Type>,
-    pub(crate) option_borrow_inner: Option<bool>,
-    pub(crate) auto_deref: Option<bool>,
-    pub(crate) rename_predicates: Option<bool>,
-    pub(crate) option_set_some: Option<bool>,
+
+    pub(crate) common_settings: CommonSettings,
 }
 
 impl FieldMethodAttributes {
@@ -32,15 +26,8 @@ impl FieldMethodAttributes {
             fn_ident,
             argument_ident: None,
             doc: None,
-            vis: None,
-            chainable_set: None,
-            get_copy: None,
             deref: None,
-            skip: false,
-            option_borrow_inner: None,
-            auto_deref: None,
-            rename_predicates: None,
-            option_set_some: None,
+            common_settings: CommonSettings::default(),
         }
     }
 
@@ -96,30 +83,24 @@ impl FieldMethodAttributes {
     }
 
     fn handle_assign_str_lit(&mut self, span: Span, lhs: &str, rhs: &LitStr) -> syn::Result<()> {
-        match lhs {
-            "vis" => self.vis = Some(rhs.parse()?),
-            "rename" => self.fn_ident = Some(rhs.parse()?),
-            "argument" => self.argument_ident = Some(rhs.parse()?),
-            "deref" => self.deref = Some(rhs.parse()?),
-            "doc" => self.doc = Some(rhs.value()),
-            _ => return Err(Error::new(span, "not recognized")),
+        if !self.common_settings.handle_assign_str_lit(lhs, rhs)? {
+            match lhs {
+                "rename" => self.fn_ident = Some(rhs.parse()?),
+                "argument" => self.argument_ident = Some(rhs.parse()?),
+                "deref" => self.deref = Some(rhs.parse()?),
+                "doc" => self.doc = Some(rhs.value()),
+                _ => return Err(Error::new(span, "not recognized")),
+            }
         }
         Ok(())
     }
 
     fn handle_assign_bool_lit(&mut self, span: Span, lhs: &str, value: bool) -> syn::Result<()> {
-        match lhs {
-            "chain" => self.chainable_set = Some(value),
-            "copy" => self.get_copy = Some(value),
-            "skip" => self.skip = value,
-            "option_borrow_inner" => self.option_borrow_inner = Some(value),
-            "deref" => self.auto_deref = Some(value),
-            "option_set_some" => self.option_set_some = Some(value),
-            "rename_predicate" | "rename_predicates" => self.rename_predicates = Some(value),
-            _ => return Err(Error::new(span, "not recognized")),
+        if self.common_settings.handle_assign_bool_lit(lhs, value) {
+            Ok(())
+        } else {
+            Err(Error::new(span, "not recognized"))
         }
-
-        Ok(())
     }
 
     fn handle_assign_path(&mut self, span: Span, lhs: &str, rhs: &Path) -> syn::Result<()> {
