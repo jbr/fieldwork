@@ -17,7 +17,7 @@ pub(crate) struct Resolved<'a> {
     pub(crate) get_copy: bool,
     pub(crate) chainable_set: bool,
     pub(crate) deref_type: Option<Cow<'a, Type>>,
-    pub(crate) option_handling: Option<OptionHandling<'a>>,
+    pub(crate) option_borrow_inner: Option<OptionHandling<'a>>,
     pub(crate) assigned_value: Expr,
     pub(crate) argument_ty: Cow<'a, Type>,
 }
@@ -32,7 +32,7 @@ impl Resolved<'_> {
             doc,
             get_copy,
             deref_type,
-            option_handling,
+            option_borrow_inner,
             ..
         } = self;
         let doc = doc.as_deref().map(|d| quote!(#[doc = #d]));
@@ -44,7 +44,7 @@ impl Resolved<'_> {
                     self.#variable_ident
                 }
             }
-        } else if let Some(oh) = option_handling {
+        } else if let Some(oh) = option_borrow_inner {
             match oh {
                 OptionHandling::Deref(ty) => quote! {
                     #doc
@@ -116,12 +116,12 @@ impl Resolved<'_> {
             ty,
             doc,
             deref_type,
-            option_handling,
+            option_borrow_inner,
             ..
         } = self;
         let doc = doc.as_deref().map(|d| quote!(#[doc = #d]));
 
-        if let Some(oh) = option_handling {
+        if let Some(oh) = option_borrow_inner {
             match oh {
                 OptionHandling::Deref(ty) => quote! {
                     #doc

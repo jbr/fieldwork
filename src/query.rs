@@ -259,7 +259,7 @@ impl<'a> Query<'a> {
         let ty = &self.field.ty;
         let chainable_set = self.chainable_set();
         let get_copy = self.is_get_copy();
-        let option_handling = self.option_handling();
+        let option_borrow_inner = self.option_borrow_inner();
         let (argument_ty, assigned_value) = self
             .option_set_some()
             .unwrap_or((Cow::Borrowed(ty), parse_quote!(#argument_ident)));
@@ -275,20 +275,20 @@ impl<'a> Query<'a> {
             get_copy,
             chainable_set,
             deref_type,
-            option_handling,
+            option_borrow_inner,
             argument_ty,
             assigned_value,
         })
     }
 
-    fn option_handling(&self) -> Option<OptionHandling<'a>> {
+    fn option_borrow_inner(&self) -> Option<OptionHandling<'a>> {
         self.field_method_attribute()
-            .and_then(|x| x.option_handling)
-            .or(self.field.attributes.option_handling)
+            .and_then(|x| x.option_borrow_inner)
+            .or(self.field.attributes.option_borrow_inner)
             .or(self
                 .struct_method_attribute()
-                .and_then(|sma| sma.option_handling))
-            .or(self.struct_attributes.option_handling)
+                .and_then(|sma| sma.option_borrow_inner))
+            .or(self.struct_attributes.option_borrow_inner)
             .unwrap_or(DEFAULT_OPTION_HANDLING)
             .then_some(())?;
 

@@ -18,7 +18,7 @@ pub(crate) struct StructAttributes {
     pub(crate) include: HashSet<Method>,
     pub(crate) where_clause: Option<WhereClause>,
     pub(crate) opt_in: bool,
-    pub(crate) option_handling: Option<bool>,
+    pub(crate) option_borrow_inner: Option<bool>,
     pub(crate) auto_deref: Option<bool>,
     pub(crate) rename_predicates: Option<bool>,
     pub(crate) option_set_some: Option<bool>,
@@ -108,7 +108,7 @@ impl StructAttributes {
 
     fn handle_assign_bool_lit(&mut self, span: Span, lhs: &str, value: bool) -> Result<(), Error> {
         match lhs {
-            "option_borrow_inner" => self.option_handling = Some(value),
+            "option_borrow_inner" => self.option_borrow_inner = Some(value),
             "opt_in" => self.opt_in = value,
             "deref" => self.auto_deref = Some(value),
             "rename_predicate" | "rename_predicates" => self.rename_predicates = Some(value),
