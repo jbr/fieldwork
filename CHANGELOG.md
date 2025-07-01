@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0](https://github.com/jbr/fieldwork/compare/fieldwork-v0.3.0...fieldwork-v0.4.0) - 2025-07-01
+
+### Added
+
+- add auto-deref for PathBuf, OsString, and Array
+- add more primitive types to copy detection
+- add backwards-compatibility acceptance of `option`
+- accept impl Into<T> for set and with
+- option set some
+- [**breaking**] rename option to option_borrow_inner for specificity of configuration
+- [**breaking**] rename boolean-returning predicate getters to is_{}
+
+### Fixed
+
+- option-set-some should no-op for non-option types
+
+### Other
+
+- improve main example
+- document `into`
+- extract common settings
+- improve coverage
+- document option_set_some
+- rename internal `option_handling` to `option_borrow_inner`
+- run docs-gen --verify in ci
+- docs-generator
+
 ## [0.3.0](https://github.com/jbr/fieldwork/compare/v0.2.0...v0.3.0) - 2025-06-15
 
 ### Added
