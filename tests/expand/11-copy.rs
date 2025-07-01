@@ -21,3 +21,22 @@ struct HoldsAReference<'a> {
 
     mut_ref_not_copy: &'a mut (),
 }
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get(copy))]
+struct AllCopyTypes {
+    char: char,
+    f32: f32,
+    f64: f64,
+    i128: i128,
+    i16: i16,
+    i32: i32,
+    i8: i8,
+    isize: isize,
+    u128: u128,
+    u16: u16,
+    u32: u32,
+    u8: u8,
+    usize: usize,
+    bool: bool,
+}

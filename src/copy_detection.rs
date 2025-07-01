@@ -12,7 +12,20 @@ pub(crate) fn enable_copy_for_type(ty: &Type) -> bool {
 
             let ident = &last_segment.ident;
 
-            ident == "bool" || ident == "usize" || ident == "u8"
+            ident == "char"
+                || ident == "f32"
+                || ident == "f64"
+                || ident == "i128"
+                || ident == "i16"
+                || ident == "i32"
+                || ident == "i8"
+                || ident == "isize"
+                || ident == "u128"
+                || ident == "u16"
+                || ident == "u32"
+                || ident == "u8"
+                || ident == "usize"
+                || ident == "bool"
         }
 
         Type::Reference(TypeReference {

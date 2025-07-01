@@ -38,3 +38,64 @@ impl<'a> HoldsAReference<'a> {
         &self.mut_ref_not_copy
     }
 }
+#[fieldwork(get(copy))]
+struct AllCopyTypes {
+    char: char,
+    f32: f32,
+    f64: f64,
+    i128: i128,
+    i16: i16,
+    i32: i32,
+    i8: i8,
+    isize: isize,
+    u128: u128,
+    u16: u16,
+    u32: u32,
+    u8: u8,
+    usize: usize,
+    bool: bool,
+}
+impl AllCopyTypes {
+    pub fn char(&self) -> char {
+        self.char
+    }
+    pub fn f32(&self) -> f32 {
+        self.f32
+    }
+    pub fn f64(&self) -> f64 {
+        self.f64
+    }
+    pub fn i128(&self) -> i128 {
+        self.i128
+    }
+    pub fn i16(&self) -> i16 {
+        self.i16
+    }
+    pub fn i32(&self) -> i32 {
+        self.i32
+    }
+    pub fn i8(&self) -> i8 {
+        self.i8
+    }
+    pub fn isize(&self) -> isize {
+        self.isize
+    }
+    pub fn u128(&self) -> u128 {
+        self.u128
+    }
+    pub fn u16(&self) -> u16 {
+        self.u16
+    }
+    pub fn u32(&self) -> u32 {
+        self.u32
+    }
+    pub fn u8(&self) -> u8 {
+        self.u8
+    }
+    pub fn usize(&self) -> usize {
+        self.usize
+    }
+    pub fn bool(&self) -> bool {
+        self.bool
+    }
+}
