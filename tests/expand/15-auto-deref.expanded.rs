@@ -7,6 +7,9 @@ struct Detection<'a, T> {
     arc: std::sync::Arc<T>,
     rc: std::rc::Rc<T>,
     cow: Cow<'a, T>,
+    path: std::path::PathBuf,
+    os_string: std::ffi::OsString,
+    arr: [u8; 16],
 }
 impl<'a, T> Detection<'a, T> {
     pub fn string(&self) -> &str {
@@ -50,6 +53,24 @@ impl<'a, T> Detection<'a, T> {
     }
     pub fn cow_mut(&mut self) -> &mut T {
         &mut *self.cow
+    }
+    pub fn path(&self) -> &std::path::Path {
+        &*self.path
+    }
+    pub fn path_mut(&mut self) -> &mut std::path::Path {
+        &mut *self.path
+    }
+    pub fn os_string(&self) -> &std::ffi::OsStr {
+        &*self.os_string
+    }
+    pub fn os_string_mut(&mut self) -> &mut std::ffi::OsStr {
+        &mut *self.os_string
+    }
+    pub fn arr(&self) -> &[u8] {
+        &*self.arr
+    }
+    pub fn arr_mut(&mut self) -> &mut [u8] {
+        &mut *self.arr
     }
 }
 #[fieldwork(get, get_mut, deref = false)]
@@ -165,6 +186,9 @@ struct OptionDeref<'a, T> {
     arc: Option<std::sync::Arc<T>>,
     rc: Option<std::rc::Rc<T>>,
     cow: Option<Cow<'a, T>>,
+    path: Option<std::path::PathBuf>,
+    os_string: Option<std::ffi::OsString>,
+    arr: Option<[u8; 16]>,
 }
 impl<'a, T> OptionDeref<'a, T> {
     pub fn string(&self) -> Option<&str> {
@@ -208,5 +232,23 @@ impl<'a, T> OptionDeref<'a, T> {
     }
     pub fn cow_mut(&mut self) -> Option<&mut T> {
         self.cow.as_deref_mut()
+    }
+    pub fn path(&self) -> Option<&std::path::Path> {
+        self.path.as_deref()
+    }
+    pub fn path_mut(&mut self) -> Option<&mut std::path::Path> {
+        self.path.as_deref_mut()
+    }
+    pub fn os_string(&self) -> Option<&std::ffi::OsStr> {
+        self.os_string.as_deref()
+    }
+    pub fn os_string_mut(&mut self) -> Option<&mut std::ffi::OsStr> {
+        self.os_string.as_deref_mut()
+    }
+    pub fn arr(&self) -> Option<&[u8]> {
+        self.arr.as_deref()
+    }
+    pub fn arr_mut(&mut self) -> Option<&mut [u8]> {
+        self.arr.as_deref_mut()
     }
 }
