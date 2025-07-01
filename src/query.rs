@@ -296,15 +296,19 @@ impl<'a> Query<'a> {
         &self,
         argument_ident: &Ident,
     ) -> (Cow<'a, Type>, Expr) {
-        let option_set_some = self.common_setting(|x| x.option_set_some);
+        let mut option_set_some = self.common_setting(|x| x.option_set_some);
         let into = self.common_setting(|x| x.into);
 
-        let mut argument_ty = Cow::Borrowed(
-            option_set_some
-                .then(|| extract_option_type(&self.field.ty))
-                .flatten()
-                .unwrap_or(&self.field.ty),
-        );
+        let mut argument_ty = Cow::Borrowed(&self.field.ty);
+
+        if option_set_some {
+            if let Some(ty) = extract_option_type(&self.field.ty) {
+                argument_ty = Cow::Borrowed(ty);
+            } else {
+                option_set_some = false;
+            }
+        }
+
         let mut assigned_value = parse_quote!(#argument_ident);
 
         if into {

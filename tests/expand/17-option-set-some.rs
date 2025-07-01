@@ -16,3 +16,10 @@ struct BobTheBuilder {
     string: Option<String>,
     bool: Option<bool>,
 }
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(set, with, get, get_mut, option_set_some)]
+struct HandlesNonOptionTypes {
+    string: String,
+    bool: Bool,
+}
