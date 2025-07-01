@@ -10,7 +10,8 @@ use syn::{File, Item, ItemImpl, ItemStruct, Type, TypePath};
 #[derive(Debug)]
 struct CodeExample {
     input_code: String,
-    current_output: String,
+    output_start: usize,
+    output_end: usize,
 }
 
 #[derive(Debug)]
@@ -54,6 +55,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let example_file = env::current_dir()?.join("examples/docs-expansion.rs");
 
+    // Process examples in reverse order to avoid position shifts
     for (i, example) in examples.iter().rev().enumerate() {
         let example_num = examples.len() - i;
 
@@ -76,15 +78,39 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
 
-                // Find and replace the output block by searching for the current content
-                if let Some(start_pos) = new_content.find(&example.current_output) {
-                    let end_pos = start_pos + example.current_output.len();
-                    new_content.replace_range(start_pos..end_pos, &formatted);
+                // Since we're processing in reverse, original positions should still be valid
+                let start = example.output_start;
+                let end = example.output_end;
+
+                // Ensure we're on character boundaries and validate range
+                let safe_start = if start >= new_content.len() {
+                    new_content.len()
+                } else if new_content.is_char_boundary(start) {
+                    start
                 } else {
-                    eprintln!(
-                        "⚠️  Could not find output block for example {example_num} - skipping"
-                    );
-                    continue;
+                    // Find previous char boundary
+                    (0..=start)
+                        .rev()
+                        .find(|&i| new_content.is_char_boundary(i))
+                        .unwrap_or(0)
+                };
+
+                let safe_end = if end > new_content.len() {
+                    new_content.len()
+                } else if new_content.is_char_boundary(end) {
+                    end
+                } else {
+                    // Find next char boundary
+                    (end..new_content.len())
+                        .find(|&i| new_content.is_char_boundary(i))
+                        .unwrap_or(new_content.len())
+                };
+
+                // Ensure we have a valid range
+                if safe_start <= safe_end {
+                    new_content.replace_range(safe_start..safe_end, &formatted);
+                } else {
+                    eprintln!("⚠️  Invalid range for example {example_num}, skipping replacement");
                 }
 
                 updated_count += 1;
@@ -111,12 +137,55 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Normal mode: write changes
         if updated_count > 0 {
             fs::write(docs_path, new_content)?;
-            println!("📝 Updated {} examples", updated_count);
+            println!("📝 Updated {updated_count} examples");
         }
     }
     Ok(())
 }
 
+fn find_expandable_examples(content: &str) -> Result<Vec<CodeExample>, Box<dyn Error>> {
+    let mut examples = Vec::new();
+    let block_pattern = Regex::new(r"(?s)```rust\n(.*?)\n```")?;
+    let blocks: Vec<_> = block_pattern.captures_iter(content).collect();
+
+    for (i, block_match) in blocks.iter().enumerate() {
+        let block_content = block_match.get(1).unwrap().as_str();
+
+        if block_content.contains("#[derive(") {
+            let input_code = block_content
+                .lines()
+                .map(|line| {
+                    if let Some(stripped) = line.strip_prefix("# ") {
+                        stripped
+                    } else if line == "#" {
+                        ""
+                    } else {
+                        line
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+
+            if let Some(next_block) = blocks.get(i + 1) {
+                let next_full = next_block.get(0).unwrap();
+
+                // Calculate byte positions for the content inside the next code block
+                let output_start = next_full.start() + 8; // +8 for "```rust\n"
+                let output_end = next_full.end() - 4; // -4 for "\n```"
+
+                examples.push(CodeExample {
+                    input_code,
+                    output_start,
+                    output_end,
+                });
+            }
+        }
+    }
+
+    Ok(examples)
+}
+
+// ... rest of your functions remain the same ...
 fn process_example(input: &str, example_file: &Path) -> Result<String, Box<dyn Error>> {
     // First, find the struct names in the input to know what we're looking for
     let target_structs = extract_struct_names_from_input(input)?;
@@ -252,46 +321,6 @@ fn concise_format(s: &str) -> String {
         .replace(" ; ", "; ")
 }
 
-fn find_expandable_examples(content: &str) -> Result<Vec<CodeExample>, Box<dyn Error>> {
-    let mut examples = Vec::new();
-    let block_pattern = Regex::new(r"(?s)```rust\n(.*?)\n```")?;
-    let marker_pattern = Regex::new(r"# // fieldwork-docs-expand")?;
-
-    let blocks: Vec<_> = block_pattern.captures_iter(content).collect();
-
-    for (i, block_match) in blocks.iter().enumerate() {
-        let block_content = block_match.get(1).unwrap().as_str();
-
-        if marker_pattern.is_match(block_content) {
-            let input_code = block_content
-                .lines()
-                .filter(|line| !line.contains("# // fieldwork-docs-expand"))
-                .map(|line| {
-                    if let Some(stripped) = line.strip_prefix("# ") {
-                        stripped
-                    } else if line == "#" {
-                        ""
-                    } else {
-                        line
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join("\n");
-
-            if let Some(next_block) = blocks.get(i + 1) {
-                let next_content = next_block.get(1).unwrap().as_str();
-
-                examples.push(CodeExample {
-                    input_code,
-                    current_output: next_content.to_string(),
-                });
-            }
-        }
-    }
-
-    Ok(examples)
-}
-
 fn expand_single_example(input: &str, example_file: &Path) -> Result<String, Box<dyn Error>> {
     // Write the example code to the .rs file in examples/
     let file_content = format!("use fieldwork::Fieldwork;\n\n{input}");
@@ -313,12 +342,24 @@ fn expand_single_example(input: &str, example_file: &Path) -> Result<String, Box
         .into());
     }
 
+    if output.stdout.is_empty() {
+        return Err("cargo expand was empty, that's probably not right".into());
+    }
+
     Ok(String::from_utf8(output.stdout)?)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_byte_to_char_conversion() {
+        let text = "Hello 🦀 World";
+        assert_eq!(byte_to_char_pos(text, 0), 0);
+        assert_eq!(byte_to_char_pos(text, 6), 6); // Just before 🦀
+        assert_eq!(byte_to_char_pos(text, 10), 7); // Just after 🦀
+    }
 
     #[test]
     fn test_extract_struct_names() {
