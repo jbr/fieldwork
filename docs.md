@@ -75,115 +75,63 @@ fields](#how-fieldwork-selects-which-methods-to-generate-for-which-fields)
 
 ## Example to get a sense of the library
 
-
 ```rust
-#[derive(fieldwork::Fieldwork)]
-#[fieldwork(get, set, get_mut, with, rename_predicates)]
-struct User {
-    /// whether this user is an admin
-    ///
-    /// Note that this is distinct from the notion of group administration,
-    /// for historical reasons
-    admin: bool,
+# // docgen-skip
+use std::path::PathBuf;
 
-    /// the user's name
-    name: String,
+#[derive(fieldwork::Fieldwork, Default)]
+#[fieldwork(get, set, with, get_mut, into, option_set_some, rename_predicates)]
+struct ServerConfig {
+    /// server hostname
+    host: String,
 
-    /// the user's favorite color, if set
-    favorite_color: Option<String>,
+    /// server port
+    #[fieldwork(into = false)]
+    port: u16,
+
+    /// path to SSL certificate file
+    #[fieldwork(option_borrow_inner = false)]
+    ssl_cert: Option<PathBuf>,
+
+    /// path to log directory  
+    log_dir: Option<PathBuf>,
+
+    /// whether TLS is required
+    tls_required: bool,
+
+    /// whether verbose logging is enabled
+    verbose: bool,
 
     #[fieldwork(skip)]
-    private: (),
-
-    /// read-only unique identifier
-    #[fieldwork(opt_in, get)]
-    id: Vec<u8>,
-}
-```
-
-This generates all of the following code:
-
-```rust
-// GENERATED
-# struct User { admin: bool, name: String, favorite_color: Option<String>, private: (), id: Vec<u8>, }
-impl User {
-    /**Returns a copy of whether this user is an admin
-
-Note that this is distinct from the notion of group administration,
-for historical reasons*/
-    pub fn is_admin(&self) -> bool {
-        self.admin
-    }
-    /**Mutably borrow whether this user is an admin
-
-Note that this is distinct from the notion of group administration,
-for historical reasons*/
-    pub fn admin_mut(&mut self) -> &mut bool {
-        &mut self.admin
-    }
-    /**Sets whether this user is an admin, returning `&mut Self` for chaining
-
-Note that this is distinct from the notion of group administration,
-for historical reasons*/
-    pub fn set_admin(&mut self, admin: bool) -> &mut Self {
-        self.admin = admin;
-        self
-    }
-    /**Owned chainable setter for whether this user is an admin, returning `Self`
-
-Note that this is distinct from the notion of group administration,
-for historical reasons*/
-    #[must_use]
-    pub fn with_admin(mut self, admin: bool) -> Self {
-        self.admin = admin;
-        self
-    }
-    ///Borrows the user's name
-    pub fn name(&self) -> &str {
-        &*self.name
-    }
-    ///Mutably borrow the user's name
-    pub fn name_mut(&mut self) -> &mut str {
-        &mut *self.name
-    }
-    ///Sets the user's name, returning `&mut Self` for chaining
-    pub fn set_name(&mut self, name: String) -> &mut Self {
-        self.name = name;
-        self
-    }
-    ///Owned chainable setter for the user's name, returning `Self`
-    #[must_use]
-    pub fn with_name(mut self, name: String) -> Self {
-        self.name = name;
-        self
-    }
-    ///Borrows the user's favorite color, if set
-    pub fn favorite_color(&self) -> Option<&str> {
-        self.favorite_color.as_deref()
-    }
-    ///Mutably borrow the user's favorite color, if set
-    pub fn favorite_color_mut(&mut self) -> Option<&mut str> {
-        self.favorite_color.as_deref_mut()
-    }
-    ///Sets the user's favorite color, if set, returning `&mut Self` for chaining
-    pub fn set_favorite_color(&mut self, favorite_color: Option<String>) -> &mut Self {
-        self.favorite_color = favorite_color;
-        self
-    }
-    ///Owned chainable setter for the user's favorite color, if set, returning `Self`
-    #[must_use]
-    pub fn with_favorite_color(mut self, favorite_color: Option<String>) -> Self {
-        self.favorite_color = favorite_color;
-        self
-    }
-    ///Borrows read-only unique identifier
-    pub fn id(&self) -> &[u8] {
-        &*self.id
-    }
+    _runtime_data: (),
 }
 
-```
+// Usage examples:
+let mut config = ServerConfig::default()
+    .with_host("LocalHost") // accepts &str via Into<String>
+    .with_port(8080)
+    .with_log_dir("/var/log") // accepts &str, wraps in Some() automatically
+    .with_tls_required(true)
+    .with_verbose(false);
 
+config.host_mut().make_ascii_lowercase();
+
+// Getters use idiomatic naming
+assert_eq!(config.host(), "localhost");
+assert_eq!(config.port(), 8080);
+assert_eq!(config.log_dir().unwrap(), PathBuf::from("/var/log"));
+assert!(config.is_tls_required()); // boolean getters use is_ prefix because of `rename_predicates`
+assert!(!config.is_verbose());
+
+// Chainable setters return &mut Self
+config
+    .set_ssl_cert(PathBuf::from("/etc/ssl/cert.pem"))
+    .set_port(9090)
+    .set_verbose(true);
+
+let cert = config.ssl_cert_mut().take();
+assert_eq!(cert, Some(PathBuf::from("/etc/ssl/cert.pem")));
+```
 
 <br/><hr/><br/>
 

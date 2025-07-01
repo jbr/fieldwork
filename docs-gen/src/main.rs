@@ -152,7 +152,7 @@ fn find_expandable_examples(content: &str) -> Result<Vec<CodeExample>, Box<dyn E
     for (i, block_match) in blocks.iter().enumerate() {
         let block_content = block_match.get(1).unwrap().as_str();
 
-        if block_content.contains("#[derive(") {
+        if block_content.contains("#[derive(") && !block_content.contains("// docgen-skip") {
             let input_code = block_content
                 .lines()
                 .map(|line| {
