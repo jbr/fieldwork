@@ -189,7 +189,7 @@ takes precedence. The intent of this approach is to avoid duplication and do wha
 
 ### Boolean handling
 
-`#[fieldwork(option = true)]` is the same as `#[fieldwork(option)]` and this is the case anywhere
+`#[fieldwork(option_borrow_inner = true)]` is the same as `#[fieldwork(option_borrow_inner)]` and this is the case anywhere
 booleans are accepted.
 
 ### Type quoting
@@ -456,16 +456,16 @@ where
 ```
 
 <h4 id="struct-option">
-<code>option</code>
+<code>option_borrow_inner</code>
 </h4>
 
-Opt out of Option detection with `option = false`. Instead of `get` returning `Option<&T>` and
+Opt out of Option detection with `option_borrow_inner = false`. Instead of `get` returning `Option<&T>` and
 `get_mut` returning `Option<&mut T>`, `get` returns `&Option<T>` and `get_mut` returns `&mut
 Option<T>`. Default behavior is for Option detection to be enabled at the struct level.
 
 ```rust
 #[derive(fieldwork::Fieldwork, Clone)]
-#[fieldwork(get, get_mut, option = false)]
+#[fieldwork(get, get_mut, option_borrow_inner = false)]
 struct User {
     // the user's name
     name: Option<String>
@@ -658,11 +658,11 @@ impl User {
 
 ```
 
-<h4 id="struct-method-option"><code>option</code></h4>
+<h4 id="struct-method-option"><code>option_borrow_inner</code></h4>
 
-Opt out of Option detection with `option = false`, or if it has been opted out at the struct level,
-opt back in with `option` or `option = true` for a single method, as in `get(option)` or
-`get_mut(option = true)`. See [option](#struct-option) above for more information.
+Opt out of Option detection with `option_borrow_inner = false`, or if it has been opted out at the struct level,
+opt back in with `option_borrow_inner` or `option_borrow_inner = true` for a single method, as in `get(option_borrow_inner)` or
+`get_mut(option_borrow_inner = true)`. See [option_borrow_inner](#struct-option) above for more information.
 
 
 <h4 id="struct-method-deref">
@@ -938,12 +938,43 @@ impl User {
 ```
 
 
-<h4 id="field-option"><code>option</code></h4>
+<h4 id="field-option"><code>option_borrow_inner</code></h4>
 
-Opt out of Option detection for this field with `option = false`, or if it has been opted out at the
-struct or struct method level, opt back in with `option` or `option = true` for a single field, as
-in `#[fieldwork(option)]` or `#[fieldwork(option = true)]`. See [option](#struct-option) above for
+Opt out of Option detection for this field with `option_borrow_inner = false`, or if it has been opted out at the
+struct or struct method level, opt back in with `option_borrow_inner` or `option_borrow_inner = true` for a single field, as
+in `#[fieldwork(option_borrow_inner)]` or `#[fieldwork(option_borrow_inner = true)]`. See [option_borrow_inner](#struct-option) above for
 more information.
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut)]
+struct User {
+    profile_thumbnail: Option<Vec<u8>>,
+
+    #[fieldwork(option_borrow_inner = false)] // opt out of option_borrow_inner
+    nickname: Option<String>,
+}
+```
+
+```rust
+// GENERATED
+# struct User { profile_thumbnail: Option<Vec<u8>>, nickname: Option<String>, }
+impl User {
+    pub fn profile_thumbnail(&self) -> Option<&[u8]> {
+        self.profile_thumbnail.as_deref()
+    }
+    pub fn profile_thumbnail_mut(&mut self) -> Option<&mut [u8]> {
+        self.profile_thumbnail.as_deref_mut()
+    }
+    pub fn nickname(&self) -> &Option<String> {
+        &self.nickname
+    }
+    pub fn nickname_mut(&mut self) -> &mut Option<String> {
+        &mut self.nickname
+    }
+}
+
+```
 
 
 <br/><hr/><br/>
@@ -1195,13 +1226,45 @@ impl User {
 ```
 
 
-<h4 id="field-method-option"><code>option</code></h4>
+<h4 id="field-method-option"><code>option_borrow_inner</code></h4>
 
-Opt out of Option detection for this field and method with `#[fieldwork(option = false)]`, or if it
-has been opted out at the struct, struct method, or field level, opt back in with `option` or
-`option = true` for a single field and method, as in `#[fieldwork(get(option))]` or
-`#[fieldwork(get_mut(option = true))]`. See [option](#struct-option) above for more information.
+Opt out of Option detection for this field and method with `#[fieldwork(option_borrow_inner = false)]`, or if it
+has been opted out at the struct, struct method, or field level, opt back in with `option_borrow_inner` or
+`option_borrow_inner = true` for a single field and method, as in `#[fieldwork(get(option_borrow_inner))]` or
+`#[fieldwork(get_mut(option_borrow_inner = true))]`. See [option_borrow_inner](#struct-option) above for more information.
 
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut)]
+struct User {
+    profile_thumbnail: Option<Vec<u8>>,
+
+    // opt out of option_borrow_inner just for get_mut, so we can use Option::insert or similar
+    #[fieldwork(get_mut(option_borrow_inner = false))]
+    nickname: Option<String>,
+}
+```
+
+```rust
+// GENERATED
+# struct User { profile_thumbnail: Option<Vec<u8>>, nickname: Option<String>, }
+impl User {
+    pub fn profile_thumbnail(&self) -> Option<&[u8]> {
+        self.profile_thumbnail.as_deref()
+    }
+    pub fn profile_thumbnail_mut(&mut self) -> Option<&mut [u8]> {
+        self.profile_thumbnail.as_deref_mut()
+    }
+    pub fn nickname(&self) -> Option<&str> {
+        self.nickname.as_deref()
+    }
+    pub fn nickname_mut(&mut self) -> &mut Option<String> {
+        &mut self.nickname
+    }
+}
+
+```
 
 
 <br/><hr/><br/>

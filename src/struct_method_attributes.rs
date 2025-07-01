@@ -95,7 +95,7 @@ impl StructMethodAttributes {
             ("copy", Method::Get) => self.auto_copy = Some(value),
             ("rename_predicate" | "rename_predicates", _) => self.rename_predicates = Some(value),
             ("skip", _) => self.skip = value,
-            ("option", _) => self.option_handling = Some(value),
+            ("option_borrow_inner", _) => self.option_handling = Some(value),
             ("deref", _) => self.auto_deref = Some(value),
             _ => return Err(Error::new(span, "not recognized")),
         }

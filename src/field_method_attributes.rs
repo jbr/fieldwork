@@ -110,7 +110,7 @@ impl FieldMethodAttributes {
             ("chain", Method::Set) => self.chainable_set = Some(value),
             ("copy", Method::Get) => self.get_copy = Some(value),
             ("skip", _) => self.skip = value,
-            ("option", _) => self.option_handling = Some(value),
+            ("option_borrow_inner", _) => self.option_handling = Some(value),
             ("deref", _) => self.auto_deref = Some(value),
             ("rename_predicate" | "rename_predicates", _) => self.rename_predicates = Some(value),
             _ => return Err(Error::new(span, "not recognized")),

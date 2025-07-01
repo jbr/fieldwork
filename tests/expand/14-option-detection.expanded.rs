@@ -4,10 +4,10 @@ struct OptionBehavior {
     option_deref: Option<String>,
     #[fieldwork(deref = str)]
     option_deref_other_style: Option<String>,
-    #[fieldwork(option = false)]
+    #[fieldwork(option_borrow_inner = false)]
     no_option_detection: Option<String>,
     option_detection: Option<()>,
-    #[fieldwork(get_mut(option = false))]
+    #[fieldwork(get_mut(option_borrow_inner = false))]
     nothing_fancy_for_get_mut: Option<()>,
 }
 impl OptionBehavior {
@@ -42,16 +42,16 @@ impl OptionBehavior {
         &mut self.nothing_fancy_for_get_mut
     }
 }
-#[fieldwork(get, get_mut, option = false)]
+#[fieldwork(get, get_mut, option_borrow_inner = false)]
 struct OptInOption {
-    #[fieldwork(deref = "Option<&str>", option = true)]
+    #[fieldwork(deref = "Option<&str>", option_borrow_inner = true)]
     option_deref: Option<String>,
-    #[fieldwork(deref = str, option = true)]
+    #[fieldwork(deref = str, option_borrow_inner = true)]
     option_deref_other_style: Option<String>,
-    #[fieldwork(option)]
+    #[fieldwork(option_borrow_inner)]
     option_detection: Option<String>,
     no_option_detection: Option<()>,
-    #[fieldwork(get_mut(option = true))]
+    #[fieldwork(get_mut(option_borrow_inner = true))]
     option_detection_only_get_mut: Option<()>,
 }
 impl OptInOption {
@@ -86,16 +86,16 @@ impl OptInOption {
         self.option_detection_only_get_mut.as_mut()
     }
 }
-#[fieldwork(get(option = true), get_mut, option = false)]
+#[fieldwork(get(option_borrow_inner = true), get_mut, option_borrow_inner = false)]
 struct OptionOnlyForGet {
-    #[fieldwork(get(option = false))]
+    #[fieldwork(get(option_borrow_inner = false))]
     no_option_detection: Option<()>,
     #[fieldwork(get(deref = str))]
     option_deref: Option<String>,
-    #[fieldwork(option = true)]
+    #[fieldwork(option_borrow_inner = true)]
     field_overrides: Option<String>,
     option_only_for_get: Option<()>,
-    #[fieldwork(get_mut(option), get(option = false))]
+    #[fieldwork(get_mut(option_borrow_inner), get(option_borrow_inner = false))]
     option_detection_only_get_mut: Option<()>,
 }
 impl OptionOnlyForGet {
@@ -130,16 +130,16 @@ impl OptionOnlyForGet {
         self.option_detection_only_get_mut.as_mut()
     }
 }
-#[fieldwork(get, get_mut, option = false, deref = false)]
+#[fieldwork(get, get_mut, option_borrow_inner = false, deref = false)]
 struct OptionAndDerefInteraction {
     a: Option<String>,
-    #[fieldwork(option)]
+    #[fieldwork(option_borrow_inner)]
     b: Option<String>,
-    #[fieldwork(option, deref)]
+    #[fieldwork(option_borrow_inner, deref)]
     c: Option<String>,
     #[fieldwork(deref)]
     d: Option<String>,
-    #[fieldwork(option, deref = "Option<&CustomDeref>")]
+    #[fieldwork(option_borrow_inner, deref = "Option<&CustomDeref>")]
     e: Option<CustomOwned>,
 }
 impl OptionAndDerefInteraction {
