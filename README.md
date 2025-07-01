@@ -24,13 +24,11 @@ made to keep this crate as lightweight as possible and featureful enough to be w
 
 ## Testing
 
-[![ci][ci-badge]][ci] [![codecov][codecov-badge]][codecov]
+[![ci][ci-badge]][ci]
+[![codecov](https://codecov.io/gh/jbr/fieldwork/graph/badge.svg?token=tlWtminkYf)](https://codecov.io/gh/jbr/fieldwork)
 
 [ci]: https://github.com/jbr/fieldwork/actions?query=workflow%3ACI
 [ci-badge]: https://github.com/jbr/fieldwork/workflows/CI/badge.svg
-[codecov-badge]: https://codecov.io/gh/jbr/fieldwork/graph/badge.svg?token=tlWtminkYf
-[codecov]: https://codecov.io/gh/jbr/fieldwork
-
 
 This crate has a full suite of macro-expansion tests in
 [tests/expand](https://github.com/jbr/fieldwork/tree/main/tests/expand). These tests are also used
