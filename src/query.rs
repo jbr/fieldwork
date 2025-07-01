@@ -2,14 +2,14 @@ use std::borrow::Cow;
 
 use crate::{
     DEFAULT_AUTO_COPY, DEFAULT_AUTO_DEREF, DEFAULT_CHAINABLE_SET, DEFAULT_OPTION_HANDLING,
-    DEFAULT_RENAME_PREDICATES, Field, FieldAttributes, FieldMethodAttributes, Method, Resolved,
-    StructAttributes, StructMethodAttributes,
+    DEFAULT_OPTION_SET_SOME, DEFAULT_RENAME_PREDICATES, Field, FieldAttributes,
+    FieldMethodAttributes, Method, Resolved, StructAttributes, StructMethodAttributes,
     copy_detection::{enable_copy_for_type, is_type},
     deref_handling::auto_deref,
     option_handling::{extract_option_type, strip_ref},
 };
 use Method::{Get, GetMut, Set, With};
-use syn::{Ident, Type, Visibility, token::Pub};
+use syn::{Expr, Ident, Type, Visibility, parse_quote, token::Pub};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Query<'a> {
@@ -259,7 +259,10 @@ impl<'a> Query<'a> {
         let ty = &self.field.ty;
         let chainable_set = self.chainable_set();
         let get_copy = self.is_get_copy();
-        let option_handling = self.option_handling();
+        let option_borrow_inner = self.option_borrow_inner();
+        let (argument_ty, assigned_value) = self
+            .option_set_some()
+            .unwrap_or((Cow::Borrowed(ty), parse_quote!(#argument_ident)));
 
         Some(Resolved {
             method,
@@ -272,18 +275,20 @@ impl<'a> Query<'a> {
             get_copy,
             chainable_set,
             deref_type,
-            option_handling,
+            option_borrow_inner,
+            argument_ty,
+            assigned_value,
         })
     }
 
-    fn option_handling(&self) -> Option<OptionHandling<'a>> {
+    fn option_borrow_inner(&self) -> Option<OptionHandling<'a>> {
         self.field_method_attribute()
-            .and_then(|x| x.option_handling)
-            .or(self.field.attributes.option_handling)
+            .and_then(|x| x.option_borrow_inner)
+            .or(self.field.attributes.option_borrow_inner)
             .or(self
                 .struct_method_attribute()
-                .and_then(|sma| sma.option_handling))
-            .or(self.struct_attributes.option_handling)
+                .and_then(|sma| sma.option_borrow_inner))
+            .or(self.struct_attributes.option_borrow_inner)
             .unwrap_or(DEFAULT_OPTION_HANDLING)
             .then_some(())?;
 
@@ -301,6 +306,29 @@ impl<'a> Query<'a> {
                 .map(OptionHandling::Deref)
                 .or_else(|| Some(OptionHandling::Ref(Cow::Borrowed(strip_ref(ty)))))
         }
+    }
+
+    fn option_set_some(&self) -> Option<(Cow<'a, Type>, Expr)> {
+        let option_set_some = [
+            self.field_method_attribute()
+                .and_then(|x| x.option_set_some),
+            self.field.attributes.option_set_some,
+            self.struct_method_attribute()
+                .and_then(|x| x.option_set_some),
+            self.struct_attributes.option_set_some,
+        ]
+        .into_iter()
+        .find_map(|x| x)
+        .unwrap_or(DEFAULT_OPTION_SET_SOME);
+
+        if !option_set_some {
+            return None;
+        }
+
+        let ty = extract_option_type(&self.field.ty)?;
+        let at = self.argument_ident();
+
+        Some((Cow::Borrowed(ty), parse_quote!(Some(#at))))
     }
 }
 

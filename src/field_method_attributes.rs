@@ -19,9 +19,10 @@ pub(crate) struct FieldMethodAttributes {
     pub(crate) chainable_set: Option<bool>,
     pub(crate) get_copy: Option<bool>,
     pub(crate) deref: Option<Type>,
-    pub(crate) option_handling: Option<bool>,
+    pub(crate) option_borrow_inner: Option<bool>,
     pub(crate) auto_deref: Option<bool>,
     pub(crate) rename_predicates: Option<bool>,
+    pub(crate) option_set_some: Option<bool>,
 }
 
 impl FieldMethodAttributes {
@@ -36,9 +37,10 @@ impl FieldMethodAttributes {
             get_copy: None,
             deref: None,
             skip: false,
-            option_handling: None,
+            option_borrow_inner: None,
             auto_deref: None,
             rename_predicates: None,
+            option_set_some: None,
         }
     }
 
@@ -106,13 +108,14 @@ impl FieldMethodAttributes {
     }
 
     fn handle_assign_bool_lit(&mut self, span: Span, lhs: &str, value: bool) -> syn::Result<()> {
-        match (lhs, self.method) {
-            ("chain", Method::Set) => self.chainable_set = Some(value),
-            ("copy", Method::Get) => self.get_copy = Some(value),
-            ("skip", _) => self.skip = value,
-            ("option_borrow_inner", _) => self.option_handling = Some(value),
-            ("deref", _) => self.auto_deref = Some(value),
-            ("rename_predicate" | "rename_predicates", _) => self.rename_predicates = Some(value),
+        match lhs {
+            "chain" => self.chainable_set = Some(value),
+            "copy" => self.get_copy = Some(value),
+            "skip" => self.skip = value,
+            "option_borrow_inner" => self.option_borrow_inner = Some(value),
+            "deref" => self.auto_deref = Some(value),
+            "option_set_some" => self.option_set_some = Some(value),
+            "rename_predicate" | "rename_predicates" => self.rename_predicates = Some(value),
             _ => return Err(Error::new(span, "not recognized")),
         }
 
