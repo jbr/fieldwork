@@ -141,7 +141,7 @@ impl FieldAttributes {
 
     fn handle_assign_bool_lit(&mut self, span: Span, lhs: &str, value: bool) -> Result<(), Error> {
         match lhs {
-            "option" => self.option_handling = Some(value),
+            "option_borrow_inner" => self.option_handling = Some(value),
             "opt_in" => self.opt_in = value,
             "skip" => self.skip = value,
             "deref" => self.auto_deref = Some(value),
