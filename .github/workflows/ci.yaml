@@ -34,6 +34,21 @@ jobs:
       env:
         RUST_LOG: trace
 
+  verify_docs_are_current:
+    name: Verify docs expansions are current
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
+    - uses: taiki-e/cache-cargo-install-action@v2
+      with:
+        tool: cargo-expand
+    - name: docs-gen --verify
+      run: cargo run -p docs-gen -- --verify
+
   check_fmt_and_docs:
     name: Checking fmt, clippy, and docs
     runs-on: ubuntu-latest

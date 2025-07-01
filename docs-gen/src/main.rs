@@ -23,8 +23,12 @@ struct ExtractedCode {
 fn main() -> Result<(), Box<dyn Error>> {
     // Check if we're in verbose mode
     let verbose = env::args().any(|arg| arg == "--verbose" || arg == "-v");
+    let verify = env::args().any(|arg| arg == "--verify");
 
-    let docs_path = env::args().nth(1).unwrap_or_else(|| "docs.md".to_string());
+    let docs_path = env::args()
+        .skip(1)
+        .find(|arg| !arg.starts_with("--"))
+        .unwrap_or_else(|| "docs.md".to_string());
     let content = fs::read_to_string(&docs_path)?;
 
     println!("Looking for examples in {docs_path}...");
@@ -96,13 +100,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    if updated_count > 0 {
-        fs::write(docs_path, new_content)?;
-        println!("📝 Updated {updated_count} examples");
+    if verify {
+        if new_content != content {
+            eprintln!("❌ Documentation is out of date! Run `cargo run --bin docs-gen` to update.");
+            std::process::exit(1);
+        } else {
+            println!("✅ Documentation is up to date.");
+        }
     } else {
-        println!("✨ No examples were updated");
+        // Normal mode: write changes
+        if updated_count > 0 {
+            fs::write(docs_path, new_content)?;
+            println!("📝 Updated {} examples", updated_count);
+        }
     }
-
     Ok(())
 }
 
