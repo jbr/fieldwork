@@ -1,6 +1,6 @@
 #[fieldwork(get, set, get_mut, with)]
 struct AcceptsAnythingInto {
-    #[fieldwork(option_set_some, into)]
+    #[fieldwork(into)]
     string: String,
     #[fieldwork(option_set_some, into)]
     option_string: Option<String>,
@@ -13,12 +13,12 @@ impl AcceptsAnythingInto {
         &mut *self.string
     }
     pub fn set_string(&mut self, string: impl Into<String>) -> &mut Self {
-        self.string = Some(string.into());
+        self.string = string.into();
         self
     }
     #[must_use]
     pub fn with_string(mut self, string: impl Into<String>) -> Self {
-        self.string = Some(string.into());
+        self.string = string.into();
         self
     }
     pub fn option_string(&self) -> Option<&str> {

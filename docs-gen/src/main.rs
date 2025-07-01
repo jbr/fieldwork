@@ -5,7 +5,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 use std::{collections::HashSet, env};
-use syn::{File, Item, ItemImpl, ItemStruct, Type, TypePath};
+use syn::{File, Item, ItemImpl, ItemStruct, ItemTrait, ItemUse, Type, TypePath};
 
 #[derive(Debug)]
 struct CodeExample {
@@ -16,7 +16,8 @@ struct CodeExample {
 
 #[derive(Debug)]
 struct ExtractedCode {
-    trait_definitions: Vec<syn::ItemTrait>,
+    use_statements: Vec<ItemUse>,
+    trait_definitions: Vec<ItemTrait>,
     struct_definitions: Vec<ItemStruct>,
     fieldwork_impls: Vec<ItemImpl>,
 }
@@ -219,12 +220,16 @@ fn extract_fieldwork_code(
 ) -> Result<ExtractedCode, Box<dyn Error>> {
     let parsed: File = syn::parse_str(expanded)?;
 
-    let mut trait_definitions = Vec::new();
-    let mut struct_definitions = Vec::new();
-    let mut fieldwork_impls = Vec::new();
+    let mut use_statements = vec![];
+    let mut trait_definitions = vec![];
+    let mut struct_definitions = vec![];
+    let mut fieldwork_impls = vec![];
 
     for item in parsed.items {
         match item {
+            Item::Use(use_item) => {
+                use_statements.push(use_item);
+            }
             Item::Trait(item_trait) => {
                 // Include all trait definitions found in the expanded code
                 trait_definitions.push(item_trait);
@@ -248,6 +253,7 @@ fn extract_fieldwork_code(
         trait_definitions,
         struct_definitions,
         fieldwork_impls,
+        use_statements,
     })
 }
 
@@ -270,6 +276,19 @@ fn is_fieldwork_impl(item_impl: &ItemImpl, target_structs: &HashSet<String>) -> 
 
 fn format_extracted_code(extracted: &ExtractedCode) -> Result<String, Box<dyn Error>> {
     let mut result = vec!["// GENERATED".to_string()];
+
+    // Add commented trait definitions
+    for use_statement in &extracted.use_statements {
+        let formatted_use = concise_format(&use_statement.to_token_stream().to_string());
+        for line in formatted_use.lines() {
+            if !line.trim().is_empty()
+                && !line.starts_with("#[prelude_import]")
+                && line != "use fieldwork::Fieldwork;"
+            {
+                result.push(format!("# {line}"));
+            }
+        }
+    }
 
     // Add commented trait definitions
     for trait_def in &extracted.trait_definitions {
@@ -319,6 +338,9 @@ fn concise_format(s: &str) -> String {
         .replace(" > ", ">")
         .replace(" , ", ", ")
         .replace(" ; ", "; ")
+        .replace(" :: ", "::")
+        .replace("# ", "#")
+        .replace(" ;", ";")
 }
 
 fn expand_single_example(input: &str, example_file: &Path) -> Result<String, Box<dyn Error>> {
