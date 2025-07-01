@@ -65,3 +65,12 @@ struct OptionAndDerefInteraction {
     #[fieldwork(option_borrow_inner, deref = "Option<&CustomDeref>")]
     e: Option<CustomOwned>,
 }
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, option = false)]
+struct BackwardsCompat {
+    #[fieldwork(option)]
+    borrow_inner: Option<()>,
+
+    not_borrow_inner: Option<String>,
+}
