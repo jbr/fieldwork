@@ -1,41 +1,28 @@
 use syn::{
-    Error, Expr, ExprAssign, ExprLit, ExprPath, Lit, LitBool, Visibility, punctuated::Punctuated,
+    Error, Expr, ExprAssign, ExprLit, ExprPath, Lit, LitBool, punctuated::Punctuated,
     spanned::Spanned, token::Comma,
 };
 
-use crate::Method;
+use crate::{CommonSettings, Method};
 
 // this represents the configuration passed to #[fieldwork] for a particular method
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct StructMethodAttributes {
     pub(crate) method: Method,
-    pub(crate) vis: Option<Visibility>,
     pub(crate) template: Option<String>,
-    pub(crate) skip: bool,
     pub(crate) doc_template: Option<String>,
-    pub(crate) chainable_set: Option<bool>,
-    pub(crate) option_borrow_inner: Option<bool>,
-    pub(crate) auto_deref: Option<bool>,
-    pub(crate) auto_copy: Option<bool>,
-    pub(crate) rename_predicates: Option<bool>,
-    pub(crate) option_set_some: Option<bool>,
+
+    pub(crate) common_settings: CommonSettings,
 }
 
 impl StructMethodAttributes {
     pub(crate) fn new(method: Method) -> Self {
         Self {
             method,
-            vis: None,
             template: None,
-            skip: false,
             doc_template: None,
-            chainable_set: None,
-            option_borrow_inner: None,
-            auto_deref: None,
-            auto_copy: None,
-            rename_predicates: None,
-            option_set_some: None,
+            common_settings: CommonSettings::default(),
         }
     }
 
@@ -92,17 +79,11 @@ impl StructMethodAttributes {
         lhs: &str,
         value: bool,
     ) -> syn::Result<()> {
-        match lhs {
-            "chain" => self.chainable_set = Some(value),
-            "copy" => self.auto_copy = Some(value),
-            "skip" => self.skip = value,
-            "rename_predicate" | "rename_predicates" => self.rename_predicates = Some(value),
-            "deref" => self.auto_deref = Some(value),
-            "option_borrow_inner" => self.option_borrow_inner = Some(value),
-            "option_set_some" => self.option_set_some = Some(value),
-            _ => return Err(Error::new(span, "not recognized")),
+        if self.common_settings.handle_assign_bool_lit(lhs, value) {
+            Ok(())
+        } else {
+            Err(Error::new(span, "not recognized"))
         }
-        Ok(())
     }
 
     fn handle_assign_str_lit(
@@ -111,11 +92,12 @@ impl StructMethodAttributes {
         lhs: &str,
         rhs: &syn::LitStr,
     ) -> Result<(), Error> {
-        match lhs {
-            "vis" => self.vis = Some(rhs.parse()?),
-            "template" => self.template = Some(rhs.value()),
-            "doc_template" => self.doc_template = Some(rhs.value()),
-            _ => return Err(Error::new(span, "not recognized")),
+        if !self.common_settings.handle_assign_str_lit(lhs, rhs)? {
+            match lhs {
+                "template" => self.template = Some(rhs.value()),
+                "doc_template" => self.doc_template = Some(rhs.value()),
+                _ => return Err(Error::new(span, "not recognized")),
+            }
         }
         Ok(())
     }

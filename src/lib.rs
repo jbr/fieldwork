@@ -14,6 +14,7 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 
+mod common_settings;
 mod copy_detection;
 mod deref_handling;
 mod field;
@@ -30,6 +31,7 @@ mod struct_method_attributes;
 #[cfg(test)]
 mod coverage_tests;
 
+pub(crate) use common_settings::CommonSettings;
 pub(crate) use field::Field;
 pub(crate) use field_attributes::FieldAttributes;
 pub(crate) use field_method_attributes::FieldMethodAttributes;
@@ -39,13 +41,6 @@ pub(crate) use resolved::Resolved;
 pub(crate) use r#struct::Struct;
 pub(crate) use struct_attributes::StructAttributes;
 pub(crate) use struct_method_attributes::StructMethodAttributes;
-
-const DEFAULT_CHAINABLE_SET: bool = true;
-const DEFAULT_OPTION_HANDLING: bool = true;
-const DEFAULT_AUTO_DEREF: bool = true;
-const DEFAULT_AUTO_COPY: bool = true;
-const DEFAULT_RENAME_PREDICATES: bool = false;
-const DEFAULT_OPTION_SET_SOME: bool = false;
 
 /// see crate-level documentation
 #[proc_macro_derive(Fieldwork, attributes(fieldwork))]

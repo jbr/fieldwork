@@ -1,9 +1,9 @@
-use crate::{Method, StructMethodAttributes};
+use crate::{CommonSettings, Method, StructMethodAttributes};
 use proc_macro2::Span;
 use std::collections::HashSet;
 use syn::{
     Attribute, Error, Expr, ExprAssign, ExprCall, ExprLit, ExprPath, Lit, LitBool, LitStr, Meta,
-    Visibility, WhereClause, WherePredicate,
+    WhereClause, WherePredicate,
     punctuated::Punctuated,
     spanned::Spanned,
     token::{Comma, Where},
@@ -13,16 +13,13 @@ use syn::{
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[derive(Default)]
 pub(crate) struct StructAttributes {
-    pub(crate) vis: Option<Visibility>,
     pub(crate) methods: Vec<StructMethodAttributes>,
     pub(crate) include: HashSet<Method>,
     pub(crate) where_clause: Option<WhereClause>,
-    pub(crate) opt_in: bool,
-    pub(crate) option_borrow_inner: Option<bool>,
-    pub(crate) auto_deref: Option<bool>,
-    pub(crate) rename_predicates: Option<bool>,
-    pub(crate) option_set_some: Option<bool>,
+
+    pub(crate) common_settings: CommonSettings,
 }
+
 impl StructAttributes {
     pub(crate) fn build(attributes: &[Attribute]) -> syn::Result<Self> {
         let mut struct_attributes = Self::default();
@@ -92,34 +89,31 @@ impl StructAttributes {
     }
 
     fn handle_assign_str_lit(&mut self, span: Span, lhs: &str, rhs: &LitStr) -> Result<(), Error> {
-        match lhs {
-            "vis" => self.vis = Some(rhs.parse()?),
-            "where_clause" | "bounds" => {
-                self.where_clause = Some(WhereClause {
-                    predicates: rhs
-                        .parse_with(Punctuated::<WherePredicate, Comma>::parse_terminated)?,
-                    where_token: Where::default(),
-                });
+        if !self.common_settings.handle_assign_str_lit(lhs, rhs)? {
+            match lhs {
+                "where_clause" | "bounds" => {
+                    self.where_clause = Some(WhereClause {
+                        predicates: rhs
+                            .parse_with(Punctuated::<WherePredicate, Comma>::parse_terminated)?,
+                        where_token: Where::default(),
+                    });
+                }
+                _ => return Err(Error::new(span, "not recognized")),
             }
-            _ => return Err(Error::new(span, "not recognized")),
         }
         Ok(())
     }
 
     fn handle_assign_bool_lit(&mut self, span: Span, lhs: &str, value: bool) -> Result<(), Error> {
-        match lhs {
-            "option_borrow_inner" => self.option_borrow_inner = Some(value),
-            "opt_in" => self.opt_in = value,
-            "deref" => self.auto_deref = Some(value),
-            "rename_predicate" | "rename_predicates" => self.rename_predicates = Some(value),
-            "option_set_some" => self.option_set_some = Some(value),
-            other if value => {
-                let method = Method::from_str_with_span(other, span)?;
-                self.include.insert(method);
-                self.methods.push(StructMethodAttributes::new(method));
-            }
-            _ => return Err(Error::new(span, "not recognized")),
+        if self.common_settings.handle_assign_bool_lit(lhs, value) {
+            Ok(())
+        } else if value {
+            let method = Method::from_str_with_span(lhs, span)?;
+            self.include.insert(method);
+            self.methods.push(StructMethodAttributes::new(method));
+            Ok(())
+        } else {
+            Err(Error::new(span, "not recognized"))
         }
-        Ok(())
     }
 }
