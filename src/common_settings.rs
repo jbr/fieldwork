@@ -14,6 +14,7 @@ pub(crate) struct CommonSettings {
     pub(crate) opt_in: bool,
     pub(crate) skip: bool,
     pub(crate) vis: Option<Vis>,
+    pub(crate) into: Option<bool>,
 }
 
 #[cfg_attr(feature = "debug", derive(Debug))]
@@ -41,6 +42,7 @@ impl CommonSettings {
         opt_in: false,
         skip: false,
         vis: Some(Vis::Default),
+        into: Some(false),
     };
 
     pub(crate) fn handle_assign_str_lit(&mut self, lhs: &str, rhs: &LitStr) -> Result<bool, Error> {
@@ -53,6 +55,7 @@ impl CommonSettings {
 
     pub(crate) fn handle_assign_bool_lit(&mut self, lhs: &str, value: bool) -> bool {
         match lhs {
+            "into" => self.into = Some(value),
             "copy" => self.get_copy = Some(value),
             "chain" => self.chainable_set = Some(value),
             "option_borrow_inner" => self.option_borrow_inner = Some(value),

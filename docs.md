@@ -48,18 +48,26 @@ configuration](#field-method-configuration). The most specific configuration alw
 [**Methods**](#methods): [`get`](#get), [`set`](#set), [`get_mut`](#get_mut), [`with`](#with)
 
 [**Struct configuration**](#struct-configuration): [`vis`](#struct-vis),
-[`where_clause`](#struct-where-clause), [`option_borrow_inner`](#struct-option), [`deref`](#struct-deref), [`option_set_some`](#struct-option_set_some), [`rename_predicates`](#struct-rename_predicates)
+[`where_clause`](#struct-where-clause), [`option_borrow_inner`](#struct-option),
+[`deref`](#struct-deref), [`option_set_some`](#struct-option_set_some), [`into`](#struct-into),
+[`rename_predicates`](#struct-rename_predicates)
 
-[**Struct method configuration**](#struct-method-configuration):
-[`vis`](#struct-method-vis), [`doc_template`](#struct-method-doc-template), [`template`](#struct-method-template),
-[`chain`](#struct-method-chain), [`option_borrow_inner`](#struct-method-option), [`deref`](#struct-method-deref), [`option_set_some`](#struct-method-option_set_some), [`copy`](#struct-method-copy)
+[**Struct method configuration**](#struct-method-configuration): [`vis`](#struct-method-vis),
+[`doc_template`](#struct-method-doc-template), [`template`](#struct-method-template),
+[`chain`](#struct-method-chain), [`option_borrow_inner`](#struct-method-option),
+[`deref`](#struct-method-deref), [`option_set_some`](#struct-method-option_set_some),
+[`into`](#struct-method-into), [`copy`](#struct-method-copy)
 
 [**Field configuration**](#field-configuration): [`skip`](#field-skip), [`rename`](#field-rename),
-[`argument`](#field-argument), [`vis`](#field-vis), [`deref`](#field-deref), [`option_set_some`](#field-option_set_some), [`option_borrow_inner`](#field-option)
+[`argument`](#field-argument), [`vis`](#field-vis), [`deref`](#field-deref),
+[`option_set_some`](#field-option_set_some), [`into`](#field-into),
+[`option_borrow_inner`](#field-option)
 
 [**Field method configuration**](#field-method-configuration): [`rename`](#field-method-rename),
 [`argument`](#field-method-argument), [`doc`](#field-method-doc), [`chain`](#field-method-chain),
-[`copy`](#field-method-copy), [`skip`](#field-method-skip), [`deref`](#field-method-deref), [`option_set_some`](#field-method-option_set_some), [`option_borrow_inner`](#field-method-option)
+[`copy`](#field-method-copy), [`skip`](#field-method-skip), [`deref`](#field-method-deref),
+[`option_set_some`](#field-method-option_set_some), [`into`](#field-method-into),
+[`option_borrow_inner`](#field-method-option)
 
 [How fieldwork selects which methods to generate for which
 fields](#how-fieldwork-selects-which-methods-to-generate-for-which-fields)
@@ -189,8 +197,8 @@ takes precedence. The intent of this approach is to avoid duplication and do wha
 
 ### Boolean handling
 
-`#[fieldwork(option_borrow_inner = true)]` is the same as `#[fieldwork(option_borrow_inner)]` and this is the case anywhere
-booleans are accepted.
+`#[fieldwork(option_borrow_inner = true)]` is the same as `#[fieldwork(option_borrow_inner)]` and
+this is the case anywhere booleans are accepted.
 
 ### Type quoting
 
@@ -220,7 +228,21 @@ detection behavior and the deref detection behavior distinctly, so you can have 
 
 ### Option setters can automatically wrap values in Some
 
-When `option_set_some` is enabled, `set` and `with` methods for `Option<T>` fields will accept `T` as input and automatically wrap it in `Some(T)`. This is useful for builder patterns and situations where `None` represents an unset default value that is only ever replaced with populated values. Instead of calling `user.set_name(Some("Alice".to_string()))`, you can simply call `user.set_name("Alice".to_string())`. This feature can be enabled at any configuration level and only affects setter methods - getters remain unchanged.
+When `option_set_some` is enabled, `set` and `with` methods for `Option<T>` fields will accept `T`
+as input and automatically wrap it in `Some(T)`. This is useful for builder patterns and situations
+where `None` represents an unset default value that is only ever replaced with populated
+values. Instead of calling `user.set_name(Some("Alice".to_string()))`, you can simply call
+`user.set_name("Alice".to_string())`. This feature can be enabled at any configuration level and
+only affects setter methods - getters remain unchanged.
+
+### Setters can accept impl Into<T> for ergonomic APIs
+
+When `into` is enabled, `set` and `with` methods will accept `impl Into<T>` instead of `T` as their
+parameter. This allows callers to pass any type that can be converted into the field type, making
+APIs more ergonomic. For example, a `String` field can accept `&str`, `String`, `Cow<str>`, or any
+other type implementing `Into<String>`. This feature works seamlessly with `option_set_some` - when
+both are enabled, the setter accepts `impl Into<T>` and wraps the result in `Some()`. This feature
+can be enabled at any configuration level and only affects setter methods.
 
 <br/><hr/><br/>
 
@@ -463,9 +485,10 @@ where
 <code>option_borrow_inner</code>
 </h4>
 
-Opt out of Option detection with `option_borrow_inner = false`. Instead of `get` returning `Option<&T>` and
-`get_mut` returning `Option<&mut T>`, `get` returns `&Option<T>` and `get_mut` returns `&mut
-Option<T>`. Default behavior is for Option detection to be enabled at the struct level.
+Opt out of Option detection with `option_borrow_inner = false`. Instead of `get` returning
+`Option<&T>` and `get_mut` returning `Option<&mut T>`, `get` returns `&Option<T>` and `get_mut`
+returns `&mut Option<T>`. Default behavior is for Option detection to be enabled at the struct
+level.
 
 ```rust
 #[derive(fieldwork::Fieldwork, Clone)]
@@ -522,7 +545,11 @@ impl User {
 <code>option_set_some</code>
 </h4>
 
-Enable automatic wrapping of setter values in `Some()` for `Option<T>` fields at the struct level with `option_set_some` or `option_set_some = true`. When enabled, `set` and `with` methods for Option fields will accept the inner type `T` instead of `Option<T>` and automatically wrap the value. This is particularly useful for builder patterns where `None` represents an unset default value.
+Enable automatic wrapping of setter values in `Some()` for `Option<T>` fields at the struct level
+with `option_set_some` or `option_set_some = true`. When enabled, `set` and `with` methods for
+Option fields will accept the inner type `T` instead of `Option<T>` and automatically wrap the
+value. This is particularly useful for builder patterns where `None` represents an unset default
+value.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -545,6 +572,57 @@ impl User {
     #[must_use]
     pub fn with_nickname(mut self, nickname: String) -> Self {
         self.nickname = Some(nickname);
+        self
+    }
+}
+
+```
+
+<h4 id="struct-into">
+<code>into</code>
+</h4>
+
+Enable `impl Into<T>` parameters for setter methods at the struct level with `into` or `into =
+true`. When enabled, `set` and `with` methods will accept `impl Into<T>` instead of `T`, allowing
+callers to pass any type that can be converted into the field type.
+
+```rust
+# use std::path::PathBuf;
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(set, with, into)]
+struct User {
+    /// the user's name
+    name: String,
+    
+    /// the user's home directory
+    home_dir: PathBuf,
+}
+```
+```rust
+// GENERATED
+# use std::path::PathBuf;
+# struct User { name: String, home_dir: PathBuf, }
+impl User {
+    ///Sets the user's name, returning `&mut Self` for chaining
+    pub fn set_name(&mut self, name: impl Into<String>) -> &mut Self {
+        self.name = name.into();
+        self
+    }
+    ///Owned chainable setter for the user's name, returning `Self`
+    #[must_use]
+    pub fn with_name(mut self, name: impl Into<String>) -> Self {
+        self.name = name.into();
+        self
+    }
+    ///Sets the user's home directory, returning `&mut Self` for chaining
+    pub fn set_home_dir(&mut self, home_dir: impl Into<PathBuf>) -> &mut Self {
+        self.home_dir = home_dir.into();
+        self
+    }
+    ///Owned chainable setter for the user's home directory, returning `Self`
+    #[must_use]
+    pub fn with_home_dir(mut self, home_dir: impl Into<PathBuf>) -> Self {
+        self.home_dir = home_dir.into();
         self
     }
 }
@@ -697,9 +775,10 @@ impl User {
 
 <h4 id="struct-method-option"><code>option_borrow_inner</code></h4>
 
-Opt out of Option detection with `option_borrow_inner = false`, or if it has been opted out at the struct level,
-opt back in with `option_borrow_inner` or `option_borrow_inner = true` for a single method, as in `get(option_borrow_inner)` or
-`get_mut(option_borrow_inner = true)`. See [option_borrow_inner](#struct-option) above for more information.
+Opt out of Option detection with `option_borrow_inner = false`, or if it has been opted out at the
+struct level, opt back in with `option_borrow_inner` or `option_borrow_inner = true` for a single
+method, as in `get(option_borrow_inner)` or `get_mut(option_borrow_inner = true)`. See
+[option_borrow_inner](#struct-option) above for more information.
 
 
 <h4 id="struct-method-deref">
@@ -734,7 +813,9 @@ impl User {
 
 <h4 id="struct-method-option_set_some"><code>option_set_some</code> (<code>set</code> and <code>with</code> only)</h4>
 
-Enable automatic wrapping of setter values in `Some()` for `Option<T>` fields for a specific method. This can be used to enable the feature for just `set` or just `with`, or to override the struct-level setting.
+Enable automatic wrapping of setter values in `Some()` for `Option<T>` fields for a specific
+method. This can be used to enable the feature for just `set` or just `with`, or to override the
+struct-level setting.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -757,6 +838,38 @@ impl User {
     #[must_use]
     pub fn with_nickname(mut self, nickname: Option<String>) -> Self {
         self.nickname = nickname;
+        self
+    }
+}
+
+```
+
+<h4 id="struct-method-into"><code>into</code> (<code>set</code> and <code>with</code> only)</h4>
+
+Enable `impl Into<T>` parameters for setter methods for a specific method. This can be used to
+enable the feature for just `set` or just `with`, or to override the struct-level setting.
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(set(into), with)]
+struct User {
+    /// the user's name
+    name: String,
+}
+```
+```rust
+// GENERATED
+# struct User { name: String, }
+impl User {
+    ///Sets the user's name, returning `&mut Self` for chaining
+    pub fn set_name(&mut self, name: impl Into<String>) -> &mut Self {
+        self.name = name.into();
+        self
+    }
+    ///Owned chainable setter for the user's name, returning `Self`
+    #[must_use]
+    pub fn with_name(mut self, name: String) -> Self {
+        self.name = name;
         self
     }
 }
@@ -959,6 +1072,7 @@ If set to a specific type, dereference to the specific type. Some types such as 
 quoting.
 
 ```rust
+# use std::sync::Arc;
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, get_mut)]
 struct User {
@@ -971,13 +1085,14 @@ struct User {
 
     // opt out of deref detection so we can use the arc directly
     #[fieldwork(deref = false)]
-    an_arc: std::sync::Arc<()>,
+    an_arc: Arc<()>,
 }
 ```
 
 ```rust
 // GENERATED
-# struct User { name: String, profile_thumbnail: Vec<u8>, an_arc: std :: sync :: Arc<()>, }
+# use std::sync::Arc;
+# struct User { name: String, profile_thumbnail: Vec<u8>, an_arc: Arc<()>, }
 impl User {
     ///Borrows the user's name
     pub fn name(&self) -> &str {
@@ -995,10 +1110,10 @@ impl User {
     pub fn profile_thumbnail_mut(&mut self) -> &mut [u8] {
         &mut *self.profile_thumbnail
     }
-    pub fn an_arc(&self) -> &std::sync::Arc<()> {
+    pub fn an_arc(&self) -> &Arc<()> {
         &self.an_arc
     }
-    pub fn an_arc_mut(&mut self) -> &mut std::sync::Arc<()> {
+    pub fn an_arc_mut(&mut self) -> &mut Arc<()> {
         &mut self.an_arc
     }
 }
@@ -1008,7 +1123,9 @@ impl User {
 
 <h4 id="field-option_set_some"><code>option_set_some</code></h4>
 
-Enable or disable automatic wrapping of setter values in `Some()` for this specific Option field with `option_set_some = true` or `option_set_some = false`. This allows you to override struct or struct-method level settings for individual fields.
+Enable or disable automatic wrapping of setter values in `Some()` for this specific Option field
+with `option_set_some = true` or `option_set_some = false`. This allows you to override struct or
+struct-method level settings for individual fields.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -1054,12 +1171,59 @@ impl User {
 
 ```
 
+<h4 id="field-into"><code>into</code></h4>
+
+Enable or disable `impl Into<T>` parameters for setter methods for this specific field with
+`into`/`into = true` or `into = false`. This allows you to override struct or struct-method level
+settings for individual fields.
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(set, with)]
+struct User {
+    name: String,
+    
+    /// Display name - uses impl Into<String> parameter
+    #[fieldwork(into)]
+    display_name: String,
+}
+```
+
+```rust
+// GENERATED
+# struct User { name: String, display_name: String, }
+impl User {
+    pub fn set_name(&mut self, name: String) -> &mut Self {
+        self.name = name;
+        self
+    }
+    #[must_use]
+    pub fn with_name(mut self, name: String) -> Self {
+        self.name = name;
+        self
+    }
+    ///Sets Display name - uses impl Into<String> parameter, returning `&mut Self` for chaining
+    pub fn set_display_name(&mut self, display_name: impl Into<String>) -> &mut Self {
+        self.display_name = display_name.into();
+        self
+    }
+    ///Owned chainable setter for Display name - uses impl Into<String> parameter, returning `Self`
+    #[must_use]
+    pub fn with_display_name(mut self, display_name: impl Into<String>) -> Self {
+        self.display_name = display_name.into();
+        self
+    }
+}
+
+```
+
 <h4 id="field-option"><code>option_borrow_inner</code></h4>
 
-Opt out of Option detection for this field with `option_borrow_inner = false`, or if it has been opted out at the
-struct or struct method level, opt back in with `option_borrow_inner` or `option_borrow_inner = true` for a single field, as
-in `#[fieldwork(option_borrow_inner)]` or `#[fieldwork(option_borrow_inner = true)]`. See [option_borrow_inner](#struct-option) above for
-more information.
+Opt out of Option detection for this field with `option_borrow_inner = false`, or if it has been
+opted out at the struct or struct method level, opt back in with `option_borrow_inner` or
+`option_borrow_inner = true` for a single field, as in `#[fieldwork(option_borrow_inner)]` or
+`#[fieldwork(option_borrow_inner = true)]`. See [option_borrow_inner](#struct-option) above for more
+information.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -1342,9 +1506,12 @@ impl User {
 ```
 
 
-<h4 id="field-method-option_set_some"><code>option_set_some</code> (<code>set</code> and <code>with</code> only)</h4>
+<h4 id="field-method-option_set_some"><code>option_set_some</code> (<code>set</code> and
+<code>with</code> only)</h4>
 
-Enable or disable automatic wrapping of setter values in `Some()` for a specific method and field. This provides the most granular control, allowing you to enable the feature for just the `set` method but not `with`, or vice versa.
+Enable or disable automatic wrapping of setter values in `Some()` for a specific method and
+field. This provides the most granular control, allowing you to enable the feature for just the
+`set` method but not `with`, or vice versa.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -1375,12 +1542,48 @@ impl User {
 
 ```
 
+<h4 id="field-method-into"><code>into</code> (<code>set</code> and <code>with</code> only)</h4>
+
+Enable or disable `impl Into<T>` parameters for a specific method and field. This provides the most
+granular control, allowing you to enable the feature for just the `set` method but not `with`, or
+vice versa.
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(set, with)]
+struct User {
+    /// Enable impl Into<String> only for the set method
+    #[fieldwork(set(into))]
+    name: String,
+}
+```
+
+```rust
+// GENERATED
+# struct User { name: String, }
+impl User {
+    ///Sets Enable impl Into<String> only for the set method, returning `&mut Self` for chaining
+    pub fn set_name(&mut self, name: impl Into<String>) -> &mut Self {
+        self.name = name.into();
+        self
+    }
+    ///Owned chainable setter for Enable impl Into<String> only for the set method, returning `Self`
+    #[must_use]
+    pub fn with_name(mut self, name: String) -> Self {
+        self.name = name;
+        self
+    }
+}
+
+```
+
 <h4 id="field-method-option"><code>option_borrow_inner</code></h4>
 
-Opt out of Option detection for this field and method with `#[fieldwork(option_borrow_inner = false)]`, or if it
-has been opted out at the struct, struct method, or field level, opt back in with `option_borrow_inner` or
-`option_borrow_inner = true` for a single field and method, as in `#[fieldwork(get(option_borrow_inner))]` or
-`#[fieldwork(get_mut(option_borrow_inner = true))]`. See [option_borrow_inner](#struct-option) above for more information.
+Opt out of Option detection for this field and method with `#[fieldwork(option_borrow_inner =
+false)]`, or if it has been opted out at the struct, struct method, or field level, opt back in with
+`option_borrow_inner` or `option_borrow_inner = true` for a single field and method, as in
+`#[fieldwork(get(option_borrow_inner))]` or `#[fieldwork(get_mut(option_borrow_inner = true))]`. See
+[option_borrow_inner](#struct-option) above for more information.
 
 
 ```rust

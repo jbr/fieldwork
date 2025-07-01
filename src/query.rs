@@ -60,9 +60,8 @@ impl<'a> Query<'a> {
         let chainable_set = self.chainable_set();
         let get_copy = self.is_get_copy();
         let option_borrow_inner = self.option_borrow_inner();
-        let (argument_ty, assigned_value) = self
-            .option_set_some()
-            .unwrap_or((Cow::Borrowed(ty), parse_quote!(#argument_ident)));
+        let (argument_ty, assigned_value) =
+            self.determine_argument_ty_and_assigned_value(&argument_ident);
 
         Some(Resolved {
             method,
@@ -293,15 +292,31 @@ impl<'a> Query<'a> {
         }
     }
 
-    fn option_set_some(&self) -> Option<(Cow<'a, Type>, Expr)> {
-        if !self.common_setting(|x| x.option_set_some) {
-            return None;
+    fn determine_argument_ty_and_assigned_value(
+        &self,
+        argument_ident: &Ident,
+    ) -> (Cow<'a, Type>, Expr) {
+        let option_set_some = self.common_setting(|x| x.option_set_some);
+        let into = self.common_setting(|x| x.into);
+
+        let mut argument_ty = Cow::Borrowed(
+            option_set_some
+                .then(|| extract_option_type(&self.field.ty))
+                .flatten()
+                .unwrap_or(&self.field.ty),
+        );
+        let mut assigned_value = parse_quote!(#argument_ident);
+
+        if into {
+            argument_ty = Cow::Owned(parse_quote!(impl Into<#argument_ty>));
+            assigned_value = parse_quote!(#assigned_value.into());
         }
 
-        let ty = extract_option_type(&self.field.ty)?;
-        let at = self.argument_ident();
+        if option_set_some {
+            assigned_value = parse_quote!(Some(#assigned_value));
+        }
 
-        Some((Cow::Borrowed(ty), parse_quote!(Some(#at))))
+        (argument_ty, assigned_value)
     }
 }
 
