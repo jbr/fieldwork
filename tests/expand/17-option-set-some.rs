@@ -9,3 +9,10 @@ struct OptionBehavior {
     #[fieldwork(set(option_set_some = false, option_borrow_inner = false))]
     nothing_fancy_for_set: Option<String>,
 }
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(with(option_set_some))]
+struct BobTheBuilder {
+    string: Option<String>,
+    bool: Option<bool>,
+}

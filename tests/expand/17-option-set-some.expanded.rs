@@ -79,3 +79,20 @@ impl OptionBehavior {
         self
     }
 }
+#[fieldwork(with(option_set_some))]
+struct BobTheBuilder {
+    string: Option<String>,
+    bool: Option<bool>,
+}
+impl BobTheBuilder {
+    #[must_use]
+    pub fn with_string(mut self, string: String) -> Self {
+        self.string = Some(string);
+        self
+    }
+    #[must_use]
+    pub fn with_bool(mut self, bool: bool) -> Self {
+        self.bool = Some(bool);
+        self
+    }
+}
