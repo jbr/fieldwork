@@ -207,9 +207,22 @@ types like `std::sync::Arc` do not need to be quoted.
 
 ### Common dereference types are detected by default
 
-The current list of types that are detected are: `String`, `Vec`, `Box`, `Arc`, `Rc`, and `Cow`. So
-for example, a field that contains a `String` will return `&str` from `get` or `&mut str` from
-`get_mut` by default. This behavior can be opted out of, at any configuration level.
+Cwned types that `Deref` to commonly used borrowed types will automatically get detected and
+dereferenced as such. So for example, a field that contains a `String` will return `&str` from `get`
+or `&mut str` from `get_mut` by default. This behavior can be opted out of, at any configuration
+level.
+
+| Owned Type | Borrowed Type |
+|------------|---------------|
+| `String`   | `&str`        |
+| `OsString  | `&OsStr`      |
+| `Vec<T>`   | `&[T]`        |
+| `Box<T>`   | `&T`          |
+| `Arc<T>`   | `&T`          |
+| `Rc<T>`    | `&T`          |
+| `PathBuf`  | `&Path`       |
+| `Cow<T>`   | `&T`          |
+| `[T; N]`   | `&[T]`        |
 
 ### Common copy types are detected by default
 

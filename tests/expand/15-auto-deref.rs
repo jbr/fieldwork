@@ -8,6 +8,9 @@ struct Detection<'a, T> {
     arc: std::sync::Arc<T>,
     rc: std::rc::Rc<T>,
     cow: Cow<'a, T>,
+    path: std::path::PathBuf,
+    os_string: std::ffi::OsString,
+    arr: [u8; 16],
 }
 
 #[derive(fieldwork::Fieldwork)]
@@ -65,4 +68,7 @@ struct OptionDeref<'a, T> {
     arc: Option<std::sync::Arc<T>>,
     rc: Option<std::rc::Rc<T>>,
     cow: Option<Cow<'a, T>>,
+    path: Option<std::path::PathBuf>,
+    os_string: Option<std::ffi::OsString>,
+    arr: Option<[u8; 16]>,
 }
