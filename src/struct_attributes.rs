@@ -20,6 +20,7 @@ pub(crate) struct StructAttributes {
     pub(crate) opt_in: bool,
     pub(crate) option_handling: Option<bool>,
     pub(crate) auto_deref: Option<bool>,
+    pub(crate) rename_predicates: Option<bool>,
 }
 impl StructAttributes {
     pub(crate) fn build(attributes: &[Attribute]) -> syn::Result<Self> {
@@ -109,6 +110,7 @@ impl StructAttributes {
             "option" => self.option_handling = Some(value),
             "opt_in" => self.opt_in = value,
             "deref" => self.auto_deref = Some(value),
+            "rename_predicate" | "rename_predicates" => self.rename_predicates = Some(value),
             other if value => {
                 let method = Method::from_str_with_span(other, span)?;
                 self.include.insert(method);

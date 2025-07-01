@@ -3,7 +3,7 @@ struct MyStruct<T> {
     /// not generated
     number: usize,
     /// generated
-    #[fieldwork(rename = is_enabled)]
+    #[fieldwork]
     enabled: bool,
     /// generated
     #[fieldwork]
@@ -13,22 +13,22 @@ struct MyStruct<T> {
 }
 impl<T> MyStruct<T> {
     ///Returns a copy of generated
-    pub fn is_enabled(&self) -> bool {
+    pub fn enabled(&self) -> bool {
         self.enabled
     }
     ///Mutably borrow generated
-    pub fn is_enabled_mut(&mut self) -> &mut bool {
+    pub fn enabled_mut(&mut self) -> &mut bool {
         &mut self.enabled
     }
     ///Sets generated, returning `&mut Self` for chaining
-    pub fn set_is_enabled(&mut self, is_enabled: bool) -> &mut Self {
-        self.enabled = is_enabled;
+    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
+        self.enabled = enabled;
         self
     }
     ///Owned chainable setter for generated, returning `Self`
     #[must_use]
-    pub fn with_is_enabled(mut self, is_enabled: bool) -> Self {
-        self.enabled = is_enabled;
+    pub fn with_enabled(mut self, enabled: bool) -> Self {
+        self.enabled = enabled;
         self
     }
     ///Borrows generated

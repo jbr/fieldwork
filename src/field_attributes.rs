@@ -21,6 +21,7 @@ pub(crate) struct FieldAttributes {
     pub(crate) opt_in: bool,
     pub(crate) option_handling: Option<bool>,
     pub(crate) auto_deref: Option<bool>,
+    pub(crate) rename_predicates: Option<bool>,
 }
 
 impl FieldAttributes {
@@ -144,6 +145,7 @@ impl FieldAttributes {
             "opt_in" => self.opt_in = value,
             "skip" => self.skip = value,
             "deref" => self.auto_deref = Some(value),
+            "rename_predicate" | "rename_predicates" => self.rename_predicates = Some(value),
             other if value => {
                 self.method_attributes.push(FieldMethodAttributes::new(
                     Method::from_str_with_span(other, span)?,
