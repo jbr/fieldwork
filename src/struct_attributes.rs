@@ -1,7 +1,8 @@
-use crate::{CommonSettings, Method, StructMethodAttributes, errors::invalid_key};
+use crate::{
+    CommonSettings, Method, StructMethodAttributes, errors::invalid_key, method::MethodSettings,
+};
 use proc_macro2::Span;
 use quote::ToTokens;
-use std::collections::HashSet;
 use syn::{
     Attribute, Error, Expr, ExprAssign, ExprCall, ExprLit, ExprPath, Lit, LitBool, LitStr, Meta,
     WhereClause, WherePredicate,
@@ -14,8 +15,8 @@ use syn::{
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[derive(Default)]
 pub(crate) struct StructAttributes {
-    pub(crate) methods: Vec<StructMethodAttributes>,
-    pub(crate) include: HashSet<Method>,
+    pub(crate) methods: MethodSettings<StructMethodAttributes>,
+    pub(crate) include: MethodSettings<bool>,
     pub(crate) where_clause: Option<WhereClause>,
 
     pub(crate) common_settings: CommonSettings,
@@ -71,9 +72,9 @@ impl StructAttributes {
                 Expr::Call(ExprCall { func, args, .. }) => match &**func {
                     Expr::Path(ExprPath { path: method, .. }) => match Method::try_from(method) {
                         Ok(method) => {
-                            self.include.insert(method);
+                            self.include.insert(method, true);
                             self.methods
-                                .push(StructMethodAttributes::build(method, args)?);
+                                .insert(method, StructMethodAttributes::build(args)?);
                         }
 
                         Err(_) => {
@@ -155,8 +156,9 @@ impl StructAttributes {
 
             if value {
                 // if they said `get = false`, we do nothing currently becuase it's opt in
-                self.include.insert(method);
-                self.methods.push(StructMethodAttributes::new(method));
+                self.include.insert(method, true);
+                self.methods
+                    .insert(method, StructMethodAttributes::default());
             }
             Ok(())
         }

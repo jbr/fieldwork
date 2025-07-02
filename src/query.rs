@@ -25,16 +25,8 @@ impl<'a> Query<'a> {
         field: &'a Field,
         struct_attributes: &'a StructAttributes,
     ) -> Self {
-        let field_method_attributes = field
-            .attributes
-            .method_attributes
-            .iter()
-            .find(|x| x.method == *method);
-
-        let struct_method_attributes = struct_attributes
-            .methods
-            .iter()
-            .find(|x| x.method == *method);
+        let field_method_attributes = field.attributes.method_attributes.retrieve(*method);
+        let struct_method_attributes = struct_attributes.methods.retrieve(*method);
 
         Self {
             method,
@@ -240,9 +232,9 @@ impl<'a> Query<'a> {
         if *opt_in || field_opt_in {
             decorated
                 && ((self.field.attributes.method_attributes.is_empty()
-                    && include.contains(self.method))
+                    && include.contains(*self.method))
                     || field_method_attr.is_some_and(|x| !x.common_settings.skip))
-        } else if !include.contains(self.method) {
+        } else if !include.contains(*self.method) {
             field_method_attr.is_some_and(|x| !x.common_settings.skip)
         } else {
             field_method_attr.is_none_or(|x| !x.common_settings.skip)

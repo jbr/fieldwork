@@ -4,13 +4,13 @@ use syn::{
     spanned::Spanned, token::Comma,
 };
 
-use crate::{CommonSettings, Method, errors::invalid_key};
+use crate::{CommonSettings, errors::invalid_key};
 
 // this represents the configuration passed to #[fieldwork] for a particular method
 
 #[cfg_attr(feature = "debug", derive(Debug))]
+#[derive(Default)]
 pub(crate) struct StructMethodAttributes {
-    pub(crate) method: Method,
     pub(crate) template: Option<String>,
     pub(crate) doc_template: Option<String>,
 
@@ -34,17 +34,9 @@ impl StructMethodAttributes {
         "template",
         "vis",
     ];
-    pub(crate) fn new(method: Method) -> Self {
-        Self {
-            method,
-            template: None,
-            doc_template: None,
-            common_settings: CommonSettings::default(),
-        }
-    }
 
-    pub(crate) fn build(method: Method, exprs: &Punctuated<Expr, Comma>) -> syn::Result<Self> {
-        let mut struct_method_attributes = Self::new(method);
+    pub(crate) fn build(exprs: &Punctuated<Expr, Comma>) -> syn::Result<Self> {
+        let mut struct_method_attributes = Self::default();
         struct_method_attributes.handle_exprs(exprs)?;
         Ok(struct_method_attributes)
     }

@@ -5,12 +5,12 @@ use syn::{
     punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
 
-use crate::{CommonSettings, Method, errors::invalid_key};
+use crate::{CommonSettings, errors::invalid_key};
 
 // this represents the configuration for the field, for a particular method
 #[cfg_attr(feature = "debug", derive(Debug))]
+#[derive(Default)]
 pub(crate) struct FieldMethodAttributes {
-    pub(crate) method: Method,
     pub(crate) fn_ident: Option<Ident>,
     pub(crate) argument_ident: Option<Ident>,
     pub(crate) doc: Option<String>,
@@ -38,22 +38,8 @@ impl FieldMethodAttributes {
         "vis",
     ];
 
-    pub(crate) fn new(method: Method, fn_ident: Option<Ident>) -> Self {
-        Self {
-            method,
-            fn_ident,
-            argument_ident: None,
-            doc: None,
-            deref: None,
-            common_settings: CommonSettings::default(),
-        }
-    }
-
-    pub(crate) fn build(
-        method: Method,
-        exprs: &Punctuated<Expr, Comma>,
-    ) -> syn::Result<FieldMethodAttributes> {
-        let mut field_method_attributes = Self::new(method, None);
+    pub(crate) fn build(exprs: &Punctuated<Expr, Comma>) -> syn::Result<FieldMethodAttributes> {
+        let mut field_method_attributes = Self::default();
         field_method_attributes.handle_exprs(exprs)?;
         Ok(field_method_attributes)
     }

@@ -5,7 +5,9 @@ use syn::{
     Meta, MetaList, Path, Type, TypePath, punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
 
-use crate::{CommonSettings, FieldMethodAttributes, Method, errors::invalid_key};
+use crate::{
+    CommonSettings, FieldMethodAttributes, Method, errors::invalid_key, method::MethodSettings,
+};
 
 // this represents the configuration for the field
 #[derive(Default)]
@@ -14,7 +16,7 @@ pub(crate) struct FieldAttributes {
     pub(crate) decorated: bool,
     pub(crate) fn_ident: Option<Ident>,
     pub(crate) argument_ident: Option<Ident>,
-    pub(crate) method_attributes: Vec<FieldMethodAttributes>,
+    pub(crate) method_attributes: MethodSettings<FieldMethodAttributes>,
     pub(crate) deref: Option<Type>,
 
     pub(crate) common_settings: CommonSettings,
@@ -94,7 +96,7 @@ impl FieldAttributes {
                             )
                         })?;
                         self.method_attributes
-                            .push(FieldMethodAttributes::build(method, args)?);
+                            .insert(method, FieldMethodAttributes::build(args)?);
                     }
 
                     func => {
@@ -142,11 +144,15 @@ impl FieldAttributes {
                 "deref" => self.deref = Some(rhs.parse()?),
                 "argument" => self.argument_ident = Some(rhs.parse()?),
                 _ => {
-                    self.method_attributes.push(FieldMethodAttributes::new(
-                        Method::from_str_with_span(lhs, span)
-                            .map_err(|_| invalid_key(span, lhs, Self::VALID_KEYS))?,
-                        Some(rhs.parse()?),
-                    ));
+                    let method = Method::from_str_with_span(lhs, span)
+                        .map_err(|_| invalid_key(span, lhs, Self::VALID_KEYS))?;
+
+                    let fma = FieldMethodAttributes {
+                        fn_ident: Some(rhs.parse()?),
+                        ..FieldMethodAttributes::default()
+                    };
+
+                    self.method_attributes.insert(method, fma);
                 }
             }
         }
@@ -165,11 +171,14 @@ impl FieldAttributes {
             }
 
             _ => {
-                self.method_attributes.push(FieldMethodAttributes::new(
-                    Method::from_str_with_span(lhs, span)
-                        .map_err(|_| invalid_key(span, lhs, Self::VALID_KEYS))?,
-                    Some(rhs.require_ident().cloned()?),
-                ));
+                let method = Method::from_str_with_span(lhs, span)
+                    .map_err(|_| invalid_key(span, lhs, Self::VALID_KEYS))?;
+                let fma = FieldMethodAttributes {
+                    fn_ident: Some(rhs.require_ident().cloned()?),
+                    ..FieldMethodAttributes::default()
+                };
+
+                self.method_attributes.insert(method, fma);
             }
         }
         Ok(())
@@ -181,13 +190,15 @@ impl FieldAttributes {
         } else {
             let method = Method::from_str_with_span(lhs, span)
                 .map_err(|_| invalid_key(span, lhs, Self::VALID_KEYS))?;
-            let mut fma = FieldMethodAttributes::new(method, None);
+            let fma = FieldMethodAttributes {
+                common_settings: CommonSettings {
+                    skip: !value,
+                    ..CommonSettings::default()
+                },
+                ..FieldMethodAttributes::default()
+            };
 
-            if !value {
-                fma.common_settings.skip = true;
-            }
-
-            self.method_attributes.push(fma);
+            self.method_attributes.insert(method, fma);
             Ok(())
         }
     }
