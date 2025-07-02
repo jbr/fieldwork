@@ -5,7 +5,7 @@ use syn::{
     punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
 
-use crate::{CommonSettings, Method};
+use crate::{CommonSettings, Method, errors::invalid_key};
 
 // this represents the configuration for the field, for a particular method
 #[cfg_attr(feature = "debug", derive(Debug))]
@@ -20,6 +20,24 @@ pub(crate) struct FieldMethodAttributes {
 }
 
 impl FieldMethodAttributes {
+    pub(crate) const VALID_KEYS: &[&str] = &[
+        "argument",
+        "chain",
+        "copy",
+        "deref",
+        "doc",
+        "into",
+        "name",
+        "opt_in",
+        "option",
+        "option_borrow_inner",
+        "option_set_some",
+        "rename",
+        "rename_predicate",
+        "skip",
+        "vis",
+    ];
+
     pub(crate) fn new(method: Method, fn_ident: Option<Ident>) -> Self {
         Self {
             method,
@@ -89,7 +107,7 @@ impl FieldMethodAttributes {
                 "argument" => self.argument_ident = Some(rhs.parse()?),
                 "deref" => self.deref = Some(rhs.parse()?),
                 "doc" => self.doc = Some(rhs.value()),
-                _ => return Err(Error::new(span, "not recognized")),
+                _ => return Err(invalid_key(span, lhs, Self::VALID_KEYS)),
             }
         }
         Ok(())
@@ -99,7 +117,7 @@ impl FieldMethodAttributes {
         if self.common_settings.handle_assign_bool_lit(lhs, value) {
             Ok(())
         } else {
-            Err(Error::new(span, "not recognized"))
+            Err(invalid_key(span, lhs, Self::VALID_KEYS))
         }
     }
 
@@ -113,7 +131,7 @@ impl FieldMethodAttributes {
                     path: rhs.clone(),
                 }));
             }
-            _ => return Err(Error::new(span, "not recognized")),
+            _ => return Err(invalid_key(span, lhs, Self::VALID_KEYS)),
         }
 
         Ok(())

@@ -1,9 +1,10 @@
+use proc_macro2::Span;
 use syn::{
     Error, Expr, ExprAssign, ExprLit, ExprPath, Lit, LitBool, punctuated::Punctuated,
     spanned::Spanned, token::Comma,
 };
 
-use crate::{CommonSettings, Method};
+use crate::{CommonSettings, Method, errors::invalid_key};
 
 // this represents the configuration passed to #[fieldwork] for a particular method
 
@@ -17,6 +18,22 @@ pub(crate) struct StructMethodAttributes {
 }
 
 impl StructMethodAttributes {
+    const VALID_KEYS: &[&str] = &[
+        "chain",
+        "copy",
+        "deref",
+        "doc_template",
+        "into",
+        "opt_in",
+        "option",
+        "option_borrow_inner",
+        "option_set_some",
+        "rename_predicate",
+        "rename_predicates",
+        "skip",
+        "template",
+        "vis",
+    ];
     pub(crate) fn new(method: Method) -> Self {
         Self {
             method,
@@ -63,7 +80,6 @@ impl StructMethodAttributes {
                 lit: Lit::Str(rhs), ..
             }) => self.handle_assign_str_lit(span, &lhs, rhs),
 
-            //            Expr::Path(ExprPath { path: rhs, .. }) => self.handle_assign_path(span, &lhs, rhs),
             Expr::Lit(ExprLit {
                 lit: Lit::Bool(LitBool { value, .. }),
                 ..
@@ -73,22 +89,17 @@ impl StructMethodAttributes {
         }
     }
 
-    fn handle_assign_bool_lit(
-        &mut self,
-        span: proc_macro2::Span,
-        lhs: &str,
-        value: bool,
-    ) -> syn::Result<()> {
+    fn handle_assign_bool_lit(&mut self, span: Span, lhs: &str, value: bool) -> syn::Result<()> {
         if self.common_settings.handle_assign_bool_lit(lhs, value) {
             Ok(())
         } else {
-            Err(Error::new(span, "not recognized"))
+            Err(invalid_key(span, lhs, Self::VALID_KEYS))
         }
     }
 
     fn handle_assign_str_lit(
         &mut self,
-        span: proc_macro2::Span,
+        span: Span,
         lhs: &str,
         rhs: &syn::LitStr,
     ) -> Result<(), Error> {
@@ -96,7 +107,7 @@ impl StructMethodAttributes {
             match lhs {
                 "template" => self.template = Some(rhs.value()),
                 "doc_template" => self.doc_template = Some(rhs.value()),
-                _ => return Err(Error::new(span, "not recognized")),
+                _ => return Err(invalid_key(span, lhs, Self::VALID_KEYS)),
             }
         }
         Ok(())

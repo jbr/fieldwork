@@ -61,3 +61,43 @@ impl<T> SetAndGet<T> {
         &self.generic
     }
 }
+#[fieldwork(get, set, with, get_mut)]
+struct SkipWithAssignment<T> {
+    #[fieldwork(with = false)]
+    no_with: bool,
+    #[fieldwork(get = false)]
+    no_get: T,
+}
+impl<T> SkipWithAssignment<T> {
+    pub fn no_with(&self) -> bool {
+        self.no_with
+    }
+    pub fn no_with_mut(&mut self) -> &mut bool {
+        &mut self.no_with
+    }
+    pub fn set_no_with(&mut self, no_with: bool) -> &mut Self {
+        self.no_with = no_with;
+        self
+    }
+    pub fn no_get_mut(&mut self) -> &mut T {
+        &mut self.no_get
+    }
+    pub fn set_no_get(&mut self, no_get: T) -> &mut Self {
+        self.no_get = no_get;
+        self
+    }
+    #[must_use]
+    pub fn with_no_get(mut self, no_get: T) -> Self {
+        self.no_get = no_get;
+        self
+    }
+}
+#[fieldwork(get, get_mut = false)]
+struct GetMutEqualsFalseDoesNothing<T> {
+    field: T,
+}
+impl<T> GetMutEqualsFalseDoesNothing<T> {
+    pub fn field(&self) -> &T {
+        &self.field
+    }
+}

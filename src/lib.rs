@@ -17,6 +17,7 @@ use quote::quote;
 mod common_settings;
 mod copy_detection;
 mod deref_handling;
+mod errors;
 mod field;
 mod field_attributes;
 mod field_method_attributes;

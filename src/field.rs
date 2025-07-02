@@ -47,11 +47,11 @@ impl Field {
         )?;
 
         Ok(Field {
-            span,
             member,
+            span,
             ty,
-            doc,
             attributes,
+            doc,
         })
     }
 }
