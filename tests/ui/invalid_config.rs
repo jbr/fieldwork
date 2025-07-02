@@ -44,4 +44,48 @@ struct H {
     field: (),
 }
 
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(invalid(copy))]
+struct I {
+    field: (),
+}
+
+#[derive(fieldwork::Fieldwork)]
+struct J {
+    #[fieldwork(get(other = "anything"))]
+    field: (),
+}
+
+#[derive(fieldwork::Fieldwork)]
+struct K {
+    #[fieldwork(get(other = anything))]
+    field: (),
+}
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get(other = "anything"))]
+struct L {
+    field: (),
+}
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(other = "anything")]
+struct M {
+    field: (),
+}
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork((get)(copy))]
+struct O(());
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork((get) = copy)]
+struct P(());
+
+#[derive(fieldwork::Fieldwork)]
+struct Q(#[fieldwork((get) = copy)] ());
+
+#[derive(fieldwork::Fieldwork)]
+struct R(#[fieldwork((get)(copy))] ());
+
 fn main() {}

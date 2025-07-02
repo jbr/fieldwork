@@ -23,3 +23,18 @@ struct SetAndGet<T> {
     #[fieldwork(set(skip))]
     generic: T,
 }
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set, with, get_mut)]
+struct SkipWithAssignment<T> {
+    #[fieldwork(with = false)]
+    no_with: bool,
+    #[fieldwork(get = false)]
+    no_get: T,
+}
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut = false)] // parses just fine, but noops
+struct GetMutEqualsFalseDoesNothing<T> {
+    field: T,
+}

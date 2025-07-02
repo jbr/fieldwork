@@ -1,5 +1,6 @@
 use crate::{CommonSettings, Method, StructMethodAttributes, errors::invalid_key};
 use proc_macro2::Span;
+use quote::ToTokens;
 use std::collections::HashSet;
 use syn::{
     Attribute, Error, Expr, ExprAssign, ExprCall, ExprLit, ExprPath, Lit, LitBool, LitStr, Meta,
@@ -84,7 +85,13 @@ impl StructAttributes {
                         }
                     },
 
-                    _ => return Err(Error::new(expr.span(), "not recognized call")),
+                    func => {
+                        return Err(invalid_key(
+                            func.span(),
+                            &func.to_token_stream().to_string(),
+                            Self::VALID_KEYS,
+                        ));
+                    }
                 },
 
                 expr => return Err(Error::new(expr.span(), "not recognized")),
@@ -102,7 +109,13 @@ impl StructAttributes {
         } else {
             None
         }
-        .ok_or_else(|| Error::new(span, "not recognized"))?;
+        .ok_or_else(|| {
+            invalid_key(
+                left.span(),
+                &left.to_token_stream().to_string(),
+                Self::VALID_KEYS,
+            )
+        })?;
         match &**right {
             Expr::Lit(ExprLit {
                 lit: Lit::Str(rhs), ..
@@ -136,14 +149,16 @@ impl StructAttributes {
     fn handle_assign_bool_lit(&mut self, span: Span, lhs: &str, value: bool) -> Result<(), Error> {
         if self.common_settings.handle_assign_bool_lit(lhs, value) {
             Ok(())
-        } else if value {
+        } else {
             let method = Method::from_str_with_span(lhs, span)
                 .map_err(|_| invalid_key(span, lhs, Self::VALID_KEYS))?;
-            self.include.insert(method);
-            self.methods.push(StructMethodAttributes::new(method));
+
+            if value {
+                // if they said `get = false`, we do nothing currently becuase it's opt in
+                self.include.insert(method);
+                self.methods.push(StructMethodAttributes::new(method));
+            }
             Ok(())
-        } else {
-            Err(invalid_key(span, lhs, Self::VALID_KEYS))
         }
     }
 }

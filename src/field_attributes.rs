@@ -1,4 +1,5 @@
 use proc_macro2::Span;
+use quote::ToTokens;
 use syn::{
     Attribute, Error, Expr, ExprAssign, ExprCall, ExprLit, ExprPath, Ident, Lit, LitBool, LitStr,
     Meta, MetaList, Path, Type, TypePath, punctuated::Punctuated, spanned::Spanned, token::Comma,
@@ -49,7 +50,13 @@ impl FieldAttributes {
         } else {
             None
         }
-        .ok_or_else(|| Error::new(span, "not recognized"))?;
+        .ok_or_else(|| {
+            invalid_key(
+                left.span(),
+                &left.to_token_stream().to_string(),
+                Self::VALID_KEYS,
+            )
+        })?;
         match &**right {
             Expr::Lit(ExprLit {
                 lit: Lit::Str(rhs), ..
@@ -79,13 +86,23 @@ impl FieldAttributes {
 
                 Expr::Call(ExprCall { func, args, .. }) => match &**func {
                     Expr::Path(ExprPath { path: method, .. }) => {
-                        let method = method.try_into()?;
+                        let method = method.try_into().map_err(|_| {
+                            invalid_key(
+                                method.span(),
+                                &method.to_token_stream().to_string(),
+                                Self::VALID_KEYS,
+                            )
+                        })?;
                         self.method_attributes
                             .push(FieldMethodAttributes::build(method, args)?);
                     }
 
-                    _ => {
-                        return Err(Error::new(expr.span(), "not recognized call"));
+                    func => {
+                        return Err(invalid_key(
+                            func.span(),
+                            &func.to_token_stream().to_string(),
+                            Self::VALID_KEYS,
+                        ));
                     }
                 },
 

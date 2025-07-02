@@ -73,3 +73,99 @@ error: invalid value for key `rename`
    |
 43 |     #[fieldwork(get(rename = true))]
    |                     ^^^^^^
+
+error: unknown configuration `invalid`
+
+       In this position, fieldwork recognizes:
+       `chain`, `copy`, `deref`, `into`, `opt_in`, `option`, `option_borrow_inner`,
+       `option_set_some`, `rename_predicate`, `rename_predicates`, `vis`, `where_clause`, `bounds`,
+       `get`, `set`, `with`, and `get_mut`
+  --> tests/ui/invalid_config.rs:48:13
+   |
+48 | #[fieldwork(invalid(copy))]
+   |             ^^^^^^^
+
+error: unknown configuration `other`
+
+       In this position, fieldwork recognizes:
+       `argument`, `chain`, `copy`, `deref`, `doc`, `into`, `name`, `opt_in`, `option`,
+       `option_borrow_inner`, `option_set_some`, `rename`, `rename_predicate`, `skip`, and `vis`
+  --> tests/ui/invalid_config.rs:55:21
+   |
+55 |     #[fieldwork(get(other = "anything"))]
+   |                     ^^^^^
+
+error: unknown configuration `other`
+
+       In this position, fieldwork recognizes:
+       `argument`, `chain`, `copy`, `deref`, `doc`, `into`, `name`, `opt_in`, `option`,
+       `option_borrow_inner`, `option_set_some`, `rename`, `rename_predicate`, `skip`, and `vis`
+  --> tests/ui/invalid_config.rs:61:21
+   |
+61 |     #[fieldwork(get(other = anything))]
+   |                     ^^^^^
+
+error: unknown configuration `other`
+
+       In this position, fieldwork recognizes:
+       `chain`, `copy`, `deref`, `doc_template`, `into`, `opt_in`, `option`, `option_borrow_inner`,
+       `option_set_some`, `rename_predicate`, `rename_predicates`, `skip`, `template`, and `vis`
+  --> tests/ui/invalid_config.rs:66:17
+   |
+66 | #[fieldwork(get(other = "anything"))]
+   |                 ^^^^^
+
+error: unknown configuration `other`
+
+       In this position, fieldwork recognizes:
+       `chain`, `copy`, `deref`, `into`, `opt_in`, `option`, `option_borrow_inner`,
+       `option_set_some`, `rename_predicate`, `rename_predicates`, `vis`, `where_clause`, `bounds`,
+       `get`, `set`, `with`, and `get_mut`
+  --> tests/ui/invalid_config.rs:72:13
+   |
+72 | #[fieldwork(other = "anything")]
+   |             ^^^^^
+
+error: unknown configuration `(get)`; did you mean `get`?
+
+       In this position, fieldwork recognizes:
+       `chain`, `copy`, `deref`, `into`, `opt_in`, `option`, `option_borrow_inner`,
+       `option_set_some`, `rename_predicate`, `rename_predicates`, `vis`, `where_clause`, `bounds`,
+       `get`, `set`, `with`, and `get_mut`
+  --> tests/ui/invalid_config.rs:78:13
+   |
+78 | #[fieldwork((get)(copy))]
+   |             ^^^^^
+
+error: unknown configuration `(get)`; did you mean `get`?
+
+       In this position, fieldwork recognizes:
+       `chain`, `copy`, `deref`, `into`, `opt_in`, `option`, `option_borrow_inner`,
+       `option_set_some`, `rename_predicate`, `rename_predicates`, `vis`, `where_clause`, `bounds`,
+       `get`, `set`, `with`, and `get_mut`
+  --> tests/ui/invalid_config.rs:82:13
+   |
+82 | #[fieldwork((get) = copy)]
+   |             ^^^^^
+
+error: unknown configuration `(get)`; did you mean `get`?
+
+       In this position, fieldwork recognizes:
+       `argument`, `chain`, `copy`, `deref`, `get`, `get_mut`, `into`, `name`, `opt_in`, `option`,
+       `option_borrow_inner`, `option_set_some`, `rename`, `rename_predicate`, `set`, `skip`, `vis`,
+       and `with`
+  --> tests/ui/invalid_config.rs:86:22
+   |
+86 | struct Q(#[fieldwork((get) = copy)] ());
+   |                      ^^^^^
+
+error: unknown configuration `(get)`; did you mean `get`?
+
+       In this position, fieldwork recognizes:
+       `argument`, `chain`, `copy`, `deref`, `get`, `get_mut`, `into`, `name`, `opt_in`, `option`,
+       `option_borrow_inner`, `option_set_some`, `rename`, `rename_predicate`, `set`, `skip`, `vis`,
+       and `with`
+  --> tests/ui/invalid_config.rs:89:22
+   |
+89 | struct R(#[fieldwork((get)(copy))] ());
+   |                      ^^^^^
