@@ -18,7 +18,7 @@ error: unknown configuration `invalid_config`
  --> tests/ui/invalid_config.rs:8:13
   |
 8 | #[fieldwork(invalid_config = true)]
-  |             ^^^^^^^^^^^^^^^^^^^^^
+  |             ^^^^^^^^^^^^^^
 
 error: unknown configuration `invalid`
 
@@ -66,10 +66,10 @@ error: invalid value for key `bounds`
   --> tests/ui/invalid_config.rs:36:13
    |
 36 | #[fieldwork(bounds = true)]
-   |             ^^^^^^^^^^^^^
+   |             ^^^^^^
 
 error: invalid value for key `rename`
   --> tests/ui/invalid_config.rs:43:21
    |
 43 |     #[fieldwork(get(rename = true))]
-   |                     ^^^^^^^^^^^^^
+   |                     ^^^^^^

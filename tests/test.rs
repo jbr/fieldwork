@@ -4,8 +4,20 @@ fn macrotest() {
     macrotest::expand("tests/expand/*.rs");
 }
 
+#[rustversion::stable]
 #[test]
 fn ui_tests() {
+    ui_tests_impl()
+}
+
+#[rustversion::not(stable)]
+#[test]
+#[ignore]
+fn ui_tests() {
+    ui_tests_impl()
+}
+
+fn ui_tests_impl() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/ui/*.rs");
 }
