@@ -100,7 +100,7 @@ impl FieldAttributes {
     fn handle_assign_str_lit(&mut self, span: Span, lhs: &str, rhs: &LitStr) -> Result<(), Error> {
         if !self.common_settings.handle_assign_str_lit(lhs, rhs)? {
             match lhs {
-                "rename" => self.fn_ident = Some(rhs.parse()?),
+                "name" | "rename" => self.fn_ident = Some(rhs.parse()?),
                 "deref" => self.deref = Some(rhs.parse()?),
                 "argument" => self.argument_ident = Some(rhs.parse()?),
                 _ => {
@@ -116,7 +116,7 @@ impl FieldAttributes {
 
     fn handle_assign_path(&mut self, span: Span, lhs: &str, rhs: &Path) -> Result<(), Error> {
         match lhs {
-            "rename" => self.fn_ident = Some(rhs.require_ident().cloned()?),
+            "name" | "rename" => self.fn_ident = Some(rhs.require_ident().cloned()?),
             "argument" => self.argument_ident = Some(rhs.require_ident().cloned()?),
             "deref" => {
                 self.deref = Some(Type::Path(TypePath {
