@@ -7,7 +7,7 @@ use crate::{
     deref_handling::auto_deref,
     option_handling::{extract_option_type, strip_ref},
 };
-use Method::{Get, GetMut, Set, With};
+use Method::{Get, GetMut, Set, With, Without};
 use syn::{Expr, Ident, Member, Type, Visibility, parse_quote};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
@@ -53,14 +53,16 @@ impl<'a> Query<'a> {
         let get_copy = self.is_get_copy();
         let option_borrow_inner = self.option_borrow_inner();
         let (argument_ty, assigned_value) =
-            self.determine_argument_ty_and_assigned_value(&argument_ident);
+            self.determine_argument_ty_and_assigned_value(&argument_ident)?;
+
+        let argument_ident_and_ty = argument_ty.map(|ty| (argument_ident, ty));
 
         Some(Resolved {
             method,
             vis,
             fn_ident,
             variable_ident,
-            argument_ident,
+            argument_ident_and_ty,
             ty,
             doc,
             get_copy,
@@ -68,7 +70,6 @@ impl<'a> Query<'a> {
             deref_type,
             option_borrow_inner,
             assigned_value,
-            argument_ty,
         })
     }
 
@@ -139,6 +140,7 @@ impl<'a> Query<'a> {
             Set => Cow::Owned(Ident::new(&format!("set_{ident}"), self.field.span)),
             With => Cow::Owned(Ident::new(&format!("with_{ident}"), self.field.span)),
             GetMut => Cow::Owned(Ident::new(&format!("{ident}_mut"), self.field.span)),
+            Without => Cow::Owned(Ident::new(&format!("without_{ident}"), self.field.span)),
         })
     }
 
@@ -182,7 +184,7 @@ impl<'a> Query<'a> {
             Get => "Borrows {}",
             Set if self.chainable_set() => "Sets {}, returning `&mut Self` for chaining",
             Set => "Sets {}",
-            With => "Owned chainable setter for {}, returning `Self`",
+            With | Without => "Owned chainable setter for {}, returning `Self`",
             GetMut => "Mutably borrow {}",
         }
     }
@@ -261,17 +263,23 @@ impl<'a> Query<'a> {
     }
 
     fn common_setting<T: 'a>(&self, fun: impl Fn(&'a CommonSettings) -> Option<T>) -> T {
+        self.common_setting_without_default(&fun)
+            .unwrap_or_else(|| fun(CommonSettings::DEFAULTS).unwrap())
+    }
+
+    fn common_setting_without_default<T: 'a>(
+        &self,
+        fun: impl Fn(&'a CommonSettings) -> Option<T>,
+    ) -> Option<T> {
         [
             self.field_method_attributes.map(|x| &x.common_settings),
             Some(&self.field.attributes.common_settings),
             self.struct_method_attributes.map(|x| &x.common_settings),
             Some(&self.struct_attributes.common_settings),
-            Some(CommonSettings::DEFAULTS),
         ]
         .into_iter()
         .flatten()
         .find_map(fun)
-        .unwrap()
     }
 
     fn option_borrow_inner(&self) -> Option<OptionHandling<'a>> {
@@ -298,9 +306,32 @@ impl<'a> Query<'a> {
     fn determine_argument_ty_and_assigned_value(
         &self,
         argument_ident: &Ident,
-    ) -> (Cow<'a, Type>, Expr) {
-        let mut option_set_some = self.common_setting(|x| x.option_set_some);
+    ) -> Option<(Option<Cow<'a, Type>>, Expr)> {
+        if self.method == &Without {
+            if is_type(&self.field.ty, "bool") {
+                return Some((None, parse_quote!(false)));
+            }
+
+            if extract_option_type(&self.field.ty).is_some() {
+                return Some((None, parse_quote!(None)));
+            }
+
+            return None;
+        }
+
+        let with_without_pair = self.method == &With && {
+            Query::new(&Without, &self.field, &self.struct_attributes).enabled()
+        };
+
+        let mut option_set_some = self
+            .common_setting_without_default(|x| x.option_set_some)
+            .unwrap_or(with_without_pair);
+
         let into = self.common_setting(|x| x.into);
+
+        if with_without_pair && option_set_some && is_type(&self.field.ty, "bool") {
+            return Some((None, parse_quote!(true)));
+        }
 
         let mut argument_ty = Cow::Borrowed(&self.field.ty);
 
@@ -323,7 +354,7 @@ impl<'a> Query<'a> {
             assigned_value = parse_quote!(Some(#assigned_value));
         }
 
-        (argument_ty, assigned_value)
+        Some((Some(argument_ty), assigned_value))
     }
 }
 
