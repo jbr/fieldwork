@@ -29,7 +29,8 @@ impl Parse for Struct {
         let fields = ds
             .fields
             .iter()
-            .map(Field::build)
+            .enumerate()
+            .map(|(index, field)| Field::build(field, index))
             .collect::<syn::Result<Vec<_>>>()?;
 
         let mut generics = input.generics.clone();

@@ -8,7 +8,7 @@ use crate::{
     option_handling::{extract_option_type, strip_ref},
 };
 use Method::{Get, GetMut, Set, With};
-use syn::{Expr, Ident, Type, Visibility, parse_quote};
+use syn::{Expr, Ident, Member, Type, Visibility, parse_quote};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Query<'a> {
@@ -51,9 +51,9 @@ impl<'a> Query<'a> {
         }
         let method = *self.method;
         let vis = self.vis();
-        let fn_ident = self.fn_ident();
+        let fn_ident = self.fn_ident()?;
         let variable_ident = self.variable_ident();
-        let argument_ident = self.argument_ident();
+        let argument_ident = self.argument_ident()?;
         let doc = self.docs();
         let deref_type = self.deref_type();
         let ty = &self.field.ty;
@@ -111,12 +111,12 @@ impl<'a> Query<'a> {
         self.common_setting(|x| x.rename_predicates)
     }
 
-    fn fn_ident(&self) -> Cow<'a, Ident> {
+    fn fn_ident(&self) -> Option<Cow<'a, Ident>> {
         if let Some(fn_ident) = self
             .field_method_attribute()
             .and_then(|x| x.fn_ident.as_ref())
         {
-            return Cow::Borrowed(fn_ident);
+            return Some(Cow::Borrowed(fn_ident));
         }
 
         let ident = self
@@ -124,53 +124,64 @@ impl<'a> Query<'a> {
             .attributes
             .fn_ident
             .as_ref()
-            .unwrap_or(&self.field.ident);
+            .or(match &self.field.member {
+                Member::Named(ident) => Some(ident),
+                Member::Unnamed(_) => None,
+            })?;
 
         if let Some(template) = self
             .struct_method_attribute()
             .and_then(|x| x.template.as_ref())
         {
-            return Cow::Owned(Ident::new(
+            return Some(Cow::Owned(Ident::new(
                 &template.as_str().replacen("{}", &ident.to_string(), 1),
-                self.field.ident.span(),
-            ));
+                self.field.span,
+            )));
         }
 
-        match self.method {
+        Some(match self.method {
             Get if self.rename_predicates() && is_type(&self.field.ty, "bool") => {
-                Cow::Owned(Ident::new(&format!("is_{ident}"), self.field.ident.span()))
+                Cow::Owned(Ident::new(&format!("is_{ident}"), self.field.span))
             }
             Get => Cow::Borrowed(ident),
-            Set => Cow::Owned(Ident::new(&format!("set_{ident}"), self.field.ident.span())),
-            With => Cow::Owned(Ident::new(
-                &format!("with_{ident}"),
-                self.field.ident.span(),
-            )),
-            GetMut => Cow::Owned(Ident::new(&format!("{ident}_mut"), self.field.ident.span())),
-        }
+            Set => Cow::Owned(Ident::new(&format!("set_{ident}"), self.field.span)),
+            With => Cow::Owned(Ident::new(&format!("with_{ident}"), self.field.span)),
+            GetMut => Cow::Owned(Ident::new(&format!("{ident}_mut"), self.field.span)),
+        })
     }
 
-    fn variable_ident(&self) -> Cow<'a, Ident> {
-        Cow::Borrowed(&self.field.ident)
+    fn variable_ident(&self) -> &'a Member {
+        &self.field.member
     }
 
-    fn argument_ident(&self) -> Cow<'a, Ident> {
+    fn argument_ident(&self) -> Option<Cow<'a, Ident>> {
         if let Some(argument_ident) = self
-            .field_method_attribute()
+            .field_method_attributes
             .and_then(|x| x.argument_ident.as_ref())
         {
-            return Cow::Borrowed(argument_ident);
+            return Some(Cow::Borrowed(argument_ident));
         }
 
         if let Some(argument_ident) = self.field.attributes.argument_ident.as_ref() {
-            return Cow::Borrowed(argument_ident);
+            return Some(Cow::Borrowed(argument_ident));
         }
 
         if let Some(renamed) = self.field.attributes.fn_ident.as_ref() {
-            return Cow::Borrowed(renamed);
+            return Some(Cow::Borrowed(renamed));
         }
 
-        Cow::Borrowed(&self.field.ident)
+        if let Member::Named(ident) = &self.field.member {
+            return Some(Cow::Borrowed(ident));
+        }
+
+        if let Some(argument_ident) = self
+            .field_method_attributes
+            .and_then(|x| x.fn_ident.as_ref())
+        {
+            return Some(Cow::Borrowed(argument_ident));
+        }
+
+        None
     }
 
     fn doc_template(&self) -> &str {

@@ -85,7 +85,7 @@ impl FieldMethodAttributes {
     fn handle_assign_str_lit(&mut self, span: Span, lhs: &str, rhs: &LitStr) -> syn::Result<()> {
         if !self.common_settings.handle_assign_str_lit(lhs, rhs)? {
             match lhs {
-                "rename" => self.fn_ident = Some(rhs.parse()?),
+                "name" | "rename" => self.fn_ident = Some(rhs.parse()?),
                 "argument" => self.argument_ident = Some(rhs.parse()?),
                 "deref" => self.deref = Some(rhs.parse()?),
                 "doc" => self.doc = Some(rhs.value()),
@@ -105,7 +105,7 @@ impl FieldMethodAttributes {
 
     fn handle_assign_path(&mut self, span: Span, lhs: &str, rhs: &Path) -> syn::Result<()> {
         match lhs {
-            "rename" => self.fn_ident = Some(rhs.require_ident().cloned()?),
+            "name" | "rename" => self.fn_ident = Some(rhs.require_ident().cloned()?),
             "argument" => self.argument_ident = Some(rhs.require_ident().cloned()?),
             "deref" => {
                 self.deref = Some(Type::Path(TypePath {

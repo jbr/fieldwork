@@ -1,22 +1,30 @@
-use syn::{Error, Expr, ExprLit, Field as SynField, Ident, Lit, Type, spanned::Spanned};
+use proc_macro2::Span;
+use syn::{Expr, ExprLit, Field as SynField, Index, Lit, Member, Type, spanned::Spanned};
 
 use crate::FieldAttributes;
 
 // this represents a field within a struct that Access has been derived for
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Field {
-    pub(crate) ident: Ident,
+    pub(crate) member: Member,
+    pub(crate) span: Span,
     pub(crate) ty: Type,
     pub(crate) attributes: FieldAttributes,
     pub(crate) doc: Vec<String>,
 }
 
 impl Field {
-    pub(crate) fn build(field: &SynField) -> syn::Result<Field> {
-        let ident = field
-            .ident
-            .clone()
-            .ok_or_else(|| Error::new(field.span(), "can only be used with named fields"))?;
+    pub(crate) fn build(field: &SynField, index: usize) -> syn::Result<Field> {
+        let span = field.span();
+        let member = match field.ident.clone() {
+            Some(ident) => Member::Named(ident),
+            None => Member::Unnamed(Index {
+                index: u32::try_from(index)
+                    .map_err(|err| syn::Error::new(field.span(), err.to_string()))?,
+                span: field.span(),
+            }),
+        };
+
         let ty = field.ty.clone();
 
         let doc = field
@@ -31,7 +39,7 @@ impl Field {
             })
             .collect();
 
-        let attrs = FieldAttributes::build(
+        let attributes = FieldAttributes::build(
             field
                 .attrs
                 .iter()
@@ -39,10 +47,11 @@ impl Field {
         )?;
 
         Ok(Field {
-            ident,
+            span,
+            member,
             ty,
             doc,
-            attributes: attrs,
+            attributes,
         })
     }
 }

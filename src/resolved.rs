@@ -3,14 +3,14 @@ use Method::{Get, GetMut, Set, With};
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use std::borrow::Cow;
-use syn::{Expr, Ident, Type, Visibility};
+use syn::{Expr, Ident, Member, Type, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Resolved<'a> {
     pub(crate) method: Method,
     pub(crate) vis: Cow<'a, Visibility>,
     pub(crate) fn_ident: Cow<'a, Ident>,
-    pub(crate) variable_ident: Cow<'a, Ident>,
+    pub(crate) variable_ident: &'a Member,
     pub(crate) argument_ident: Cow<'a, Ident>,
     pub(crate) ty: &'a Type,
     pub(crate) doc: Option<Cow<'a, str>>,

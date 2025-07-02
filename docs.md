@@ -1,7 +1,7 @@
 # ⛏️ fieldwork - field accessor generation
 
 `fieldwork` is a procedural macro crate designed to automate the generation of field accessor
-methods for named structs. By leveraging Rust's powerful macro system, `fieldwork` reduces
+methods for structs. By leveraging Rust's powerful macro system, `fieldwork` reduces
 boilerplate code, enhances code readability, and ensures consistency. Just as importantly,
 `fieldwork` intends to be fully customizable and expressive for common access patterns.
 
@@ -204,6 +204,32 @@ APIs more ergonomic. For example, a `String` field can accept `&str`, `String`, 
 other type implementing `Into<String>`. This feature works seamlessly with `option_set_some` - when
 both are enabled, the setter accepts `impl Into<T>` and wraps the result in `Some()`. This feature
 can be enabled at any configuration level and only affects setter methods.
+
+### Tuple struct support
+
+Fieldwork supports both named structs and tuple structs. For tuple structs, you must provide a
+`name` attribute for each field you want to generate methods for. Fields without a `name` attribute
+are ignored.
+
+```rust
+# // docgen-skip
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set, with, get_mut)]
+struct Color(
+    #[fieldwork(name = red)] u8,
+    #[fieldwork(name = green)] u8,
+    #[fieldwork(name = blue)] u8,
+);
+
+// Usage
+let color = Color(255, 128, 0)
+    .with_red(200)
+    .with_blue(100);
+
+assert_eq!(color.red(), 200);
+assert_eq!(color.green(), 128);
+assert_eq!(color.blue(), 100);
+```
 
 <br/><hr/><br/>
 
