@@ -1,4 +1,4 @@
-use crate::{CommonSettings, Method, StructMethodAttributes};
+use crate::{CommonSettings, Method, StructMethodAttributes, errors::invalid_key};
 use proc_macro2::Span;
 use std::collections::HashSet;
 use syn::{
@@ -21,6 +21,26 @@ pub(crate) struct StructAttributes {
 }
 
 impl StructAttributes {
+    const VALID_KEYS: &[&str] = &[
+        "chain",
+        "copy",
+        "deref",
+        "into",
+        "opt_in",
+        "option",
+        "option_borrow_inner",
+        "option_set_some",
+        "rename_predicate",
+        "rename_predicates",
+        "vis",
+        "where_clause",
+        "bounds",
+        "get",
+        "set",
+        "with",
+        "get_mut",
+    ];
+
     pub(crate) fn build(attributes: &[Attribute]) -> syn::Result<Self> {
         let mut struct_attributes = Self::default();
         let Some(attr) = attributes.iter().find(|x| x.path().is_ident("fieldwork")) else {
@@ -48,12 +68,21 @@ impl StructAttributes {
                 )?,
 
                 Expr::Call(ExprCall { func, args, .. }) => match &**func {
-                    Expr::Path(ExprPath { path: method, .. }) => {
-                        let method = Method::try_from(method)?;
-                        self.include.insert(method);
-                        self.methods
-                            .push(StructMethodAttributes::build(method, args)?);
-                    }
+                    Expr::Path(ExprPath { path: method, .. }) => match Method::try_from(method) {
+                        Ok(method) => {
+                            self.include.insert(method);
+                            self.methods
+                                .push(StructMethodAttributes::build(method, args)?);
+                        }
+
+                        Err(_) => {
+                            return Err(invalid_key(
+                                func.span(),
+                                &method.require_ident()?.to_string(),
+                                Self::VALID_KEYS,
+                            ));
+                        }
+                    },
 
                     _ => return Err(Error::new(expr.span(), "not recognized call")),
                 },
@@ -98,7 +127,7 @@ impl StructAttributes {
                         where_token: Where::default(),
                     });
                 }
-                _ => return Err(Error::new(span, "not recognized")),
+                _ => return Err(invalid_key(span, lhs, Self::VALID_KEYS)),
             }
         }
         Ok(())
@@ -108,12 +137,13 @@ impl StructAttributes {
         if self.common_settings.handle_assign_bool_lit(lhs, value) {
             Ok(())
         } else if value {
-            let method = Method::from_str_with_span(lhs, span)?;
+            let method = Method::from_str_with_span(lhs, span)
+                .map_err(|_| invalid_key(span, lhs, Self::VALID_KEYS))?;
             self.include.insert(method);
             self.methods.push(StructMethodAttributes::new(method));
             Ok(())
         } else {
-            Err(Error::new(span, "not recognized"))
+            Err(invalid_key(span, lhs, Self::VALID_KEYS))
         }
     }
 }

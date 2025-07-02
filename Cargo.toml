@@ -27,3 +27,4 @@ syn = { version = "2.0.101", features = ["full"] }
 [dev-dependencies]
 macrotest = { version = "1.1.0" }
 runtime-macros = { version = "1.1.1" }
+trybuild = "1.0.105"

@@ -55,15 +55,15 @@ impl CommonSettings {
 
     pub(crate) fn handle_assign_bool_lit(&mut self, lhs: &str, value: bool) -> bool {
         match lhs {
-            "into" => self.into = Some(value),
-            "copy" => self.get_copy = Some(value),
             "chain" => self.chainable_set = Some(value),
-            "option" | "option_borrow_inner" => self.option_borrow_inner = Some(value),
-            "opt_in" => self.opt_in = value,
-            "skip" => self.skip = value,
+            "copy" => self.get_copy = Some(value),
             "deref" => self.auto_deref = Some(value),
-            "rename_predicate" | "rename_predicates" => self.rename_predicates = Some(value),
+            "into" => self.into = Some(value),
+            "opt_in" => self.opt_in = value,
+            "option" | "option_borrow_inner" => self.option_borrow_inner = Some(value),
             "option_set_some" => self.option_set_some = Some(value),
+            "rename_predicate" | "rename_predicates" => self.rename_predicates = Some(value),
+            "skip" => self.skip = value,
             _ => return false,
         }
         true

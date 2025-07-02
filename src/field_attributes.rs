@@ -4,7 +4,7 @@ use syn::{
     Meta, MetaList, Path, Type, TypePath, punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
 
-use crate::{CommonSettings, FieldMethodAttributes, Method};
+use crate::{CommonSettings, FieldMethodAttributes, Method, errors::invalid_key};
 
 // this represents the configuration for the field
 #[derive(Default)]
@@ -20,6 +20,27 @@ pub(crate) struct FieldAttributes {
 }
 
 impl FieldAttributes {
+    const VALID_KEYS: &[&str] = &[
+        "argument",
+        "chain",
+        "copy",
+        "deref",
+        "get",
+        "get_mut",
+        "into",
+        "name",
+        "opt_in",
+        "option",
+        "option_borrow_inner",
+        "option_set_some",
+        "rename",
+        "rename_predicate",
+        "set",
+        "skip",
+        "vis",
+        "with",
+    ];
+
     fn handle_assign(&mut self, assign: &ExprAssign) -> syn::Result<()> {
         let ExprAssign { left, right, .. } = assign;
         let span = assign.span();
@@ -105,7 +126,8 @@ impl FieldAttributes {
                 "argument" => self.argument_ident = Some(rhs.parse()?),
                 _ => {
                     self.method_attributes.push(FieldMethodAttributes::new(
-                        Method::from_str_with_span(lhs, span)?,
+                        Method::from_str_with_span(lhs, span)
+                            .map_err(|_| invalid_key(span, lhs, Self::VALID_KEYS))?,
                         Some(rhs.parse()?),
                     ));
                 }
@@ -127,7 +149,8 @@ impl FieldAttributes {
 
             _ => {
                 self.method_attributes.push(FieldMethodAttributes::new(
-                    Method::from_str_with_span(lhs, span)?,
+                    Method::from_str_with_span(lhs, span)
+                        .map_err(|_| invalid_key(span, lhs, Self::VALID_KEYS))?,
                     Some(rhs.require_ident().cloned()?),
                 ));
             }
@@ -138,14 +161,17 @@ impl FieldAttributes {
     fn handle_assign_bool_lit(&mut self, span: Span, lhs: &str, value: bool) -> Result<(), Error> {
         if self.common_settings.handle_assign_bool_lit(lhs, value) {
             Ok(())
-        } else if value {
-            self.method_attributes.push(FieldMethodAttributes::new(
-                Method::from_str_with_span(lhs, span)?,
-                None,
-            ));
-            Ok(())
         } else {
-            Err(Error::new(span, "not recognized"))
+            let method = Method::from_str_with_span(lhs, span)
+                .map_err(|_| invalid_key(span, lhs, Self::VALID_KEYS))?;
+            let mut fma = FieldMethodAttributes::new(method, None);
+
+            if !value {
+                fma.common_settings.skip = true;
+            }
+
+            self.method_attributes.push(fma);
+            Ok(())
         }
     }
 }
