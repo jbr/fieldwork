@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.1...fieldwork-v0.4.2) - 2025-07-03
+
+### Fixed
+
+- accidentally added a dev-dep as a primary dep
+
+### Other
+
+- Merge pull request #55 from jbr/fix-rustversion-dev-dep
+
 ## [0.4.1](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.0...fieldwork-v0.4.1) - 2025-07-03
 
 ### Added
