@@ -17,32 +17,6 @@ feature, is to be as customizable and expressive as writing your own getters and
 succeeds if you are able to emit exactly the code that you would have manually written, but far more
 concisely.
 
-## Performance
-
-The compile time cost of using a proc macro crate is always worth considering. All efforts have been
-made to keep this crate as lightweight as possible and featureful enough to be worth the tradeoff.
-
-## Testing
-
-[![ci][ci-badge]][ci]
-[![codecov](https://codecov.io/gh/jbr/fieldwork/graph/badge.svg?token=tlWtminkYf)](https://codecov.io/gh/jbr/fieldwork)
-
-[ci]: https://github.com/jbr/fieldwork/actions?query=workflow%3ACI
-[ci-badge]: https://github.com/jbr/fieldwork/workflows/CI/badge.svg
-
-This crate has a full suite of macro-expansion tests in
-[tests/expand](https://github.com/jbr/fieldwork/tree/main/tests/expand). These tests are also used
-for test coverage.
-
-## Documentation
-
-View the docs for main on github at [docs.md](https://github.com/jbr/fieldwork/blob/main/docs.md),
-or on github pages in [rustdoc format](https://jbr.github.io/fieldwork/fieldwork/).  The most recent
-release can always be viewed at [docs.rs](https://docs.rs/fieldwork).
-
-## Safety
-This crate uses `#![deny(unsafe_code)]`.
-
 ## Example to get a sense of the library
 
 ```rust
@@ -106,6 +80,31 @@ config = config.without_log_dir(); // Sets log_dir to None
 assert!(config.log_dir().is_none());
 ```
 
+## Performance
+
+The compile time cost of using a proc macro crate is always worth considering. All efforts have been
+made to keep this crate as lightweight as possible and featureful enough to be worth the tradeoff.
+
+## Testing
+
+[![ci][ci-badge]][ci]
+[![codecov](https://codecov.io/gh/jbr/fieldwork/graph/badge.svg?token=tlWtminkYf)](https://codecov.io/gh/jbr/fieldwork)
+
+[ci]: https://github.com/jbr/fieldwork/actions?query=workflow%3ACI
+[ci-badge]: https://github.com/jbr/fieldwork/workflows/CI/badge.svg
+
+This crate has a full suite of macro-expansion tests in
+[tests/expand](https://github.com/jbr/fieldwork/tree/main/tests/expand). These tests are also used
+for test coverage.
+
+## Documentation
+
+View the docs for main on github at [docs.md](https://github.com/jbr/fieldwork/blob/main/docs.md),
+or on github pages in [rustdoc format](https://jbr.github.io/fieldwork/fieldwork/).  The most recent
+release can always be viewed at [docs.rs](https://docs.rs/fieldwork).
+
+## Safety
+This crate uses `#![deny(unsafe_code)]`.
 
 ## License
 
