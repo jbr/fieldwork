@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.0...fieldwork-v0.4.1) - 2025-07-03
+
+### Added
+
+- add `without` method
+- improved error messages
+- support tuple structs
+
+### Other
+
+- add documentation for `without`
+- improve how per-method settings are stored
+- improve coverage
+- only run ui tests on stable
+- add ui tests to coverage
+
 ## [0.4.0](https://github.com/jbr/fieldwork/compare/fieldwork-v0.3.0...fieldwork-v0.4.0) - 2025-07-01
 
 ### Added
