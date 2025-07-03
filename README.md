@@ -49,7 +49,7 @@ This crate uses `#![deny(unsafe_code)]`.
 use std::path::PathBuf;
 
 #[derive(fieldwork::Fieldwork, Default)]
-#[fieldwork(get, set, with, get_mut, into, option_set_some, rename_predicates)]
+#[fieldwork(get, set, with, without, get_mut, into, rename_predicates)]
 struct ServerConfig {
     /// server hostname
     host: String,
@@ -80,8 +80,8 @@ let mut config = ServerConfig::default()
     .with_host("LocalHost") // accepts &str via Into<String>
     .with_port(8080)
     .with_log_dir("/var/log") // accepts &str, wraps in Some() automatically
-    .with_tls_required(true)
-    .with_verbose(false);
+    .with_tls_required() // sets to true
+    .without_verbose(); // sets to false
 
 config.host_mut().make_ascii_lowercase();
 
@@ -100,6 +100,10 @@ config
 
 let cert = config.ssl_cert_mut().take();
 assert_eq!(cert, Some(PathBuf::from("/etc/ssl/cert.pem")));
+
+// Without methods provide convenient clearing
+config = config.without_log_dir(); // Sets log_dir to None
+assert!(config.log_dir().is_none());
 ```
 
 
