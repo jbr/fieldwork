@@ -45,7 +45,7 @@ configuration](#field-method-configuration). The most specific configuration alw
 ## Quick Links (TOC)
 
 
-[**Methods**](#methods): [`get`](#get), [`set`](#set), [`get_mut`](#get_mut), [`with`](#with)
+[**Methods**](#methods): [`get`](#get), [`set`](#set), [`get_mut`](#get_mut), [`with`](#with), [`without`](#without)
 
 [**Struct configuration**](#struct-configuration): [`vis`](#struct-vis),
 [`where_clause`](#struct-where-clause), [`option_borrow_inner`](#struct-option),
@@ -80,7 +80,7 @@ fields](#how-fieldwork-selects-which-methods-to-generate-for-which-fields)
 use std::path::PathBuf;
 
 #[derive(fieldwork::Fieldwork, Default)]
-#[fieldwork(get, set, with, get_mut, into, option_set_some, rename_predicates)]
+#[fieldwork(get, set, with, without, get_mut, into, rename_predicates)]
 struct ServerConfig {
     /// server hostname
     host: String,
@@ -111,8 +111,8 @@ let mut config = ServerConfig::default()
     .with_host("LocalHost") // accepts &str via Into<String>
     .with_port(8080)
     .with_log_dir("/var/log") // accepts &str, wraps in Some() automatically
-    .with_tls_required(true)
-    .with_verbose(false);
+    .with_tls_required() // sets to true
+    .without_verbose(); // sets to false
 
 config.host_mut().make_ascii_lowercase();
 
@@ -131,6 +131,10 @@ config
 
 let cert = config.ssl_cert_mut().take();
 assert_eq!(cert, Some(PathBuf::from("/etc/ssl/cert.pem")));
+
+// Without methods provide convenient clearing
+config = config.without_log_dir(); // Sets log_dir to None
+assert!(config.log_dir().is_none());
 ```
 
 <br/><hr/><br/>
@@ -214,7 +218,7 @@ are ignored.
 ```rust
 # // docgen-skip
 #[derive(fieldwork::Fieldwork)]
-#[fieldwork(get, set, with, get_mut)]
+#[fieldwork(get, set, with, without, get_mut)]
 struct Color(
     #[fieldwork(name = red)] u8,
     #[fieldwork(name = green)] u8,
@@ -235,7 +239,7 @@ assert_eq!(color.blue(), 100);
 
 ## Methods
 
-Fieldwork supports four distinct methods: `get`, `set`, `get_mut`, and `with`.
+Fieldwork supports five distinct methods: `get`, `set`, `get_mut`, `with`, and `without`.
 
 ### `get`
 
@@ -413,6 +417,58 @@ impl User {
 }
 
 ```
+
+### `without`
+
+The `without` method provides "negative" operations to complement `with`. When `without` is enabled, it changes how `with` works: instead of accepting the field's type directly, `with` becomes the "positive" operation (true for bools, Some(value) for Options) and `without` becomes the "negative" operation (false for bools, None for Options).
+
+#### How `with` and `without` work together
+
+```rust
+// With `without` - the `with` methods change behavior
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(with, without)]
+struct Config {
+    debug: bool,
+    name: Option<String>,
+}
+```
+
+```rust
+// GENERATED
+# struct Config { debug: bool, name: Option<String>, }
+impl Config {
+    #[must_use]
+    pub fn with_debug(mut self) -> Self {
+        self.debug = true;
+        self
+    }
+    #[must_use]
+    pub fn without_debug(mut self) -> Self {
+        self.debug = false;
+        self
+    }
+    #[must_use]
+    pub fn with_name(mut self, name: String) -> Self {
+        self.name = Some(name);
+        self
+    }
+    #[must_use]
+    pub fn without_name(mut self) -> Self {
+        self.name = None;
+        self
+    }
+}
+
+```
+
+#### Field type behavior
+
+- **`Option<T>` fields**: `with_field(value: T)` sets to `Some(value)`, `without_field()` sets to `None`
+- **`bool` fields**: `with_field()` sets to `true`, `without_field()` sets to `false`  
+- **Other types**: `without` methods are not generated, `with` methods work normally
+
+The `without` behavior can be disabled per-field with `#[fieldwork(without = false)]`, and the automatic `Option<T>` wrapping can be disabled with `#[fieldwork(option_set_some = false)]`.
 
 <br/><hr/><br/>
 
@@ -1401,7 +1457,7 @@ impl Collection {
 
 <h4 id="field-method-skip"><code>skip</code></h4>
 
-Omit this field from the particular method.
+Omit this field from the particular method. As a shorthand, you can also use `method = false` (e.g., `without = false`) which is equivalent to `without(skip)`.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -1617,7 +1673,7 @@ attribute.
 
 ### Opt-out
 
-If a `#[fieldwork(get, set, with, get_mut)]` attribute is applied to the struct, it applies those
+If a `#[fieldwork(get, set, with, without, get_mut)]` attribute is applied to the struct, it applies those
 methods to all fields that don't have `#[fieldwork(skip)]` (to skip the entire field) or, using get
 as an example, `#[fieldwork(get(skip)]` to skip just the get method for the particular field.
 

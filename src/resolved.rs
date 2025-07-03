@@ -1,5 +1,5 @@
 use crate::{Method, query::OptionHandling};
-use Method::{Get, GetMut, Set, With};
+use Method::{Get, GetMut, Set, With, Without};
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use std::borrow::Cow;
@@ -11,7 +11,7 @@ pub(crate) struct Resolved<'a> {
     pub(crate) vis: Cow<'a, Visibility>,
     pub(crate) fn_ident: Cow<'a, Ident>,
     pub(crate) variable_ident: &'a Member,
-    pub(crate) argument_ident: Cow<'a, Ident>,
+    pub(crate) argument_ident_and_ty: Option<(Cow<'a, Ident>, Cow<'a, Type>)>,
     pub(crate) ty: &'a Type,
     pub(crate) doc: Option<Cow<'a, str>>,
     pub(crate) get_copy: bool,
@@ -19,7 +19,6 @@ pub(crate) struct Resolved<'a> {
     pub(crate) deref_type: Option<Cow<'a, Type>>,
     pub(crate) option_borrow_inner: Option<OptionHandling<'a>>,
     pub(crate) assigned_value: Expr,
-    pub(crate) argument_ty: Cow<'a, Type>,
 }
 
 impl Resolved<'_> {
@@ -81,13 +80,17 @@ impl Resolved<'_> {
             vis,
             fn_ident,
             variable_ident,
-            argument_ident,
             doc,
             chainable_set,
-            argument_ty,
             assigned_value,
+            argument_ident_and_ty,
             ..
         } = self;
+
+        let Some((argument_ident, argument_ty)) = argument_ident_and_ty else {
+            return quote!();
+        };
+
         let doc = doc.as_deref().map(|d| quote!(#[doc = #d]));
 
         if *chainable_set {
@@ -158,19 +161,29 @@ impl Resolved<'_> {
             vis,
             fn_ident,
             variable_ident,
-            argument_ident,
+            argument_ident_and_ty,
             doc,
-            argument_ty,
             assigned_value,
             ..
         } = self;
         let doc = doc.as_deref().map(|d| quote!(#[doc = #d]));
-        quote! {
-            #doc
-            #[must_use]
-            #vis fn #fn_ident(mut self, #argument_ident: #argument_ty) -> Self {
-                self.#variable_ident = #assigned_value;
-                self
+        if let Some((argument_ident, argument_ty)) = argument_ident_and_ty {
+            quote! {
+                #doc
+                #[must_use]
+                #vis fn #fn_ident(mut self, #argument_ident: #argument_ty) -> Self {
+                    self.#variable_ident = #assigned_value;
+                    self
+                }
+            }
+        } else {
+            quote! {
+                #doc
+                #[must_use]
+                #vis fn #fn_ident(mut self) -> Self {
+                    self.#variable_ident = #assigned_value;
+                    self
+                }
             }
         }
     }
@@ -181,6 +194,28 @@ impl Resolved<'_> {
             Set => self.build_set(),
             GetMut => self.build_get_mut(),
             With => self.build_with(),
+            Without => self.build_without(),
+        }
+    }
+
+    fn build_without(&self) -> TokenStream2 {
+        let Resolved {
+            vis,
+            fn_ident,
+            variable_ident,
+            doc,
+            assigned_value,
+            ..
+        } = self;
+        let doc = doc.as_deref().map(|d| quote!(#[doc = #d]));
+
+        quote! {
+            #doc
+            #[must_use]
+            #vis fn #fn_ident(mut self) -> Self {
+                self.#variable_ident = #assigned_value;
+                self
+            }
         }
     }
 }

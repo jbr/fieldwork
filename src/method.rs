@@ -8,11 +8,18 @@ pub(crate) enum Method {
     Set,
     With,
     GetMut,
+    Without,
 }
 
 impl Method {
     pub(crate) const fn all() -> &'static [Method] {
-        &[Self::Get, Self::GetMut, Self::Set, Self::With]
+        &[
+            Self::Get,
+            Self::GetMut,
+            Self::Set,
+            Self::With,
+            Self::Without,
+        ]
     }
 
     pub(crate) fn from_str_with_span(s: &str, span: Span) -> syn::Result<Self> {
@@ -21,6 +28,7 @@ impl Method {
             "set" => Ok(Self::Set),
             "with" => Ok(Self::With),
             "get_mut" => Ok(Self::GetMut),
+            "without" => Ok(Self::Without),
             _ => Err(Error::new(span, "unrecognized method")),
         }
     }
@@ -38,6 +46,8 @@ impl TryFrom<&Path> for Method {
             Ok(Self::With)
         } else if path.is_ident("get_mut") {
             Ok(Self::GetMut)
+        } else if path.is_ident("without") {
+            Ok(Self::Without)
         } else {
             Err(Error::new(path.span(), "unrecognized method"))
         }
@@ -45,7 +55,7 @@ impl TryFrom<&Path> for Method {
 }
 
 #[derive(Debug)]
-pub(crate) struct MethodSettings<T>([Option<T>; 4]);
+pub(crate) struct MethodSettings<T>([Option<T>; 5]);
 
 impl<T> Default for MethodSettings<T> {
     fn default() -> Self {
