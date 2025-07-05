@@ -247,7 +247,7 @@ impl<'a> Query<'a> {
 
     fn auto_deref(&self, ty: &'a Type) -> Option<Cow<'a, Type>> {
         if self.common_setting(|x| x.auto_deref) {
-            auto_deref(ty)
+            auto_deref(ty, *self.method)
         } else {
             None
         }
