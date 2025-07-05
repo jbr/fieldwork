@@ -39,20 +39,20 @@ impl<'a, T> Detection<'a, T> {
     pub fn arc(&self) -> &T {
         &*self.arc
     }
-    pub fn arc_mut(&mut self) -> &mut T {
-        &mut *self.arc
+    pub fn arc_mut(&mut self) -> &mut std::sync::Arc<T> {
+        &mut self.arc
     }
     pub fn rc(&self) -> &T {
         &*self.rc
     }
-    pub fn rc_mut(&mut self) -> &mut T {
-        &mut *self.rc
+    pub fn rc_mut(&mut self) -> &mut std::rc::Rc<T> {
+        &mut self.rc
     }
     pub fn cow(&self) -> &T {
         &*self.cow
     }
-    pub fn cow_mut(&mut self) -> &mut T {
-        &mut *self.cow
+    pub fn cow_mut(&mut self) -> &mut Cow<'a, T> {
+        &mut self.cow
     }
     pub fn path(&self) -> &std::path::Path {
         &*self.path
@@ -218,20 +218,20 @@ impl<'a, T> OptionDeref<'a, T> {
     pub fn arc(&self) -> Option<&T> {
         self.arc.as_deref()
     }
-    pub fn arc_mut(&mut self) -> Option<&mut T> {
-        self.arc.as_deref_mut()
+    pub fn arc_mut(&mut self) -> Option<&mut std::sync::Arc<T>> {
+        self.arc.as_mut()
     }
     pub fn rc(&self) -> Option<&T> {
         self.rc.as_deref()
     }
-    pub fn rc_mut(&mut self) -> Option<&mut T> {
-        self.rc.as_deref_mut()
+    pub fn rc_mut(&mut self) -> Option<&mut std::rc::Rc<T>> {
+        self.rc.as_mut()
     }
     pub fn cow(&self) -> Option<&T> {
         self.cow.as_deref()
     }
-    pub fn cow_mut(&mut self) -> Option<&mut T> {
-        self.cow.as_deref_mut()
+    pub fn cow_mut(&mut self) -> Option<&mut Cow<'a, T>> {
+        self.cow.as_mut()
     }
     pub fn path(&self) -> Option<&std::path::Path> {
         self.path.as_deref()

@@ -164,17 +164,17 @@ dereferenced as such. So for example, a field that contains a `String` will retu
 or `&mut str` from `get_mut` by default. This behavior can be opted out of, at any configuration
 level.
 
-| Owned Type | Borrowed Type |
-|------------|---------------|
-| `String`   | `&str`        |
-| `OsString  | `&OsStr`      |
-| `Vec<T>`   | `&[T]`        |
-| `Box<T>`   | `&T`          |
-| `Arc<T>`   | `&T`          |
-| `Rc<T>`    | `&T`          |
-| `PathBuf`  | `&Path`       |
-| `Cow<T>`   | `&T`          |
-| `[T; N]`   | `&[T]`        |
+| Owned Type | Borrowed Type | DerefMut
+|------------|---------------|------
+| `String`   | `&str`        | yes
+| `OsString  | `&OsStr`      | yes
+| `Vec<T>`   | `&[T]`        | yes
+| `Box<T>`   | `&T`          | yes
+| `Arc<T>`   | `&T`          | no
+| `Rc<T>`    | `&T`          | no
+| `PathBuf`  | `&Path`       | yes
+| `Cow<T>`   | `&T`          | no
+| `[T; N]`   | `&[T]`        | yes
 
 ### Common copy types are detected by default
 
