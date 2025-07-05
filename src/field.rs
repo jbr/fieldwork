@@ -15,7 +15,6 @@ pub(crate) struct Field {
 
 impl Field {
     pub(crate) fn build(field: &SynField, index: usize) -> syn::Result<Field> {
-        let span = field.span();
         let member = match field.ident.clone() {
             Some(ident) => Member::Named(ident),
             None => Member::Unnamed(Index {
@@ -26,6 +25,8 @@ impl Field {
         };
 
         let ty = field.ty.clone();
+
+        let span = member.span().join(ty.span()).unwrap_or(ty.span());
 
         let doc = field
             .attrs

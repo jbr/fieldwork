@@ -12,7 +12,7 @@ fn ui_tests() {
 
 #[rustversion::not(stable)]
 #[test]
-#[ignore]
+#[ignore = "to run ui tests, use the stable toolchain"]
 fn ui_tests() {
     ui_tests_impl()
 }

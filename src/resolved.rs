@@ -1,24 +1,25 @@
 use crate::{Method, query::OptionHandling};
 use Method::{Get, GetMut, Set, With, Without};
-use proc_macro2::TokenStream as TokenStream2;
-use quote::quote;
+use proc_macro2::{Span, TokenStream as TokenStream2};
+use quote::{quote, quote_spanned};
 use std::borrow::Cow;
 use syn::{Expr, Ident, Member, Type, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Resolved<'a> {
-    pub(crate) method: Method,
-    pub(crate) vis: Cow<'a, Visibility>,
-    pub(crate) fn_ident: Cow<'a, Ident>,
-    pub(crate) variable_ident: &'a Member,
     pub(crate) argument_ident_and_ty: Option<(Cow<'a, Ident>, Cow<'a, Type>)>,
-    pub(crate) ty: &'a Type,
-    pub(crate) doc: Option<Cow<'a, str>>,
-    pub(crate) get_copy: bool,
+    pub(crate) assigned_value: Expr,
     pub(crate) chainable_set: bool,
     pub(crate) deref_type: Option<Cow<'a, Type>>,
+    pub(crate) doc: Option<Cow<'a, str>>,
+    pub(crate) fn_ident: Cow<'a, Ident>,
+    pub(crate) get_copy: bool,
+    pub(crate) method: Method,
     pub(crate) option_borrow_inner: Option<OptionHandling<'a>>,
-    pub(crate) assigned_value: Expr,
+    pub(crate) span: Span,
+    pub(crate) ty: &'a Type,
+    pub(crate) variable_ident: &'a Member,
+    pub(crate) vis: Cow<'a, Visibility>,
 }
 
 impl Resolved<'_> {
@@ -32,12 +33,13 @@ impl Resolved<'_> {
             get_copy,
             deref_type,
             option_borrow_inner,
+            span,
             ..
         } = self;
         let doc = doc.as_deref().map(|d| quote!(#[doc = #d]));
 
         if *get_copy {
-            quote! {
+            quote_spanned! {*span=>
                 #doc
                 #vis fn #fn_ident(&self) -> #ty {
                     self.#variable_ident
@@ -45,13 +47,13 @@ impl Resolved<'_> {
             }
         } else if let Some(oh) = option_borrow_inner {
             match oh {
-                OptionHandling::Deref(ty) => quote! {
+                OptionHandling::Deref(ty) => quote_spanned! {*span=>
                     #doc
                     #vis fn #fn_ident(&self) -> Option<&#ty> {
                         self.#variable_ident.as_deref()
                     }
                 },
-                OptionHandling::Ref(ty) => quote! {
+                OptionHandling::Ref(ty) => quote_spanned! {*span=>
                     #doc
                     #vis fn #fn_ident(&self) -> Option<&#ty> {
                         self.#variable_ident.as_ref()
@@ -59,14 +61,14 @@ impl Resolved<'_> {
                 },
             }
         } else if let Some(deref) = deref_type {
-            quote! {
+            quote_spanned! {*span=>
                 #doc
                 #vis fn #fn_ident(&self) -> &#deref {
                     &*self.#variable_ident
                 }
             }
         } else {
-            quote! {
+            quote_spanned! {*span=>
                 #doc
                 #vis fn #fn_ident(&self) -> &#ty {
                     &self.#variable_ident
@@ -84,6 +86,7 @@ impl Resolved<'_> {
             chainable_set,
             assigned_value,
             argument_ident_and_ty,
+            span,
             ..
         } = self;
 
@@ -94,7 +97,7 @@ impl Resolved<'_> {
         let doc = doc.as_deref().map(|d| quote!(#[doc = #d]));
 
         if *chainable_set {
-            quote! {
+            quote_spanned! {*span=>
                 #doc
                 #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) -> &mut Self {
                     self.#variable_ident = #assigned_value;
@@ -102,7 +105,7 @@ impl Resolved<'_> {
                 }
             }
         } else {
-            quote! {
+            quote_spanned! {*span=>
                 #doc
                 #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) {
                     self.#variable_ident = #assigned_value;
@@ -120,19 +123,20 @@ impl Resolved<'_> {
             doc,
             deref_type,
             option_borrow_inner,
+            span,
             ..
         } = self;
         let doc = doc.as_deref().map(|d| quote!(#[doc = #d]));
 
         if let Some(oh) = option_borrow_inner {
             match oh {
-                OptionHandling::Deref(ty) => quote! {
+                OptionHandling::Deref(ty) => quote_spanned! {*span=>
                     #doc
                     #vis fn #fn_ident(&mut self) -> Option<&mut #ty> {
                         self.#variable_ident.as_deref_mut()
                     }
                 },
-                OptionHandling::Ref(ty) => quote! {
+                OptionHandling::Ref(ty) => quote_spanned! {*span=>
                     #doc
                     #vis fn #fn_ident(&mut self) -> Option<&mut #ty> {
                         self.#variable_ident.as_mut()
@@ -140,14 +144,14 @@ impl Resolved<'_> {
                 },
             }
         } else if let Some(deref) = deref_type {
-            quote! {
+            quote_spanned! {*span=>
                 #doc
                 #vis fn #fn_ident(&mut self) -> &mut #deref {
                     &mut *self.#variable_ident
                 }
             }
         } else {
-            quote! {
+            quote_spanned! {*span=>
                 #doc
                 #vis fn #fn_ident(&mut self) -> &mut #ty {
                     &mut self.#variable_ident
@@ -164,11 +168,12 @@ impl Resolved<'_> {
             argument_ident_and_ty,
             doc,
             assigned_value,
+            span,
             ..
         } = self;
         let doc = doc.as_deref().map(|d| quote!(#[doc = #d]));
         if let Some((argument_ident, argument_ty)) = argument_ident_and_ty {
-            quote! {
+            quote_spanned! {*span=>
                 #doc
                 #[must_use]
                 #vis fn #fn_ident(mut self, #argument_ident: #argument_ty) -> Self {
@@ -177,7 +182,7 @@ impl Resolved<'_> {
                 }
             }
         } else {
-            quote! {
+            quote_spanned! {*span=>
                 #doc
                 #[must_use]
                 #vis fn #fn_ident(mut self) -> Self {
@@ -205,11 +210,12 @@ impl Resolved<'_> {
             variable_ident,
             doc,
             assigned_value,
+            span,
             ..
         } = self;
         let doc = doc.as_deref().map(|d| quote!(#[doc = #d]));
 
-        quote! {
+        quote_spanned! {*span=>
             #doc
             #[must_use]
             #vis fn #fn_ident(mut self) -> Self {

@@ -8,14 +8,16 @@ use crate::{
     option_handling::{extract_option_type, strip_ref},
 };
 use Method::{Get, GetMut, Set, With, Without};
+use proc_macro2::Span;
 use syn::{Expr, Ident, Member, Type, Visibility, parse_quote};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Query<'a> {
-    method: &'a Method,
     field: &'a Field,
-    struct_attributes: &'a StructAttributes,
     field_method_attributes: Option<&'a FieldMethodAttributes>,
+    method: &'a Method,
+    span: &'a Span,
+    struct_attributes: &'a StructAttributes,
     struct_method_attributes: Option<&'a StructMethodAttributes>,
 }
 
@@ -25,14 +27,20 @@ impl<'a> Query<'a> {
         field: &'a Field,
         struct_attributes: &'a StructAttributes,
     ) -> Self {
-        let field_method_attributes = field.attributes.method_attributes.retrieve(*method);
+        let (span, field_method_attributes) = field
+            .attributes
+            .method_attributes
+            .retrieve(*method)
+            .map_or((None, None), |(s, fma)| (Some(s), Some(fma)));
         let struct_method_attributes = struct_attributes.methods.retrieve(*method);
+        let span = span.unwrap_or(&field.span);
 
         Self {
-            method,
             field,
-            struct_attributes,
             field_method_attributes,
+            method,
+            span,
+            struct_attributes,
             struct_method_attributes,
         }
     }
@@ -41,6 +49,7 @@ impl<'a> Query<'a> {
         if !self.enabled() {
             return None;
         }
+        let span = *self.span;
         let method = *self.method;
         let vis = self.vis();
         let fn_ident = self.fn_ident()?;
@@ -58,18 +67,19 @@ impl<'a> Query<'a> {
         let argument_ident_and_ty = argument_ty.map(|ty| (argument_ident, ty));
 
         Some(Resolved {
-            method,
-            vis,
-            fn_ident,
-            variable_ident,
             argument_ident_and_ty,
-            ty,
-            doc,
-            get_copy,
+            assigned_value,
             chainable_set,
             deref_type,
+            doc,
+            fn_ident,
+            get_copy,
+            method,
             option_borrow_inner,
-            assigned_value,
+            span,
+            ty,
+            variable_ident,
+            vis,
         })
     }
 

@@ -16,7 +16,7 @@ pub(crate) struct FieldAttributes {
     pub(crate) decorated: bool,
     pub(crate) fn_ident: Option<Ident>,
     pub(crate) argument_ident: Option<Ident>,
-    pub(crate) method_attributes: MethodSettings<FieldMethodAttributes>,
+    pub(crate) method_attributes: MethodSettings<(Span, FieldMethodAttributes)>,
     pub(crate) deref: Option<Type>,
 
     pub(crate) common_settings: CommonSettings,
@@ -96,7 +96,7 @@ impl FieldAttributes {
                             )
                         })?;
                         self.method_attributes
-                            .insert(method, FieldMethodAttributes::build(args)?);
+                            .insert(method, (expr.span(), FieldMethodAttributes::build(args)?));
                     }
 
                     func => {
@@ -152,7 +152,7 @@ impl FieldAttributes {
                         ..FieldMethodAttributes::default()
                     };
 
-                    self.method_attributes.insert(method, fma);
+                    self.method_attributes.insert(method, (span, fma));
                 }
             }
         }
@@ -178,7 +178,7 @@ impl FieldAttributes {
                     ..FieldMethodAttributes::default()
                 };
 
-                self.method_attributes.insert(method, fma);
+                self.method_attributes.insert(method, (span, fma));
             }
         }
         Ok(())
@@ -198,7 +198,7 @@ impl FieldAttributes {
                 ..FieldMethodAttributes::default()
             };
 
-            self.method_attributes.insert(method, fma);
+            self.method_attributes.insert(method, (span, fma));
             Ok(())
         }
     }
