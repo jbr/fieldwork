@@ -29,11 +29,11 @@ struct ServerConfig {
     host: String,
 
     /// server port
-    #[fieldwork(into = false)]
+    #[field(into = false)]
     port: u16,
 
     /// path to SSL certificate file
-    #[fieldwork(option_borrow_inner = false)]
+    #[field(option_borrow_inner = false)]
     ssl_cert: Option<PathBuf>,
 
     /// path to log directory  
@@ -45,7 +45,7 @@ struct ServerConfig {
     /// whether verbose logging is enabled
     verbose: bool,
 
-    #[fieldwork(skip)]
+    #[field(skip)]
     _runtime_data: (),
 }
 
