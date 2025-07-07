@@ -226,9 +226,9 @@ are ignored.
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set, with, without, get_mut)]
 struct Color(
-    #[field(name = red)] u8,
-    #[field(name = green)] u8,
-    #[field(name = blue)] u8,
+    #[field = "red"] u8,
+    #[field = "green"] u8,
+    #[field = "blue"] u8,
 );
 
 // Usage
