@@ -21,12 +21,17 @@ pub(crate) fn extract_option_type(ty: &Type) -> Option<&Type> {
     let Some(GenericArgument::Type(inner_type)) = bracketed_args.args.first() else {
         return None;
     };
-    Some(strip_ref(inner_type))
+
+    Some(inner_type)
 }
 
 pub(crate) fn strip_ref(ty: &Type) -> &Type {
+    ref_inner(ty).unwrap_or(ty)
+}
+
+pub(crate) fn ref_inner(ty: &Type) -> Option<&Type> {
     match ty {
-        Type::Reference(TypeReference { elem, .. }) => elem,
-        _ => ty,
+        Type::Reference(TypeReference { elem, .. }) => Some(elem),
+        _ => None,
     }
 }

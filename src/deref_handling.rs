@@ -1,16 +1,35 @@
-use std::borrow::Cow;
-
-use syn::{GenericArgument, Path, PathArguments, Type, TypeArray, TypePath, parse_quote};
+use proc_macro2::Span;
+use syn::{
+    GenericArgument, Path, PathArguments, Type, TypeArray, TypePath, TypeReference,
+    parse_quote_spanned,
+};
 
 use crate::Method;
 
-pub(crate) fn auto_deref(ty: &Type, method: Method) -> Option<Cow<'_, Type>> {
+pub(crate) fn auto_deref(ty: &Type, method: Method, span: Span) -> Option<(Type, usize)> {
+    let mut ty = ty.clone();
+    let mut count = 0;
+
+    while let Some(next_ty) = auto_deref_inner(&ty, method, span) {
+        ty = next_ty;
+        count += 1;
+    }
+
+    if count > 0 { Some((ty, count)) } else { None }
+}
+
+pub(crate) fn auto_deref_inner(ty: &Type, method: Method, span: Span) -> Option<Type> {
     let segments = match ty {
+        Type::Reference(TypeReference {
+            mutability: Some(_),
+            elem,
+            ..
+        }) => return Some(*elem.clone()),
         Type::Path(TypePath {
             path: Path { segments, .. },
             ..
         }) => segments,
-        Type::Array(TypeArray { elem, .. }) => return Some(Cow::Owned(parse_quote!([#elem]))),
+        Type::Array(TypeArray { elem, .. }) => return Some(parse_quote_spanned!(span => [#elem])),
         _ => {
             return None;
         }
@@ -18,15 +37,15 @@ pub(crate) fn auto_deref(ty: &Type, method: Method) -> Option<Cow<'_, Type>> {
 
     let last_segment = segments.last()?;
     if last_segment.ident == "String" {
-        return Some(Cow::Owned(parse_quote!(str)));
+        return Some(parse_quote_spanned!(span => str));
     }
 
     if last_segment.ident == "PathBuf" {
-        return Some(Cow::Owned(parse_quote!(std::path::Path)));
+        return Some(parse_quote_spanned!(span => std::path::Path));
     }
 
     if last_segment.ident == "OsString" {
-        return Some(Cow::Owned(parse_quote!(std::ffi::OsStr)));
+        return Some(parse_quote_spanned!(span => std::ffi::OsStr));
     }
 
     if last_segment.ident == "Vec" {
@@ -38,7 +57,7 @@ pub(crate) fn auto_deref(ty: &Type, method: Method) -> Option<Cow<'_, Type>> {
             return None;
         };
 
-        return Some(Cow::Owned(parse_quote!([#inner_type])));
+        return Some(parse_quote_spanned!(span => [#inner_type]));
     }
 
     if last_segment.ident == "Box" {
@@ -50,7 +69,7 @@ pub(crate) fn auto_deref(ty: &Type, method: Method) -> Option<Cow<'_, Type>> {
             return None;
         };
 
-        return Some(Cow::Borrowed(inner_type));
+        return Some(inner_type.clone());
     }
 
     if method == Method::Get {
@@ -63,7 +82,7 @@ pub(crate) fn auto_deref(ty: &Type, method: Method) -> Option<Cow<'_, Type>> {
                 return None;
             };
 
-            return Some(Cow::Borrowed(inner_type));
+            return Some(inner_type.clone());
         }
 
         if last_segment.ident == "Cow" {
@@ -79,7 +98,7 @@ pub(crate) fn auto_deref(ty: &Type, method: Method) -> Option<Cow<'_, Type>> {
                 return None;
             };
 
-            return Some(Cow::Borrowed(t));
+            return Some(t.clone());
         }
     }
 

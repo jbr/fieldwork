@@ -23,7 +23,7 @@ struct HoldsAReference<'a> {
 }
 
 #[derive(fieldwork::Fieldwork)]
-#[fieldwork(get(copy))]
+#[fieldwork(get)]
 struct AllCopyTypes {
     char: char,
     f32: f32,
@@ -39,4 +39,11 @@ struct AllCopyTypes {
     u8: u8,
     usize: usize,
     bool: bool,
+}
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get)]
+struct CopyInteractsWithDeref {
+    box_bool: Box<bool>,
+    arc_usize: Arc<usize>,
 }

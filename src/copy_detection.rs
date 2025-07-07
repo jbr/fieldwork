@@ -1,6 +1,8 @@
 use syn::{Path, Type, TypePath, TypeReference};
 
-pub(crate) fn enable_copy_for_type(ty: &Type) -> bool {
+use crate::Method;
+
+pub(crate) fn enable_copy_for_type(ty: &Type, method: Method) -> bool {
     match ty {
         Type::Path(TypePath {
             path: Path { segments, .. },
@@ -31,6 +33,11 @@ pub(crate) fn enable_copy_for_type(ty: &Type) -> bool {
         Type::Reference(TypeReference {
             mutability: None, ..
         }) => true,
+
+        Type::Reference(TypeReference {
+            mutability: Some(_),
+            ..
+        }) => method == Method::GetMut,
 
         _ => false,
     }

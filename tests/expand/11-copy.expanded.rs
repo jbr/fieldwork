@@ -34,11 +34,11 @@ impl<'a> HoldsAReference<'a> {
     pub fn name(&self) -> &'a str {
         self.name
     }
-    pub fn mut_ref_not_copy(&self) -> &&'a mut () {
-        &self.mut_ref_not_copy
+    pub fn mut_ref_not_copy(&self) -> &() {
+        &*self.mut_ref_not_copy
     }
 }
-#[fieldwork(get(copy))]
+#[fieldwork(get)]
 struct AllCopyTypes {
     char: char,
     f32: f32,
@@ -97,5 +97,18 @@ impl AllCopyTypes {
     }
     pub fn bool(&self) -> bool {
         self.bool
+    }
+}
+#[fieldwork(get)]
+struct CopyInteractsWithDeref {
+    box_bool: Box<bool>,
+    arc_usize: Arc<usize>,
+}
+impl CopyInteractsWithDeref {
+    pub fn box_bool(&self) -> bool {
+        *self.box_bool
+    }
+    pub fn arc_usize(&self) -> usize {
+        *self.arc_usize
     }
 }
