@@ -57,8 +57,8 @@ impl Rgb {
 #[fieldwork(get, set, with, get_mut, option_set_some)]
 struct Color(#[fieldwork(name = rgb, copy)] Rgb, #[fieldwork(name = alpha)] Option<u8>);
 impl Color {
-    pub fn rgb(&self) -> &Rgb {
-        &self.0
+    pub fn rgb(&self) -> Rgb {
+        self.0
     }
     pub fn rgb_mut(&mut self) -> &mut Rgb {
         &mut self.0
