@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.3](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.2...fieldwork-v0.4.3) - 2025-07-07
+
+### Fixed
+
+- address poorly-handled nested type detection
+- Do not auto-deref Rc, Cow, or Arc
+
+### Other
+
+- Merge pull request #60 from jbr/fix-deref-mut
+- move example higher in readme
+
 ## [0.4.2](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.1...fieldwork-v0.4.2) - 2025-07-03
 
 ### Fixed
