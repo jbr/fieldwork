@@ -5,7 +5,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 use std::{collections::HashSet, env};
-use syn::{File, Item, ItemImpl, ItemStruct, ItemTrait, ItemUse, Type, TypePath};
+use syn::{Attribute, File, Item, ItemImpl, ItemStruct, ItemTrait, ItemUse, Type, TypePath};
 
 #[derive(Debug)]
 struct CodeExample {
@@ -306,13 +306,13 @@ fn format_extracted_code(extracted: &ExtractedCode) -> Result<String, Box<dyn Er
         // Remove fieldwork attributes from the struct itself
         cleaned_struct
             .attrs
-            .retain(|attr| !attr.path().is_ident("fieldwork") && !attr.path().is_ident("doc"));
+            .retain(|attr| !is_fieldwork_attr(attr) && !attr.path().is_ident("doc"));
 
         // Remove fieldwork attributes from all fields
         for field in &mut cleaned_struct.fields {
             field
                 .attrs
-                .retain(|attr| !attr.path().is_ident("fieldwork") && !attr.path().is_ident("doc"));
+                .retain(|attr| !is_fieldwork_attr(attr) && !attr.path().is_ident("doc"));
         }
 
         let formatted_struct = concise_format(&cleaned_struct.into_token_stream().to_string());
@@ -330,6 +330,11 @@ fn format_extracted_code(extracted: &ExtractedCode) -> Result<String, Box<dyn Er
     }
 
     Ok(result.join("\n"))
+}
+
+fn is_fieldwork_attr(attr: &Attribute) -> bool {
+    let path = attr.path();
+    path.is_ident("fieldwork") || path.is_ident("field")
 }
 
 fn concise_format(s: &str) -> String {

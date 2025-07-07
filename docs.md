@@ -86,11 +86,11 @@ struct ServerConfig {
     host: String,
 
     /// server port
-    #[fieldwork(into = false)]
+    #[field(into = false)]
     port: u16,
 
     /// path to SSL certificate file
-    #[fieldwork(option_borrow_inner = false)]
+    #[field(option_borrow_inner = false)]
     ssl_cert: Option<PathBuf>,
 
     /// path to log directory  
@@ -102,7 +102,7 @@ struct ServerConfig {
     /// whether verbose logging is enabled
     verbose: bool,
 
-    #[fieldwork(skip)]
+    #[field(skip)]
     _runtime_data: (),
 }
 
@@ -141,6 +141,12 @@ assert!(config.log_dir().is_none());
 
 ## General notes and configuration
 
+### `#[field]` and `#[fieldwork]` attributes are used to configure fieldwork
+
+Fieldwork can be configured on structs and fields through `#[field]` and `#[fieldwork]`,
+interchangeably. These docs generally use `#[fieldwork]` for the structs and `#[field]` for the
+indiviual fields.
+
 ### Fieldwork has four configuration levels that cascade
 
 Configuration at each field method inherits from the field's configuration, the struct configuration
@@ -149,7 +155,7 @@ takes precedence. The intent of this approach is to avoid duplication and do wha
 
 ### Boolean handling
 
-`#[fieldwork(option_borrow_inner = true)]` is the same as `#[fieldwork(option_borrow_inner)]` and
+`#[field(option_borrow_inner = true)]` is the same as `#[field(option_borrow_inner)]` and
 this is the case anywhere booleans are accepted.
 
 ### Type quoting
@@ -220,9 +226,9 @@ are ignored.
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set, with, without, get_mut)]
 struct Color(
-    #[fieldwork(name = red)] u8,
-    #[fieldwork(name = green)] u8,
-    #[fieldwork(name = blue)] u8,
+    #[field(name = red)] u8,
+    #[field(name = green)] u8,
+    #[field(name = blue)] u8,
 );
 
 // Usage
@@ -244,7 +250,7 @@ Fieldwork supports five distinct methods: `get`, `set`, `get_mut`, `with`, and `
 ### `get`
 
 Borrows the field. This can also be used to return a copy of the field using the
-`#[fieldwork(get(copy))]` annotation on a field, or when common copy types are detected (see above).
+`#[field(get(copy))]` annotation on a field, or when common copy types are detected (see above).
 
 #### Example:
 
@@ -468,7 +474,7 @@ impl Config {
 - **`bool` fields**: `with_field()` sets to `true`, `without_field()` sets to `false`  
 - **Other types**: `without` methods are not generated, `with` methods work normally
 
-The `without` behavior can be disabled per-field with `#[fieldwork(without = false)]`, and the automatic `Option<T>` wrapping can be disabled with `#[fieldwork(option_set_some = false)]`.
+The `without` behavior can be disabled per-field with `#[field(without = false)]`, and the automatic `Option<T>` wrapping can be disabled with `#[field(option_set_some = false)]`.
 
 <br/><hr/><br/>
 
@@ -969,7 +975,7 @@ struct User {
     /// the user's name
     name: String,
 
-    #[fieldwork(skip)]
+    #[field(skip)]
     private: (),
 }
 ```
@@ -1008,7 +1014,7 @@ Change the name of this field for all generated methods.
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set)]
 struct User {
-    #[fieldwork(rename = admin)]
+    #[field(rename = admin)]
     /// whether this user is an admin
     superadmin: bool,
 }
@@ -1040,7 +1046,7 @@ and lsp.
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(with, set)]
 struct User {
-    #[fieldwork(argument = is_admin)]
+    #[field(argument = is_admin)]
     /// whether this user is an admin
     admin: bool,
 }
@@ -1076,7 +1082,7 @@ struct User {
     /// whether this user is an admin
     admin: bool,
 
-    #[fieldwork(vis = "pub(crate)")]
+    #[field(vis = "pub(crate)")]
     /// the user's name
     name: String,
 }
@@ -1123,11 +1129,11 @@ struct User {
     name: String,
 
     /// a small image in jpg format
-    #[fieldwork(deref = "[u8]")]
+    #[field(deref = "[u8]")]
     profile_thumbnail: Vec<u8>,
 
     // opt out of deref detection so we can use the arc directly
-    #[fieldwork(deref = false)]
+    #[field(deref = false)]
     an_arc: Arc<()>,
 }
 ```
@@ -1175,11 +1181,11 @@ struct-method level settings for individual fields.
 #[fieldwork(set, with)]
 struct User {
     /// Nickname - uses regular Option setter
-    #[fieldwork(option_set_some = false)]
+    #[field(option_set_some = false)]
     nickname: Option<String>,
     
     /// Display name - uses automatic Some() wrapping
-    #[fieldwork(option_set_some = true)]
+    #[field(option_set_some = true)]
     display_name: Option<String>,
 }
 ```
@@ -1227,7 +1233,7 @@ struct User {
     name: String,
     
     /// Display name - uses impl Into<String> parameter
-    #[fieldwork(into)]
+    #[field(into)]
     display_name: String,
 }
 ```
@@ -1264,8 +1270,8 @@ impl User {
 
 Opt out of Option detection for this field with `option_borrow_inner = false`, or if it has been
 opted out at the struct or struct method level, opt back in with `option_borrow_inner` or
-`option_borrow_inner = true` for a single field, as in `#[fieldwork(option_borrow_inner)]` or
-`#[fieldwork(option_borrow_inner = true)]`. See [option_borrow_inner](#struct-option) above for more
+`option_borrow_inner = true` for a single field, as in `#[field(option_borrow_inner)]` or
+`#[field(option_borrow_inner = true)]`. See [option_borrow_inner](#struct-option) above for more
 information.
 
 ```rust
@@ -1274,7 +1280,7 @@ information.
 struct User {
     profile_thumbnail: Option<Vec<u8>>,
 
-    #[fieldwork(option_borrow_inner = false)] // opt out of option_borrow_inner
+    #[field(option_borrow_inner = false)] // opt out of option_borrow_inner
     nickname: Option<String>,
 }
 ```
@@ -1312,8 +1318,8 @@ and field-level [`rename`](#rename).
 ```rust
 #[derive(fieldwork::Fieldwork)]
 struct User {
-    #[fieldwork(get(rename = is_an_admin))]
     /// whether this user is an admin
+    #[field(get(rename = is_an_admin))]
     admin: bool,
 }
 ```
@@ -1334,8 +1340,8 @@ If there are no other configuration options needed, this can be provided with th
 ```rust
 #[derive(fieldwork::Fieldwork)]
 struct User {
-    #[fieldwork(get = is_an_admin)]
     /// whether this user is an admin
+    #[field(get = is_an_admin)]
     admin: bool,
 }
 ```
@@ -1360,8 +1366,8 @@ Specify the name of the argument for this specific method and field.
 ```rust
 #[derive(fieldwork::Fieldwork)]
 struct User {
-    #[fieldwork(set(argument = is_an_admin))]
     /// whether this user is an admin
+    #[field(set(argument = is_an_admin))]
     admin: bool,
 }
 ```
@@ -1386,7 +1392,7 @@ Override the documentation for this specific method and field.
 ```rust
 #[derive(fieldwork::Fieldwork)]
 struct User {
-    #[fieldwork(set(doc = "Specify whether this user can administer this system"))]
+    #[field(set(doc = "Specify whether this user can administer this system"))]
     admin: bool,
 }
 ```
@@ -1412,7 +1418,7 @@ To return `()` from this specific `set` method instead of `&mut Self`, provide `
 #[derive(fieldwork::Fieldwork)]
 struct User {
     /// whether this user is an admin
-    #[fieldwork(set(chain = false))]
+    #[field(set(chain = false))]
     admin: bool,
 }
 ```
@@ -1432,14 +1438,14 @@ impl User {
 <h4 id="field-method-copy"><code>copy</code> (<code>get</code> only)</h4>
 
 Sometimes it is more useful to return a `Copy` of the returned type instead of a borrow. To opt into
-this behavior for a specific field, use `#[fieldwork(get(copy))]`. To opt out of default copy
-behavior for common types such as `bool`, use `#[fieldwork(get(copy = false))]`.
+this behavior for a specific field, use `#[field(get(copy))]`. To opt out of default copy
+behavior for common types such as `bool`, use `#[field(get(copy = false))]`.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
 struct Collection {
     /// length
-    #[fieldwork(get(copy))]
+    #[field(get(copy))]
     len: usize,
 }
 ```
@@ -1464,7 +1470,7 @@ Omit this field from the particular method. As a shorthand, you can also use `me
 #[fieldwork(get, set)]
 struct User {
     /// whether this user is an admin
-    #[fieldwork(set(skip))]
+    #[field(set(skip))]
     admin: bool,
 
     /// the user's name
@@ -1505,11 +1511,11 @@ detection for common types.
 #[fieldwork(deref = false)]
 struct User {
     /// the user's name
-    #[fieldwork(get(deref = str), set, get_mut)]
+    #[field(get(deref = str), set, get_mut)]
     name: String,
 
     /// a small image in jpg format
-    #[fieldwork(get_mut(deref = true), get, set)]
+    #[field(get_mut(deref = true), get, set)]
     profile_thumbnail: Vec<u8>,
 }
 ```
@@ -1561,7 +1567,7 @@ field. This provides the most granular control, allowing you to enable the featu
 #[fieldwork(set, with)]
 struct User {
     /// Enable automatic Some() wrapping only for the set method
-    #[fieldwork(set(option_set_some = true))]
+    #[field(set(option_set_some = true))]
     nickname: Option<String>,
 }
 ```
@@ -1596,7 +1602,7 @@ vice versa.
 #[fieldwork(set, with)]
 struct User {
     /// Enable impl Into<String> only for the set method
-    #[fieldwork(set(into))]
+    #[field(set(into))]
     name: String,
 }
 ```
@@ -1622,10 +1628,10 @@ impl User {
 
 <h4 id="field-method-option"><code>option_borrow_inner</code></h4>
 
-Opt out of Option detection for this field and method with `#[fieldwork(option_borrow_inner =
+Opt out of Option detection for this field and method with `#[field(option_borrow_inner =
 false)]`, or if it has been opted out at the struct, struct method, or field level, opt back in with
 `option_borrow_inner` or `option_borrow_inner = true` for a single field and method, as in
-`#[fieldwork(get(option_borrow_inner))]` or `#[fieldwork(get_mut(option_borrow_inner = true))]`. See
+`#[field(get(option_borrow_inner))]` or `#[field(get_mut(option_borrow_inner = true))]`. See
 [option_borrow_inner](#struct-option) above for more information.
 
 
@@ -1636,7 +1642,7 @@ struct User {
     profile_thumbnail: Option<Vec<u8>>,
 
     // opt out of option_borrow_inner just for get_mut, so we can use Option::insert or similar
-    #[fieldwork(get_mut(option_borrow_inner = false))]
+    #[field(get_mut(option_borrow_inner = false))]
     nickname: Option<String>,
 }
 ```
@@ -1668,19 +1674,19 @@ impl User {
 ## How fieldwork selects which methods to generate for which fields
 
 In order to be maximally expressive, fieldwork can operate in both opt-in and opt-out
-mode. `#[derive(fieldwork::Fieldwork)]` does nothing without at least one `#[fieldwork]`
+mode. `#[derive(fieldwork::Fieldwork)]` does nothing without at least one `#[fieldwork]`/`#[field]`
 attribute.
 
 ### Opt-out
 
 If a `#[fieldwork(get, set, with, without, get_mut)]` attribute is applied to the struct, it applies those
-methods to all fields that don't have `#[fieldwork(skip)]` (to skip the entire field) or, using get
-as an example, `#[fieldwork(get(skip)]` to skip just the get method for the particular field.
+methods to all fields that don't have `#[field(skip)]` (to skip the entire field) or, using get
+as an example, `#[field(get(skip)]` or `#[field(get = false)]` to skip just the get method for the particular field.
 
 ### Opt-in
 
 It is also possible to omit the struct-level attribute and opt individual fields in with eg
-`#[fieldwork(get, set)]`.
+`#[field(get, set)]`.
 
 If you need to specify struct-level configuration in order to reduce repetition but still want to
 operate in an opt-in mode instead of using `skip`, fieldwork supports `opt_in` as a top level
@@ -1692,11 +1698,11 @@ methods specified on that field.
 #[fieldwork(opt_in, get(template = "get_{}"))]
 struct User {
     /// whether this user is an admin
-    #[fieldwork(get)]
+    #[field(get)]
     admin: bool,
 
     /// the user's name
-    #[fieldwork(set)]
+    #[field(set)]
     name: String,
 
     private: ()

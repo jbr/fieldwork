@@ -1,5 +1,6 @@
 use crate::{
-    CommonSettings, Method, StructMethodAttributes, errors::invalid_key, method::MethodSettings,
+    CommonSettings, Method, StructMethodAttributes, errors::invalid_key, is_fieldwork_attr,
+    method::MethodSettings,
 };
 use proc_macro2::Span;
 use quote::ToTokens;
@@ -45,7 +46,7 @@ impl StructAttributes {
 
     pub(crate) fn build(attributes: &[Attribute]) -> syn::Result<Self> {
         let mut struct_attributes = Self::default();
-        let Some(attr) = attributes.iter().find(|x| x.path().is_ident("fieldwork")) else {
+        let Some(attr) = attributes.iter().find(|x| is_fieldwork_attr(x)) else {
             return Ok(struct_attributes);
         };
         let Meta::List(list) = &attr.meta else {
