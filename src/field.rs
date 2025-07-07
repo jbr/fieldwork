@@ -1,7 +1,7 @@
 use proc_macro2::Span;
 use syn::{Expr, ExprLit, Field as SynField, Index, Lit, Member, Type, spanned::Spanned};
 
-use crate::FieldAttributes;
+use crate::{FieldAttributes, is_fieldwork_attr};
 
 // this represents a field within a struct that Access has been derived for
 #[cfg_attr(feature = "debug", derive(Debug))]
@@ -40,12 +40,8 @@ impl Field {
             })
             .collect();
 
-        let attributes = FieldAttributes::build(
-            field
-                .attrs
-                .iter()
-                .find(|attr| attr.path().is_ident("fieldwork")),
-        )?;
+        let attributes =
+            FieldAttributes::build(field.attrs.iter().find(|attr| is_fieldwork_attr(attr)))?;
 
         Ok(Field {
             member,

@@ -42,9 +42,10 @@ pub(crate) use resolved::Resolved;
 pub(crate) use r#struct::Struct;
 pub(crate) use struct_attributes::StructAttributes;
 pub(crate) use struct_method_attributes::StructMethodAttributes;
+use syn::Attribute;
 
 /// see crate-level documentation
-#[proc_macro_derive(Fieldwork, attributes(fieldwork))]
+#[proc_macro_derive(Fieldwork, attributes(fieldwork, field))]
 pub fn derive_fieldwork(input: TokenStream) -> TokenStream {
     derive_fieldwork_internal(input.into()).into()
 }
@@ -75,4 +76,9 @@ fn derive_fieldwork_internal(input: TokenStream2) -> TokenStream2 {
             #impls
         }
     }
+}
+
+pub(crate) fn is_fieldwork_attr(attr: &Attribute) -> bool {
+    let path = attr.path();
+    path.is_ident("fieldwork") || path.is_ident("field")
 }
