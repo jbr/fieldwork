@@ -47,3 +47,30 @@ struct CopyInteractsWithDeref {
     box_bool: Box<bool>,
     arc_usize: Arc<usize>,
 }
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get)]
+struct AllowSpecifyingCopyAtFieldAttribute<T: Copy> {
+    #[fieldwork(copy)]
+    generic: T,
+
+    #[fieldwork(copy = true)]
+    another: (T, T),
+}
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get)]
+struct AllowSpecifyingCopyFalseAtFieldAttribute<T: Copy> {
+    #[fieldwork(copy = false)]
+    usize: usize,
+}
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, copy = false)]
+struct AllowOptingBackInAtFieldAttribute<T: Copy> {
+    #[fieldwork(copy = true)]
+    usize: usize,
+
+    #[field(copy)]
+    generic: T,
+}

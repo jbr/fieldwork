@@ -112,3 +112,43 @@ impl CopyInteractsWithDeref {
         *self.arc_usize
     }
 }
+#[fieldwork(get)]
+struct AllowSpecifyingCopyAtFieldAttribute<T: Copy> {
+    #[fieldwork(copy)]
+    generic: T,
+    #[fieldwork(copy = true)]
+    another: (T, T),
+}
+impl<T: Copy> AllowSpecifyingCopyAtFieldAttribute<T> {
+    pub fn generic(&self) -> T {
+        self.generic
+    }
+    pub fn another(&self) -> (T, T) {
+        self.another
+    }
+}
+#[fieldwork(get)]
+struct AllowSpecifyingCopyFalseAtFieldAttribute<T: Copy> {
+    #[fieldwork(copy = false)]
+    usize: usize,
+}
+impl<T: Copy> AllowSpecifyingCopyFalseAtFieldAttribute<T> {
+    pub fn usize(&self) -> &usize {
+        &self.usize
+    }
+}
+#[fieldwork(get, copy = false)]
+struct AllowOptingBackInAtFieldAttribute<T: Copy> {
+    #[fieldwork(copy = true)]
+    usize: usize,
+    #[field(copy)]
+    generic: T,
+}
+impl<T: Copy> AllowOptingBackInAtFieldAttribute<T> {
+    pub fn usize(&self) -> usize {
+        self.usize
+    }
+    pub fn generic(&self) -> T {
+        self.generic
+    }
+}

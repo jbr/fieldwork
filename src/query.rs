@@ -73,6 +73,7 @@ impl<'a> Query<'a> {
         if let Some(field_copy) = self
             .field_method_attributes
             .and_then(|fma| fma.common_settings.get_copy)
+            .or(self.field.attributes.common_settings.get_copy)
         {
             return field_copy;
         }
