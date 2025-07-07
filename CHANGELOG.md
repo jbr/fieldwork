@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.4](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.3...fieldwork-v0.4.4) - 2025-07-07
+
+### Added
+
+- add `#[field = false]`, `#[field = true]`, and `#[field = "renamed"]`
+- add support for a `#[field]` attribute synonym
+
+### Other
+
+- update README to use `#[field]`
+
 ## [0.4.3](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.2...fieldwork-v0.4.3) - 2025-07-07
 
 ### Fixed
