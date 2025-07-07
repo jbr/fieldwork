@@ -5,11 +5,11 @@ use crate::{
     StructAttributes, StructMethodAttributes,
     copy_detection::{enable_copy_for_type, is_type},
     deref_handling::auto_deref,
-    option_handling::{extract_option_type, strip_ref},
+    option_handling::{extract_option_type, ref_inner, strip_ref},
 };
 use Method::{Get, GetMut, Set, With, Without};
 use proc_macro2::Span;
-use syn::{Expr, Ident, Member, Type, Visibility, parse_quote};
+use syn::{Expr, Ident, Member, Type, Visibility, parse_quote_spanned};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Query<'a> {
@@ -22,6 +22,14 @@ pub(crate) struct Query<'a> {
 }
 
 impl<'a> Query<'a> {
+    pub(crate) fn method(&self) -> Method {
+        *self.method
+    }
+
+    pub(crate) fn span(&self) -> Span {
+        *self.span
+    }
+
     pub(crate) fn new(
         method: &'a Method,
         field: &'a Field,
@@ -45,53 +53,23 @@ impl<'a> Query<'a> {
         }
     }
 
-    pub(crate) fn resolve(&self) -> Option<Resolved<'a>> {
-        if !self.enabled() {
-            return None;
-        }
-        let span = *self.span;
-        let method = *self.method;
-        let vis = self.vis();
-        let fn_ident = self.fn_ident()?;
-        let variable_ident = self.variable_ident();
-        let argument_ident = self.argument_ident()?;
-        let doc = self.docs();
-        let deref_type = self.deref_type();
-        let ty = &self.field.ty;
-        let chainable_set = self.chainable_set();
-        let get_copy = self.is_get_copy();
-        let option_borrow_inner = self.option_borrow_inner();
-        let (argument_ty, assigned_value) =
-            self.determine_argument_ty_and_assigned_value(&argument_ident)?;
-
-        let argument_ident_and_ty = argument_ty.map(|ty| (argument_ident, ty));
-
-        Some(Resolved {
-            argument_ident_and_ty,
-            assigned_value,
-            chainable_set,
-            deref_type,
-            doc,
-            fn_ident,
-            get_copy,
-            method,
-            option_borrow_inner,
-            span,
-            ty,
-            variable_ident,
-            vis,
-        })
+    pub(crate) fn ty(&self) -> &'a Type {
+        &self.field.ty
     }
 
-    fn field_method_attribute(&self) -> Option<&'a FieldMethodAttributes> {
+    pub(crate) fn resolve(&self) -> Option<Resolved<'a>> {
+        Resolved::from_query(self)
+    }
+
+    pub(crate) fn field_method_attribute(&self) -> Option<&'a FieldMethodAttributes> {
         self.field_method_attributes
     }
 
-    fn struct_method_attribute(&self) -> Option<&'a StructMethodAttributes> {
+    pub(crate) fn struct_method_attribute(&self) -> Option<&'a StructMethodAttributes> {
         self.struct_method_attributes
     }
 
-    fn is_get_copy(&self) -> bool {
+    pub(crate) fn is_get_copy(&self, ty: &Type) -> bool {
         if let Some(field_copy) = self
             .field_method_attributes
             .and_then(|fma| fma.common_settings.get_copy)
@@ -99,22 +77,36 @@ impl<'a> Query<'a> {
             return field_copy;
         }
 
-        self.common_setting(|x| x.get_copy) && enable_copy_for_type(&self.field.ty)
+        self.common_setting(|x| x.get_copy)
+            && (enable_copy_for_type(ty, *self.method)
+                || self
+                    .borrow_inner(ty)
+                    .is_some_and(|ty| enable_copy_for_type(ty, *self.method)))
     }
 
-    fn chainable_set(&self) -> bool {
+    pub(crate) fn chainable_set(&self) -> bool {
         self.method == &Set && self.common_setting(|x| x.chainable_set)
     }
 
-    fn vis(&self) -> Cow<'a, Visibility> {
+    pub(crate) fn vis(&self) -> Cow<'a, Visibility> {
         self.common_setting(|x| x.vis.as_ref()).as_visibility()
     }
 
-    fn rename_predicates(&self) -> bool {
+    pub(crate) fn rename_predicates(&self) -> bool {
         self.common_setting(|x| x.rename_predicates)
     }
 
-    fn fn_ident(&self) -> Option<Cow<'a, Ident>> {
+    pub(crate) fn field_name(&self) -> Option<&'a Ident> {
+        self.field_method_attributes
+            .and_then(|x| x.fn_ident.as_ref())
+            .or(self.field.attributes.fn_ident.as_ref())
+            .or(match &self.field.member {
+                Member::Named(ident) => Some(ident),
+                Member::Unnamed(_) => None,
+            })
+    }
+
+    pub(crate) fn fn_ident(&self) -> Option<Cow<'a, Ident>> {
         if let Some(fn_ident) = self
             .field_method_attribute()
             .and_then(|x| x.fn_ident.as_ref())
@@ -154,11 +146,11 @@ impl<'a> Query<'a> {
         })
     }
 
-    fn variable_ident(&self) -> &'a Member {
+    pub(crate) fn variable_ident(&self) -> &'a Member {
         &self.field.member
     }
 
-    fn argument_ident(&self) -> Option<Cow<'a, Ident>> {
+    pub(crate) fn argument_ident(&self) -> Option<Cow<'a, Ident>> {
         if let Some(argument_ident) = self
             .field_method_attributes
             .and_then(|x| x.argument_ident.as_ref())
@@ -188,9 +180,9 @@ impl<'a> Query<'a> {
         None
     }
 
-    fn doc_template(&self) -> &str {
+    pub(crate) fn doc_template(&self, is_get_copy: bool) -> &str {
         match self.method {
-            Get if self.is_get_copy() => "Returns a copy of {}",
+            Get if is_get_copy => "Returns a copy of {}",
             Get => "Borrows {}",
             Set if self.chainable_set() => "Sets {}, returning `&mut Self` for chaining",
             Set => "Sets {}",
@@ -199,7 +191,7 @@ impl<'a> Query<'a> {
         }
     }
 
-    fn docs(&self) -> Option<Cow<'a, str>> {
+    pub(crate) fn docs(&self, is_get_copy: bool) -> Option<Cow<'a, str>> {
         if let Some(explicit_method_doc) =
             self.field_method_attribute().and_then(|x| x.doc.as_ref())
         {
@@ -211,7 +203,7 @@ impl<'a> Query<'a> {
         let template = self
             .struct_method_attribute()
             .and_then(|x| x.doc_template.as_deref())
-            .unwrap_or(self.doc_template());
+            .unwrap_or(self.doc_template(is_get_copy));
 
         let mut doc = template.replacen("{}", first_line, 1);
 
@@ -222,7 +214,7 @@ impl<'a> Query<'a> {
         Some(Cow::Owned(doc))
     }
 
-    fn enabled(&self) -> bool {
+    pub(crate) fn enabled(&self) -> bool {
         let struct_method_attr = self.struct_method_attribute();
         let field_method_attr = self.field_method_attribute();
         let StructAttributes {
@@ -255,29 +247,42 @@ impl<'a> Query<'a> {
         }
     }
 
-    fn auto_deref(&self, ty: &'a Type) -> Option<Cow<'a, Type>> {
+    pub(crate) fn auto_deref(&self, ty: &'a Type) -> Option<(Cow<'a, Type>, usize)> {
         if self.common_setting(|x| x.auto_deref) {
-            auto_deref(ty, *self.method)
+            auto_deref(ty, *self.method, self.span()).map(|(ty, count)| (Cow::Owned(ty), count))
         } else {
             None
         }
     }
 
-    fn deref_type(&self) -> Option<Cow<'a, Type>> {
+    pub(crate) fn explicit_deref_type(&self) -> Option<&'a Type> {
         self.field_method_attribute()
             .and_then(|x| x.deref.as_ref())
             .or(self.field.attributes.deref.as_ref())
-            .map(strip_ref)
-            .map(Cow::Borrowed)
-            .or_else(|| self.auto_deref(&self.field.ty))
+            .map(|specified| strip_ref(extract_option_type(specified).unwrap_or(specified)))
     }
 
-    fn common_setting<T: 'a>(&self, fun: impl Fn(&'a CommonSettings) -> Option<T>) -> T {
+    pub(crate) fn deref_and_count(&self, ty: &'a Type) -> Option<(Cow<'a, Type>, usize)> {
+        let (mut deref, mut count) = self
+            .auto_deref(ty)
+            .map_or((None, 0), |(deref, count)| (Some(deref), count));
+
+        if let Some(specified) = self.explicit_deref_type() {
+            if deref.as_deref().is_none_or(|deref| deref != specified) {
+                deref = Some(Cow::Borrowed(specified));
+                count += 1;
+            }
+        }
+
+        deref.map(|deref| (deref, count))
+    }
+
+    pub(crate) fn common_setting<T: 'a>(&self, fun: impl Fn(&'a CommonSettings) -> Option<T>) -> T {
         self.common_setting_without_default(&fun)
             .unwrap_or_else(|| fun(CommonSettings::DEFAULTS).unwrap())
     }
 
-    fn common_setting_without_default<T: 'a>(
+    pub(crate) fn common_setting_without_default<T: 'a>(
         &self,
         fun: impl Fn(&'a CommonSettings) -> Option<T>,
     ) -> Option<T> {
@@ -292,45 +297,130 @@ impl<'a> Query<'a> {
         .find_map(fun)
     }
 
-    fn option_borrow_inner(&self) -> Option<OptionHandling<'a>> {
-        if !self.common_setting(|x| x.option_borrow_inner) {
-            return None;
-        }
-
-        let ty = extract_option_type(&self.field.ty)?;
-
-        if let Some(deref_ty) = self
-            .field_method_attribute()
-            .and_then(|x| x.deref.as_ref())
-            .or(self.field.attributes.deref.as_ref())
-        {
-            let deref_ty = extract_option_type(deref_ty)?;
-            Some(OptionHandling::Deref(Cow::Borrowed(deref_ty)))
+    pub(crate) fn borrow_inner(&self, ty: &'a Type) -> Option<&'a Type> {
+        if self.common_setting(|x| x.option_borrow_inner) {
+            extract_option_type(ty)
         } else {
-            self.auto_deref(ty)
-                .map(OptionHandling::Deref)
-                .or_else(|| Some(OptionHandling::Ref(Cow::Borrowed(strip_ref(ty)))))
+            None
         }
     }
 
-    fn determine_argument_ty_and_assigned_value(
+    pub(crate) fn mut_access_expr_and_type(&self) -> (Expr, Type) {
+        let member = self.variable_ident();
+        let span = self.span();
+        let mut access_expr: Expr = parse_quote_spanned!(span => self.#member);
+        let mut current_type: Type = self.ty().clone();
+
+        if let Some(inner_type) = self.borrow_inner(&current_type) {
+            if let Some((deref_type, deref_count)) = self.deref_and_count(inner_type) {
+                access_expr = if deref_count == 1 {
+                    parse_quote_spanned!(span => #access_expr.as_deref_mut())
+                } else {
+                    let ident = self.field_name();
+                    let mut deref_expr: Expr = parse_quote_spanned!(span => #ident);
+                    for _ in 0..deref_count {
+                        deref_expr = parse_quote_spanned!(span => *#deref_expr);
+                    }
+                    parse_quote_spanned!(span => #access_expr.as_mut().map(|#ident| &mut #deref_expr))
+                };
+
+                current_type = parse_quote_spanned!(span => Option<&mut #deref_type>);
+            } else if ref_inner(inner_type).is_none() {
+                access_expr = parse_quote_spanned!(span => #access_expr.as_mut());
+                current_type = parse_quote_spanned!(span => Option<&mut #inner_type>);
+            }
+            return (access_expr, current_type);
+        }
+
+        if let Some((deref_type, deref_count)) = self.deref_and_count(&current_type) {
+            for _ in 0..deref_count {
+                access_expr = parse_quote_spanned!(span => *#access_expr);
+            }
+
+            current_type = deref_type.into_owned();
+        }
+
+        (
+            parse_quote_spanned!(span => &mut #access_expr),
+            parse_quote_spanned!(span => &mut #current_type),
+        )
+    }
+
+    pub(crate) fn get_access_expr_type_and_copy(&self) -> (Expr, Type, bool) {
+        let span = self.span();
+        let member = self.variable_ident();
+        let mut access_expr: Expr = parse_quote_spanned!(span => self.#member);
+        let mut current_type: Type = self.ty().clone();
+
+        if let Some(result) = self.check_copy(&access_expr, &current_type) {
+            return result;
+        }
+
+        if let Some(inner_type) = self.borrow_inner(&current_type) {
+            if let Some((deref_type, deref_count)) = self.deref_and_count(inner_type) {
+                access_expr = if deref_count == 1 {
+                    parse_quote_spanned!(span => #access_expr.as_deref())
+                } else {
+                    let ident = self.field_name();
+                    let mut deref_expr: Expr = parse_quote_spanned!(span => #ident);
+                    for _ in 0..deref_count {
+                        deref_expr = parse_quote_spanned!(span => *#deref_expr);
+                    }
+                    parse_quote_spanned!(span => #access_expr.as_ref().map(|#ident| &#deref_expr))
+                };
+
+                current_type = parse_quote_spanned!(span => Option<&#deref_type>);
+            } else if ref_inner(inner_type).is_none() {
+                access_expr = parse_quote_spanned!(span => #access_expr.as_ref());
+                current_type = parse_quote_spanned!(span => Option<&#inner_type>);
+            }
+        } else if let Some((deref_type, deref_count)) = self.deref_and_count(&current_type) {
+            for _ in 0..deref_count {
+                access_expr = parse_quote_spanned!(span => *#access_expr);
+            }
+
+            current_type = deref_type.into_owned();
+        }
+
+        self.check_copy(&access_expr, &current_type)
+            .unwrap_or_else(|| {
+                (
+                    parse_quote_spanned!(span => &#access_expr),
+                    parse_quote_spanned!(span => &#current_type),
+                    false,
+                )
+            })
+    }
+
+    fn check_copy(&self, expr: &Expr, ty: &Type) -> Option<(Expr, Type, bool)> {
+        if self.is_get_copy(ty) {
+            let is_not_a_reference = ref_inner(ty).is_none()
+                && extract_option_type(ty).is_none_or(|t| ref_inner(t).is_none());
+            Some((expr.clone(), ty.clone(), is_not_a_reference))
+        } else {
+            None
+        }
+    }
+
+    pub(crate) fn determine_argument_ty_and_assigned_value(
         &self,
         argument_ident: &Ident,
     ) -> Option<(Option<Cow<'a, Type>>, Expr)> {
+        let span = self.span();
         if self.method == &Without {
             if is_type(&self.field.ty, "bool") {
-                return Some((None, parse_quote!(false)));
+                return Some((None, parse_quote_spanned!(span => false)));
             }
 
             if extract_option_type(&self.field.ty).is_some() {
-                return Some((None, parse_quote!(None)));
+                return Some((None, parse_quote_spanned!(span => None)));
             }
 
             return None;
         }
 
         let with_without_pair = self.method == &With && {
-            Query::new(&Without, &self.field, &self.struct_attributes).enabled()
+            Query::new(&Without, self.field, self.struct_attributes).enabled()
         };
 
         let mut option_set_some = self
@@ -340,36 +430,30 @@ impl<'a> Query<'a> {
         let into = self.common_setting(|x| x.into);
 
         if with_without_pair && option_set_some && is_type(&self.field.ty, "bool") {
-            return Some((None, parse_quote!(true)));
+            return Some((None, parse_quote_spanned!(span => true)));
         }
 
         let mut argument_ty = Cow::Borrowed(&self.field.ty);
 
         if option_set_some {
             if let Some(ty) = extract_option_type(&self.field.ty) {
-                argument_ty = Cow::Borrowed(ty);
+                argument_ty = Cow::Borrowed(strip_ref(ty));
             } else {
                 option_set_some = false;
             }
         }
 
-        let mut assigned_value = parse_quote!(#argument_ident);
+        let mut assigned_value = parse_quote_spanned!(span => #argument_ident);
 
         if into {
-            argument_ty = Cow::Owned(parse_quote!(impl Into<#argument_ty>));
-            assigned_value = parse_quote!(#assigned_value.into());
+            argument_ty = Cow::Owned(parse_quote_spanned!(span => impl Into<#argument_ty>));
+            assigned_value = parse_quote_spanned!(span => #assigned_value.into());
         }
 
         if option_set_some {
-            assigned_value = parse_quote!(Some(#assigned_value));
+            assigned_value = parse_quote_spanned!(span => Some(#assigned_value));
         }
 
         Some((Some(argument_ty), assigned_value))
     }
-}
-
-#[cfg_attr(feature = "debug", derive(Debug))]
-pub(crate) enum OptionHandling<'a> {
-    Ref(Cow<'a, Type>),
-    Deref(Cow<'a, Type>),
 }

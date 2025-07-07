@@ -280,9 +280,9 @@ impl User {
     pub fn name(&self) -> &str {
         &*self.name
     }
-    ///Borrows the user's age, if set
-    pub fn age(&self) -> Option<&u8> {
-        self.age.as_ref()
+    ///Returns a copy of the user's age, if set
+    pub fn age(&self) -> Option<u8> {
+        self.age
     }
     ///Borrows favorite color, if set
     pub fn favorite_color(&self) -> Option<&str> {

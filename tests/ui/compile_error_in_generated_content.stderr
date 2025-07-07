@@ -1,27 +1,13 @@
-error[E0308]: mismatched types
+error[E0614]: type `str` cannot be dereferenced
  --> tests/ui/compile_error_in_generated_content.rs:3:17
   |
 3 |       #[fieldwork(get, deref = "()")]
-  |                   ^----------------
-  |                   |
-  |  _________________expected `&()` because of return type
-  | |
+  |  _________________^
 4 | |     string: String,
-  | |__________^ expected `&()`, found `&str`
-  |
-  = note: expected reference `&()`
-             found reference `&str`
+  | |__________^ can't be dereferenced
 
-error[E0308]: mismatched types
+error[E0614]: type `str` cannot be dereferenced
   --> tests/ui/compile_error_in_generated_content.rs:11:5
    |
-10 |       #[fieldwork(deref = "()")]
-   |  _________________________-
-11 | |     string: String,
-   | |     ^^^^^^^^^^^^^-
-   | |_____|____________|
-   |       |            expected `&()` because of return type
-   |       expected `&()`, found `&str`
-   |
-   = note: expected reference `&()`
-              found reference `&str`
+11 |     string: String,
+   |     ^^^^^^^^^^^^^^ can't be dereferenced

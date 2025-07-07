@@ -72,3 +72,14 @@ struct OptionDeref<'a, T> {
     os_string: Option<std::ffi::OsString>,
     arr: Option<[u8; 16]>,
 }
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut)]
+struct OptionMultiDeref<'a, T> {
+    a: Option<std::rc::Rc<PathBuf>>,
+    b: Option<Box<Arc<Cow<'a, T>>>>,
+    c: Option<Arc<Vec<u8>>>,
+    d: Option<Box<Vec<T>>>,
+    #[fieldwork(deref = U)]
+    e: Option<Box<T>>,
+}

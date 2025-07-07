@@ -72,8 +72,8 @@ impl Color {
         self.0 = rgb;
         self
     }
-    pub fn alpha(&self) -> Option<&u8> {
-        self.1.as_ref()
+    pub fn alpha(&self) -> Option<u8> {
+        self.1
     }
     pub fn alpha_mut(&mut self) -> Option<&mut u8> {
         self.1.as_mut()
@@ -112,5 +112,50 @@ struct OnlyGet(String, #[fieldwork(get(name = name))] Option<String>);
 impl OnlyGet {
     pub fn name(&self) -> Option<&str> {
         self.1.as_deref()
+    }
+}
+#[fieldwork(get, get_mut)]
+struct OptionMultiDeref<'a, T>(
+    #[fieldwork(name = a)]
+    Option<std::rc::Rc<PathBuf>>,
+    #[fieldwork(name = b)]
+    Option<Box<Arc<Cow<'a, T>>>>,
+    #[fieldwork(name = c)]
+    Option<Arc<Vec<u8>>>,
+    #[fieldwork(name = d)]
+    Option<Box<Vec<T>>>,
+    #[fieldwork(deref = U, name = e)]
+    Option<Box<T>>,
+);
+impl<'a, T> OptionMultiDeref<'a, T> {
+    pub fn a(&self) -> Option<&std::path::Path> {
+        self.0.as_ref().map(|a| &**a)
+    }
+    pub fn a_mut(&mut self) -> Option<&mut std::rc::Rc<PathBuf>> {
+        self.0.as_mut()
+    }
+    pub fn b(&self) -> Option<&T> {
+        self.1.as_ref().map(|b| &***b)
+    }
+    pub fn b_mut(&mut self) -> Option<&mut Arc<Cow<'a, T>>> {
+        self.1.as_deref_mut()
+    }
+    pub fn c(&self) -> Option<&[u8]> {
+        self.2.as_ref().map(|c| &**c)
+    }
+    pub fn c_mut(&mut self) -> Option<&mut Arc<Vec<u8>>> {
+        self.2.as_mut()
+    }
+    pub fn d(&self) -> Option<&[T]> {
+        self.3.as_ref().map(|d| &**d)
+    }
+    pub fn d_mut(&mut self) -> Option<&mut [T]> {
+        self.3.as_mut().map(|d| &mut **d)
+    }
+    pub fn e(&self) -> Option<&U> {
+        self.4.as_ref().map(|e| &**e)
+    }
+    pub fn e_mut(&mut self) -> Option<&mut U> {
+        self.4.as_mut().map(|e| &mut **e)
     }
 }

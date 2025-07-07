@@ -24,8 +24,8 @@ impl OptionBehavior {
         self.option_deref = Some(option_deref);
         self
     }
-    pub fn no_option_detection(&self) -> Option<&bool> {
-        self.no_option_detection.as_ref()
+    pub fn no_option_detection(&self) -> Option<bool> {
+        self.no_option_detection
     }
     pub fn no_option_detection_mut(&mut self) -> Option<&mut bool> {
         self.no_option_detection.as_mut()
