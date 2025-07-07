@@ -126,3 +126,58 @@ impl<T> WithTemplate<T> {
         self
     }
 }
+#[fieldwork(get, set, with, get_mut, without)]
+struct RenameWithEquals {
+    /// this number is cool
+    #[fieldwork = "number_in_seconds"]
+    number: usize,
+    /// is this struct on or not
+    #[field = "setting_enabled"]
+    enabled: bool,
+}
+impl RenameWithEquals {
+    ///Returns a copy of this number is cool
+    pub fn number_in_seconds(&self) -> usize {
+        self.number
+    }
+    ///Mutably borrow this number is cool
+    pub fn number_in_seconds_mut(&mut self) -> &mut usize {
+        &mut self.number
+    }
+    ///Sets this number is cool, returning `&mut Self` for chaining
+    pub fn set_number_in_seconds(&mut self, number_in_seconds: usize) -> &mut Self {
+        self.number = number_in_seconds;
+        self
+    }
+    ///Owned chainable setter for this number is cool, returning `Self`
+    #[must_use]
+    pub fn with_number_in_seconds(mut self, number_in_seconds: usize) -> Self {
+        self.number = number_in_seconds;
+        self
+    }
+    ///Returns a copy of is this struct on or not
+    pub fn setting_enabled(&self) -> bool {
+        self.enabled
+    }
+    ///Mutably borrow is this struct on or not
+    pub fn setting_enabled_mut(&mut self) -> &mut bool {
+        &mut self.enabled
+    }
+    ///Sets is this struct on or not, returning `&mut Self` for chaining
+    pub fn set_setting_enabled(&mut self, setting_enabled: bool) -> &mut Self {
+        self.enabled = setting_enabled;
+        self
+    }
+    ///Owned chainable setter for is this struct on or not, returning `Self`
+    #[must_use]
+    pub fn with_setting_enabled(mut self) -> Self {
+        self.enabled = true;
+        self
+    }
+    ///Owned chainable setter for is this struct on or not, returning `Self`
+    #[must_use]
+    pub fn without_setting_enabled(mut self) -> Self {
+        self.enabled = false;
+        self
+    }
+}

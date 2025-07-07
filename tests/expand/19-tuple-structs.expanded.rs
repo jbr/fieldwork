@@ -116,15 +116,15 @@ impl OnlyGet {
 }
 #[fieldwork(get, get_mut)]
 struct OptionMultiDeref<'a, T>(
-    #[fieldwork(name = a)]
+    #[field = "a"]
     Option<std::rc::Rc<PathBuf>>,
-    #[fieldwork(name = b)]
+    #[field = "b"]
     Option<Box<Arc<Cow<'a, T>>>>,
-    #[fieldwork(name = c)]
+    #[field = "c"]
     Option<Arc<Vec<u8>>>,
-    #[fieldwork(name = d)]
+    #[field = "d"]
     Option<Box<Vec<T>>>,
-    #[fieldwork(deref = U, name = e)]
+    #[field(deref = U, name = e)]
     Option<Box<T>>,
 );
 impl<'a, T> OptionMultiDeref<'a, T> {

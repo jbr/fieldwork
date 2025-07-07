@@ -2,7 +2,8 @@ use proc_macro2::Span;
 use quote::ToTokens;
 use syn::{
     Attribute, Error, Expr, ExprAssign, ExprCall, ExprLit, ExprPath, Ident, Lit, LitBool, LitStr,
-    Meta, MetaList, Path, Type, TypePath, punctuated::Punctuated, spanned::Spanned, token::Comma,
+    Meta, MetaList, MetaNameValue, Path, Type, TypePath, punctuated::Punctuated, spanned::Spanned,
+    token::Comma,
 };
 
 use crate::{
@@ -129,9 +130,33 @@ impl FieldAttributes {
                 ..
             }) => field_attributes.handle_list(list)?,
 
-            None => {}
+            Some(Attribute {
+                meta: Meta::NameValue(MetaNameValue { value, .. }),
+                ..
+            }) => match value {
+                Expr::Lit(ExprLit {
+                    lit: Lit::Str(value),
+                    ..
+                }) => {
+                    field_attributes.fn_ident = Some(value.parse()?);
+                }
 
-            Some(attribute) => return Err(Error::new(attribute.span(), "not recognized")),
+                Expr::Lit(ExprLit {
+                    lit: Lit::Bool(value),
+                    ..
+                }) => {
+                    if value.value {
+                        field_attributes.decorated = true;
+                    } else {
+                        field_attributes.common_settings.skip = true;
+                    }
+                }
+                _ => {
+                    return Err(Error::new(value.span(), "unexpected attribute format"));
+                }
+            },
+
+            _ => {}
         }
 
         Ok(field_attributes)

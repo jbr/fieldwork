@@ -12,6 +12,14 @@ struct MyStruct<T> {
 }
 
 #[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set, with, get_mut)]
+struct AnotherInterface<T> {
+    number: usize,
+    #[fieldwork = false]
+    enabled: bool,
+}
+
+#[derive(fieldwork::Fieldwork)]
 #[fieldwork(set, get)]
 struct SetAndGet<T> {
     /// this number is cool

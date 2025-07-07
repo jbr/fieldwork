@@ -27,3 +27,14 @@ struct WithTemplate<T> {
     #[fieldwork(set(rename = "put_the_generic"))]
     generic: T,
 }
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set, with, get_mut, without)]
+struct RenameWithEquals {
+    /// this number is cool
+    #[fieldwork = "number_in_seconds"]
+    number: usize,
+    /// is this struct on or not
+    #[field = "setting_enabled"]
+    enabled: bool,
+}

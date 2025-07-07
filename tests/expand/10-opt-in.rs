@@ -17,6 +17,21 @@ struct MyStruct<T> {
 }
 
 #[derive(fieldwork::Fieldwork)]
+#[fieldwork(opt_in, get, set, with, get_mut)]
+struct FieldworkEqualsTrue<T> {
+    /// not generated
+    number: usize,
+
+    /// generated
+    #[fieldwork = true]
+    enabled: bool,
+
+    /// generated
+    #[field = true]
+    generic: T,
+}
+
+#[derive(fieldwork::Fieldwork)]
 #[fieldwork(opt_in, get)]
 struct OptingInPerField<T> {
     /// not generated
