@@ -88,4 +88,7 @@ struct Q(#[fieldwork((get) = copy)] ());
 #[derive(fieldwork::Fieldwork)]
 struct R(#[fieldwork((get)(copy))] ());
 
+#[derive(fieldwork::Fieldwork)]
+struct S(#[fieldwork = 1.0] ());
+
 fn main() {}

@@ -54,6 +54,57 @@ impl<T> MyStruct<T> {
         &self.only_get
     }
 }
+#[fieldwork(opt_in, get, set, with, get_mut)]
+struct FieldworkEqualsTrue<T> {
+    /// not generated
+    number: usize,
+    /// generated
+    #[fieldwork = true]
+    enabled: bool,
+    /// generated
+    #[field = true]
+    generic: T,
+}
+impl<T> FieldworkEqualsTrue<T> {
+    ///Returns a copy of generated
+    pub fn enabled(&self) -> bool {
+        self.enabled
+    }
+    ///Mutably borrow generated
+    pub fn enabled_mut(&mut self) -> &mut bool {
+        &mut self.enabled
+    }
+    ///Sets generated, returning `&mut Self` for chaining
+    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
+        self.enabled = enabled;
+        self
+    }
+    ///Owned chainable setter for generated, returning `Self`
+    #[must_use]
+    pub fn with_enabled(mut self, enabled: bool) -> Self {
+        self.enabled = enabled;
+        self
+    }
+    ///Borrows generated
+    pub fn generic(&self) -> &T {
+        &self.generic
+    }
+    ///Mutably borrow generated
+    pub fn generic_mut(&mut self) -> &mut T {
+        &mut self.generic
+    }
+    ///Sets generated, returning `&mut Self` for chaining
+    pub fn set_generic(&mut self, generic: T) -> &mut Self {
+        self.generic = generic;
+        self
+    }
+    ///Owned chainable setter for generated, returning `Self`
+    #[must_use]
+    pub fn with_generic(mut self, generic: T) -> Self {
+        self.generic = generic;
+        self
+    }
+}
 #[fieldwork(opt_in, get)]
 struct OptingInPerField<T> {
     /// not generated

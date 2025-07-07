@@ -58,12 +58,12 @@ configuration](#field-method-configuration). The most specific configuration alw
 [`deref`](#struct-method-deref), [`option_set_some`](#struct-method-option_set_some),
 [`into`](#struct-method-into), [`copy`](#struct-method-copy)
 
-[**Field configuration**](#field-configuration): [`skip`](#field-skip), [`rename`](#field-rename),
+[**Field configuration**](#field-configuration): [`skip`](#field-skip), [`name`](#field-name),
 [`argument`](#field-argument), [`vis`](#field-vis), [`deref`](#field-deref),
 [`option_set_some`](#field-option_set_some), [`into`](#field-into),
 [`option_borrow_inner`](#field-option)
 
-[**Field method configuration**](#field-method-configuration): [`rename`](#field-method-rename),
+[**Field method configuration**](#field-method-configuration): [`name`](#field-method-name),
 [`argument`](#field-method-argument), [`doc`](#field-method-doc), [`chain`](#field-method-chain),
 [`copy`](#field-method-copy), [`skip`](#field-method-skip), [`deref`](#field-method-deref),
 [`option_set_some`](#field-method-option_set_some), [`into`](#field-method-into),
@@ -102,7 +102,7 @@ struct ServerConfig {
     /// whether verbose logging is enabled
     verbose: bool,
 
-    #[field(skip)]
+    #[field = false]
     _runtime_data: (),
 }
 
@@ -963,7 +963,7 @@ impl Collection {
 
 <h4 id="field-skip"><code>skip</code></h4>
 
-Omit this field from all generated functions.
+Omit this field from all generated functions. As a shorthand, you can also use `#[field = false]`.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -977,12 +977,15 @@ struct User {
 
     #[field(skip)]
     private: (),
+
+    #[field = false]
+    other_private: ()
 }
 ```
 
 ```rust
 // GENERATED
-# struct User { admin: bool, name: String, private: (), }
+# struct User { admin: bool, name: String, private: (), other_private: (), }
 impl User {
     ///Returns a copy of whether this user is an admin
     pub fn admin(&self) -> bool {
@@ -1006,23 +1009,28 @@ impl User {
 
 ```
 
-<h4 id="field-rename"><code>rename</code></h4>
+<h4 id="field-name"><code>name</code></h4>
 
-Change the name of this field for all generated methods.
+Change the name of this field for all generated methods. There are two ways to accomplish this. If
+you don't need to specify any other configuration on the field, you can use `#[field = "new_name"]`,
+or use `#[field(name = new_name)]`
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set)]
 struct User {
-    #[field(rename = admin)]
+    #[field(name = admin)]
     /// whether this user is an admin
     superadmin: bool,
+
+    #[field = "full_name"]
+    name: String,
 }
 ```
 
 ```rust
 // GENERATED
-# struct User { superadmin: bool, }
+# struct User { superadmin: bool, name: String, }
 impl User {
     ///Returns a copy of whether this user is an admin
     pub fn admin(&self) -> bool {
@@ -1033,9 +1041,17 @@ impl User {
         self.superadmin = admin;
         self
     }
+    pub fn full_name(&self) -> &str {
+        &*self.name
+    }
+    pub fn set_full_name(&mut self, full_name: String) -> &mut Self {
+        self.name = full_name;
+        self
+    }
 }
 
 ```
+
 
 <h4 id="field-argument"><code>argument</code></h4>
 
@@ -1310,16 +1326,16 @@ impl User {
 
 ### Field Method Configuration
 
-<h4 id="field-method-rename"><code>rename</code></h4>
+<h4 id="field-method-name"><code>name</code></h4>
 
 Specify the full function name for this particular method. Note that this overrides both `template`
-and field-level [`rename`](#rename).
+and field-level [`name`](#name).
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
 struct User {
     /// whether this user is an admin
-    #[field(get(rename = is_an_admin))]
+    #[field(get(name = is_an_admin))]
     admin: bool,
 }
 ```
@@ -1698,7 +1714,7 @@ methods specified on that field.
 #[fieldwork(opt_in, get(template = "get_{}"))]
 struct User {
     /// whether this user is an admin
-    #[field(get)]
+    #[field = true]
     admin: bool,
 
     /// the user's name

@@ -169,3 +169,9 @@ error: unknown configuration `(get)`; did you mean `get`?
    |
 89 | struct R(#[fieldwork((get)(copy))] ());
    |                      ^^^^^
+
+error: unexpected attribute format
+  --> tests/ui/invalid_config.rs:92:24
+   |
+92 | struct S(#[fieldwork = 1.0] ());
+   |                        ^^^

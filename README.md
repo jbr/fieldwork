@@ -45,7 +45,7 @@ struct ServerConfig {
     /// whether verbose logging is enabled
     verbose: bool,
 
-    #[field(skip)]
+    #[field = false]
     _runtime_data: (),
 }
 
