@@ -3,6 +3,7 @@ struct MyStruct<'a> {
     borrow: &'a (),
     mut_borrow: &'a mut (),
     cow: Cow<'a, str>,
+    box_dyn_trait: Box<dyn Clone + 'a>,
 }
 impl<'a> MyStruct<'a> {
     pub fn borrow(&self) -> &'a () {
@@ -22,5 +23,11 @@ impl<'a> MyStruct<'a> {
     }
     pub fn cow_mut(&mut self) -> &mut Cow<'a, str> {
         &mut self.cow
+    }
+    pub fn box_dyn_trait(&self) -> &(dyn Clone + 'a) {
+        &*self.box_dyn_trait
+    }
+    pub fn box_dyn_trait_mut(&mut self) -> &mut (dyn Clone + 'a) {
+        &mut *self.box_dyn_trait
     }
 }
