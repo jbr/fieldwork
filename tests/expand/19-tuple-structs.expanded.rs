@@ -129,33 +129,33 @@ struct OptionMultiDeref<'a, T>(
 );
 impl<'a, T> OptionMultiDeref<'a, T> {
     pub fn a(&self) -> Option<&std::path::Path> {
-        self.0.as_ref().map(|a| &**a)
+        self.0.as_ref().map(|a| &***a)
     }
     pub fn a_mut(&mut self) -> Option<&mut std::rc::Rc<PathBuf>> {
         self.0.as_mut()
     }
     pub fn b(&self) -> Option<&T> {
-        self.1.as_ref().map(|b| &***b)
+        self.1.as_ref().map(|b| &****b)
     }
     pub fn b_mut(&mut self) -> Option<&mut Arc<Cow<'a, T>>> {
         self.1.as_deref_mut()
     }
     pub fn c(&self) -> Option<&[u8]> {
-        self.2.as_ref().map(|c| &**c)
+        self.2.as_ref().map(|c| &***c)
     }
     pub fn c_mut(&mut self) -> Option<&mut Arc<Vec<u8>>> {
         self.2.as_mut()
     }
     pub fn d(&self) -> Option<&[T]> {
-        self.3.as_ref().map(|d| &**d)
+        self.3.as_ref().map(|d| &***d)
     }
     pub fn d_mut(&mut self) -> Option<&mut [T]> {
-        self.3.as_mut().map(|d| &mut **d)
+        self.3.as_mut().map(|d| &mut ***d)
     }
     pub fn e(&self) -> Option<&U> {
-        self.4.as_ref().map(|e| &**e)
+        self.4.as_ref().map(|e| &***e)
     }
     pub fn e_mut(&mut self) -> Option<&mut U> {
-        self.4.as_mut().map(|e| &mut **e)
+        self.4.as_mut().map(|e| &mut ***e)
     }
 }
