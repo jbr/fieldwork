@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.5](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.4...fieldwork-v0.4.5) - 2025-07-08
+
+### Fixed
+
+- include the correct number of dereferences inside options
+- correctly coerce arrays to slices
+- handle `dyn Trait + 'lifetime` by wrapping with parens
+- allow specifying `copy` at the field configuration level
+
+### Other
+
+- *(deps)* update rust crate trybuild to v1.0.106
+- actually compile expansion tests
+- gitignore debug.rs
+- add a missing backtick
+- *(deps)* update swatinem/rust-cache action to v2.8.0
+- use `field = ""` syntax for tuple example
+
 ## [0.4.4](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.3...fieldwork-v0.4.4) - 2025-07-07
 
 ### Added
