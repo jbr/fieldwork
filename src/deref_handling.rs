@@ -1,7 +1,7 @@
 use proc_macro2::Span;
 use syn::{
     GenericArgument, Path, PathArguments, Type, TypeArray, TypePath, TypeReference,
-    parse_quote_spanned,
+    TypeTraitObject, parse_quote_spanned,
 };
 
 use crate::Method;
@@ -13,6 +13,13 @@ pub(crate) fn auto_deref(ty: &Type, method: Method, span: Span) -> Option<(Type,
     while let Some(next_ty) = auto_deref_inner(&ty, method, span) {
         ty = next_ty;
         count += 1;
+    }
+
+    match &ty {
+        Type::TraitObject(TypeTraitObject { bounds, .. }) if bounds.len() > 1 => {
+            ty = parse_quote_spanned! {span => (#ty)};
+        }
+        _ => (),
     }
 
     if count > 0 { Some((ty, count)) } else { None }
