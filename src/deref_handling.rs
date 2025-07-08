@@ -1,7 +1,7 @@
 use proc_macro2::Span;
 use syn::{
-    GenericArgument, Path, PathArguments, Type, TypeArray, TypePath, TypeReference,
-    TypeTraitObject, parse_quote_spanned,
+    GenericArgument, Path, PathArguments, Type, TypePath, TypeReference, TypeTraitObject,
+    parse_quote_spanned,
 };
 
 use crate::Method;
@@ -36,7 +36,6 @@ pub(crate) fn auto_deref_inner(ty: &Type, method: Method, span: Span) -> Option<
             path: Path { segments, .. },
             ..
         }) => segments,
-        Type::Array(TypeArray { elem, .. }) => return Some(parse_quote_spanned!(span => [#elem])),
         _ => {
             return None;
         }

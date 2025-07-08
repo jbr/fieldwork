@@ -67,10 +67,10 @@ impl<'a, T> Detection<'a, T> {
         &mut *self.os_string
     }
     pub fn arr(&self) -> &[u8] {
-        &*self.arr
+        &self.arr[..]
     }
     pub fn arr_mut(&mut self) -> &mut [u8] {
-        &mut *self.arr
+        &mut self.arr[..]
     }
 }
 #[fieldwork(get, get_mut, deref = false)]
@@ -246,10 +246,10 @@ impl<'a, T> OptionDeref<'a, T> {
         self.os_string.as_deref_mut()
     }
     pub fn arr(&self) -> Option<&[u8]> {
-        self.arr.as_deref()
+        self.arr.as_ref().map(|arr| &arr[..])
     }
     pub fn arr_mut(&mut self) -> Option<&mut [u8]> {
-        self.arr.as_deref_mut()
+        self.arr.as_mut().map(|arr| &mut arr[..])
     }
 }
 #[fieldwork(get, get_mut)]

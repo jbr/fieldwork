@@ -5,11 +5,11 @@ use crate::{
     StructAttributes, StructMethodAttributes,
     copy_detection::{enable_copy_for_type, is_type},
     deref_handling::auto_deref,
-    option_handling::{extract_option_type, ref_inner, strip_ref},
+    option_handling::{extract_option_type, option_type_mut, ref_inner, ref_inner_mut, strip_ref},
 };
 use Method::{Get, GetMut, Set, With, Without};
 use proc_macro2::Span;
-use syn::{Expr, Ident, Member, Type, Visibility, parse_quote_spanned};
+use syn::{Expr, Ident, Member, Type, TypeArray, Visibility, parse_quote_spanned};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Query<'a> {
@@ -330,6 +330,9 @@ impl<'a> Query<'a> {
                 access_expr = parse_quote_spanned!(span => #access_expr.as_mut());
                 current_type = parse_quote_spanned!(span => Option<&mut #inner_type>);
             }
+
+            self.coerce_slices(span, &mut access_expr, &mut current_type);
+
             return (access_expr, current_type);
         }
 
@@ -340,6 +343,8 @@ impl<'a> Query<'a> {
 
             current_type = deref_type.into_owned();
         }
+
+        self.coerce_slices(span, &mut access_expr, &mut current_type);
 
         (
             parse_quote_spanned!(span => &mut #access_expr),
@@ -382,6 +387,8 @@ impl<'a> Query<'a> {
 
             current_type = deref_type.into_owned();
         }
+
+        self.coerce_slices(span, &mut access_expr, &mut current_type);
 
         self.check_copy(&access_expr, &current_type)
             .unwrap_or_else(|| {
@@ -456,5 +463,28 @@ impl<'a> Query<'a> {
         }
 
         Some((Some(argument_ty), assigned_value))
+    }
+
+    fn coerce_slices(&self, span: Span, access_expr: &mut Expr, current_type: &mut Type) {
+        if !self.common_setting(|x| x.auto_deref) {
+            return;
+        }
+
+        if let Some((ty, mutability)) = option_type_mut(current_type).and_then(ref_inner_mut) {
+            if let Type::Array(TypeArray { elem, .. }) = ty {
+                let member = self.variable_ident();
+                let field_name = self.field_name();
+                *access_expr = if mutability {
+                    parse_quote_spanned!(span => self.#member.as_mut().map(|#field_name| &mut #field_name[..]))
+                } else {
+                    parse_quote_spanned!(span => self.#member.as_ref().map(|#field_name| &#field_name[..]))
+                };
+                *ty = parse_quote_spanned!(span => [#elem]);
+            }
+        } else if let Type::Array(TypeArray { elem, .. }) = current_type {
+            let member = self.variable_ident();
+            *access_expr = parse_quote_spanned!(span => self.#member[..]);
+            *current_type = parse_quote_spanned!(span => [#elem]);
+        }
     }
 }
