@@ -128,7 +128,7 @@ impl<T> OptingInPerField<T> {
     }
 }
 #[fieldwork(opt_in, get(template = "get_{}"))]
-struct OptingInPerField<T> {
+struct OptingInPerField2<T> {
     /// not generated
     number: usize,
     /// generated
@@ -138,7 +138,7 @@ struct OptingInPerField<T> {
     #[fieldwork(get, set = true)]
     generic: T,
 }
-impl<T> OptingInPerField<T> {
+impl<T> OptingInPerField2<T> {
     ///Sets generated, returning `&mut Self` for chaining
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
@@ -155,12 +155,12 @@ impl<T> OptingInPerField<T> {
     }
 }
 #[fieldwork(get, set, with, get_mut)]
-struct MyStruct {
+struct MyStruct2 {
     number: usize,
     #[fieldwork(opt_in = true, get)]
     only_get: (),
 }
-impl MyStruct {
+impl MyStruct2 {
     pub fn number(&self) -> usize {
         self.number
     }

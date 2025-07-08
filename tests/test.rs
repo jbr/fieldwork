@@ -1,3 +1,5 @@
+mod expand;
+
 #[test]
 fn macrotest() {
     println!("`MACROTEST=overwrite cargo test` to accept");

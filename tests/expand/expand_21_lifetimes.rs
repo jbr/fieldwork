@@ -1,8 +1,10 @@
+use std::borrow::Cow;
+
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, get_mut)]
 struct MyStruct<'a> {
     borrow: &'a (),
     mut_borrow: &'a mut (),
     cow: Cow<'a, str>,
-    box_dyn_trait: Box<dyn Clone + 'a>,
+    box_dyn_trait: Box<dyn std::fmt::Debug + 'a>,
 }

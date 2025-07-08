@@ -99,7 +99,7 @@ impl BobTheBuilder {
 #[fieldwork(set, with, get, get_mut, option_set_some)]
 struct HandlesNonOptionTypes {
     string: String,
-    bool: Bool,
+    bool: bool,
 }
 impl HandlesNonOptionTypes {
     pub fn string(&self) -> &str {
@@ -117,18 +117,18 @@ impl HandlesNonOptionTypes {
         self.string = string;
         self
     }
-    pub fn bool(&self) -> &Bool {
-        &self.bool
+    pub fn bool(&self) -> bool {
+        self.bool
     }
-    pub fn bool_mut(&mut self) -> &mut Bool {
+    pub fn bool_mut(&mut self) -> &mut bool {
         &mut self.bool
     }
-    pub fn set_bool(&mut self, bool: Bool) -> &mut Self {
+    pub fn set_bool(&mut self, bool: bool) -> &mut Self {
         self.bool = bool;
         self
     }
     #[must_use]
-    pub fn with_bool(mut self, bool: Bool) -> Self {
+    pub fn with_bool(mut self, bool: bool) -> Self {
         self.bool = bool;
         self
     }

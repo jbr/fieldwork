@@ -48,7 +48,7 @@ struct OptingInPerField<T> {
 
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(opt_in, get(template = "get_{}"))]
-struct OptingInPerField<T> {
+struct OptingInPerField2<T> {
     /// not generated
     number: usize,
 
@@ -63,7 +63,7 @@ struct OptingInPerField<T> {
 
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set, with, get_mut)]
-struct MyStruct {
+struct MyStruct2 {
     number: usize,
     #[fieldwork(opt_in = true, get)]
     only_get: (),

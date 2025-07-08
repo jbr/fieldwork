@@ -31,12 +31,12 @@ impl<T> MyStruct<T> {
     }
 }
 #[fieldwork(get, set, with, get_mut)]
-struct AnotherInterface<T> {
+struct AnotherInterface {
     number: usize,
     #[fieldwork = false]
     enabled: bool,
 }
-impl<T> AnotherInterface<T> {
+impl AnotherInterface {
     pub fn number(&self) -> usize {
         self.number
     }

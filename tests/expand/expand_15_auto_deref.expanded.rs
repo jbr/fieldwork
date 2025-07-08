@@ -1,5 +1,21 @@
-#[fieldwork(get, get_mut)]
-struct Detection<'a, T> {
+use std::borrow::Cow;
+use std::fmt::Display;
+use std::ops::{Deref, DerefMut};
+struct DerefType;
+struct OwnedType(DerefType);
+impl Deref for OwnedType {
+    type Target = DerefType;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl DerefMut for OwnedType {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+#[fieldwork(get, get_mut, bounds = "T: Clone")]
+struct Detection<'a, T: Clone> {
     string: String,
     vec: Vec<u8>,
     boxed: Box<T>,
@@ -11,7 +27,10 @@ struct Detection<'a, T> {
     os_string: std::ffi::OsString,
     arr: [u8; 16],
 }
-impl<'a, T> Detection<'a, T> {
+impl<'a, T: Clone> Detection<'a, T>
+where
+    T: Clone,
+{
     pub fn string(&self) -> &str {
         &*self.string
     }
@@ -149,40 +168,12 @@ impl SpecifyingTypeStillWorksWithDerefFalse {
         &mut *self.deref_to_specified_type
     }
 }
-#[fieldwork(get, get_mut, deref = false)]
-struct SpecifyingTypeStillWorksWithDerefFalse {
-    baseline_no_auto_deref: Vec<()>,
-    #[fieldwork(get(deref = DerefType))]
-    deref_get_to_specified_type: OwnedType,
-    #[fieldwork(deref = DerefType)]
-    deref_to_specified_type: OwnedType,
-}
-impl SpecifyingTypeStillWorksWithDerefFalse {
-    pub fn baseline_no_auto_deref(&self) -> &Vec<()> {
-        &self.baseline_no_auto_deref
-    }
-    pub fn baseline_no_auto_deref_mut(&mut self) -> &mut Vec<()> {
-        &mut self.baseline_no_auto_deref
-    }
-    pub fn deref_get_to_specified_type(&self) -> &DerefType {
-        &*self.deref_get_to_specified_type
-    }
-    pub fn deref_get_to_specified_type_mut(&mut self) -> &mut OwnedType {
-        &mut self.deref_get_to_specified_type
-    }
-    pub fn deref_to_specified_type(&self) -> &DerefType {
-        &*self.deref_to_specified_type
-    }
-    pub fn deref_to_specified_type_mut(&mut self) -> &mut DerefType {
-        &mut *self.deref_to_specified_type
-    }
-}
-#[fieldwork(get, get_mut)]
-struct OptionDeref<'a, T> {
+#[fieldwork(get, get_mut, bounds = "T: Clone")]
+struct OptionDeref<'a, T: Clone> {
     string: Option<String>,
     vec: Option<Vec<u8>>,
     boxed: Option<Box<T>>,
-    boxed_dyn: Option<Box<dyn Display>>,
+    boxed_dyn: Option<Box<dyn Display + 'static>>,
     arc: Option<std::sync::Arc<T>>,
     rc: Option<std::rc::Rc<T>>,
     cow: Option<Cow<'a, T>>,
@@ -190,7 +181,10 @@ struct OptionDeref<'a, T> {
     os_string: Option<std::ffi::OsString>,
     arr: Option<[u8; 16]>,
 }
-impl<'a, T> OptionDeref<'a, T> {
+impl<'a, T: Clone> OptionDeref<'a, T>
+where
+    T: Clone,
+{
     pub fn string(&self) -> Option<&str> {
         self.string.as_deref()
     }
@@ -209,10 +203,10 @@ impl<'a, T> OptionDeref<'a, T> {
     pub fn boxed_mut(&mut self) -> Option<&mut T> {
         self.boxed.as_deref_mut()
     }
-    pub fn boxed_dyn(&self) -> Option<&dyn Display> {
+    pub fn boxed_dyn(&self) -> Option<&(dyn Display + 'static)> {
         self.boxed_dyn.as_deref()
     }
-    pub fn boxed_dyn_mut(&mut self) -> Option<&mut dyn Display> {
+    pub fn boxed_dyn_mut(&mut self) -> Option<&mut (dyn Display + 'static)> {
         self.boxed_dyn.as_deref_mut()
     }
     pub fn arc(&self) -> Option<&T> {
@@ -252,44 +246,53 @@ impl<'a, T> OptionDeref<'a, T> {
         self.arr.as_mut().map(|arr| &mut arr[..])
     }
 }
-#[fieldwork(get, get_mut)]
-struct OptionMultiDeref<'a, T> {
-    a: Option<std::rc::Rc<PathBuf>>,
-    b: Option<Box<Arc<Cow<'a, T>>>>,
-    c: Option<Arc<Vec<u8>>>,
-    d: Option<Box<Vec<T>>>,
-    #[fieldwork(deref = U)]
-    e: Option<Box<T>>,
-}
-impl<'a, T> OptionMultiDeref<'a, T> {
-    pub fn a(&self) -> Option<&std::path::Path> {
-        self.a.as_ref().map(|a| &***a)
+mod x {
+    use std::borrow::Cow;
+    use std::ops::{Deref, DerefMut};
+    use std::path::PathBuf;
+    use std::sync::Arc;
+    #[fieldwork(get, get_mut, bounds = "T: Deref + DerefMut + Clone")]
+    struct OptionMultiDeref<'a, T: Clone> {
+        a: Option<std::rc::Rc<PathBuf>>,
+        b: Option<Box<Arc<Cow<'a, T>>>>,
+        c: Option<Arc<Vec<u8>>>,
+        d: Option<Box<Vec<T>>>,
+        #[fieldwork(deref = T::Target)]
+        e: Option<Box<T>>,
     }
-    pub fn a_mut(&mut self) -> Option<&mut std::rc::Rc<PathBuf>> {
-        self.a.as_mut()
-    }
-    pub fn b(&self) -> Option<&T> {
-        self.b.as_ref().map(|b| &****b)
-    }
-    pub fn b_mut(&mut self) -> Option<&mut Arc<Cow<'a, T>>> {
-        self.b.as_deref_mut()
-    }
-    pub fn c(&self) -> Option<&[u8]> {
-        self.c.as_ref().map(|c| &***c)
-    }
-    pub fn c_mut(&mut self) -> Option<&mut Arc<Vec<u8>>> {
-        self.c.as_mut()
-    }
-    pub fn d(&self) -> Option<&[T]> {
-        self.d.as_ref().map(|d| &***d)
-    }
-    pub fn d_mut(&mut self) -> Option<&mut [T]> {
-        self.d.as_mut().map(|d| &mut ***d)
-    }
-    pub fn e(&self) -> Option<&U> {
-        self.e.as_ref().map(|e| &***e)
-    }
-    pub fn e_mut(&mut self) -> Option<&mut U> {
-        self.e.as_mut().map(|e| &mut ***e)
+    impl<'a, T: Clone> OptionMultiDeref<'a, T>
+    where
+        T: Deref + DerefMut + Clone,
+    {
+        pub fn a(&self) -> Option<&std::path::Path> {
+            self.a.as_ref().map(|a| &***a)
+        }
+        pub fn a_mut(&mut self) -> Option<&mut std::rc::Rc<PathBuf>> {
+            self.a.as_mut()
+        }
+        pub fn b(&self) -> Option<&T> {
+            self.b.as_ref().map(|b| &****b)
+        }
+        pub fn b_mut(&mut self) -> Option<&mut Arc<Cow<'a, T>>> {
+            self.b.as_deref_mut()
+        }
+        pub fn c(&self) -> Option<&[u8]> {
+            self.c.as_ref().map(|c| &***c)
+        }
+        pub fn c_mut(&mut self) -> Option<&mut Arc<Vec<u8>>> {
+            self.c.as_mut()
+        }
+        pub fn d(&self) -> Option<&[T]> {
+            self.d.as_ref().map(|d| &***d)
+        }
+        pub fn d_mut(&mut self) -> Option<&mut [T]> {
+            self.d.as_mut().map(|d| &mut ***d)
+        }
+        pub fn e(&self) -> Option<&T::Target> {
+            self.e.as_ref().map(|e| &***e)
+        }
+        pub fn e_mut(&mut self) -> Option<&mut T::Target> {
+            self.e.as_mut().map(|e| &mut ***e)
+        }
     }
 }

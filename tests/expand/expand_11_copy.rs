@@ -41,11 +41,14 @@ struct AllCopyTypes {
     bool: bool,
 }
 
-#[derive(fieldwork::Fieldwork)]
-#[fieldwork(get)]
-struct CopyInteractsWithDeref {
-    box_bool: Box<bool>,
-    arc_usize: Arc<usize>,
+mod x {
+    use std::sync::Arc;
+    #[derive(fieldwork::Fieldwork)]
+    #[fieldwork(get)]
+    struct CopyInteractsWithDeref {
+        box_bool: Box<bool>,
+        arc_usize: Arc<usize>,
+    }
 }
 
 #[derive(fieldwork::Fieldwork)]
@@ -60,7 +63,7 @@ struct AllowSpecifyingCopyAtFieldAttribute<T: Copy> {
 
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get)]
-struct AllowSpecifyingCopyFalseAtFieldAttribute<T: Copy> {
+struct AllowSpecifyingCopyFalseAtFieldAttribute {
     #[fieldwork(copy = false)]
     usize: usize,
 }
