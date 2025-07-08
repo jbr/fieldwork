@@ -322,7 +322,7 @@ impl<'a> Query<'a> {
                     for _ in 0..deref_count {
                         deref_expr = parse_quote_spanned!(span => *#deref_expr);
                     }
-                    parse_quote_spanned!(span => #access_expr.as_mut().map(|#ident| &mut #deref_expr))
+                    parse_quote_spanned!(span => #access_expr.as_mut().map(|#ident| &mut *#deref_expr))
                 };
 
                 current_type = parse_quote_spanned!(span => Option<&mut #deref_type>);
@@ -372,7 +372,7 @@ impl<'a> Query<'a> {
                     for _ in 0..deref_count {
                         deref_expr = parse_quote_spanned!(span => *#deref_expr);
                     }
-                    parse_quote_spanned!(span => #access_expr.as_ref().map(|#ident| &#deref_expr))
+                    parse_quote_spanned!(span => #access_expr.as_ref().map(|#ident| &*#deref_expr))
                 };
 
                 current_type = parse_quote_spanned!(span => Option<&#deref_type>);

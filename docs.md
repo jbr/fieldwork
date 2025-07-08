@@ -173,7 +173,7 @@ level.
 | Owned Type | Borrowed Type | DerefMut
 |------------|---------------|------
 | `String`   | `&str`        | yes
-| `OsString  | `&OsStr`      | yes
+| `OsString` | `&OsStr`      | yes
 | `Vec<T>`   | `&[T]`        | yes
 | `Box<T>`   | `&T`          | yes
 | `Arc<T>`   | `&T`          | no
