@@ -13,7 +13,7 @@ struct MyStruct<T> {
 
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set, with, get_mut)]
-struct AnotherInterface<T> {
+struct AnotherInterface {
     number: usize,
     #[fieldwork = false]
     enabled: bool,

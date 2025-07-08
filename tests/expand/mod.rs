@@ -1,0 +1,22 @@
+#![allow(dead_code)]
+mod expand_01_basic;
+mod expand_02_only_set_and_get;
+mod expand_03_skipping;
+mod expand_04_renaming;
+mod expand_05_template;
+mod expand_06_docs;
+mod expand_07_bounds;
+mod expand_08_arg_name;
+mod expand_09_vis_override;
+mod expand_10_opt_in;
+mod expand_11_copy;
+mod expand_12_non_chain_set;
+mod expand_13_deref;
+mod expand_14_option_detection;
+mod expand_15_auto_deref;
+mod expand_17_option_set_some;
+mod expand_18_into;
+mod expand_19_tuple_structs;
+mod expand_20_with_and_without;
+mod expand_21_lifetimes;
+mod expand_22_arrays;

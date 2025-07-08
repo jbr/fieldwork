@@ -14,7 +14,7 @@ impl Bools {
 #[fieldwork(get(rename_predicates = false), rename_predicates)]
 struct NoPredicateRenaming {
     enabled: bool,
-    #[fieldwork(get(rename_predicate))]
+    #[field(get(rename_predicate))]
     active: bool,
 }
 impl NoPredicateRenaming {

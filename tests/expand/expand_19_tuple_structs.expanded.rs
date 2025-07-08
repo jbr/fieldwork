@@ -1,3 +1,7 @@
+use std::borrow::Cow;
+use std::ops::{Deref, DerefMut};
+use std::path::PathBuf;
+use std::sync::Arc;
 #[fieldwork(get, set, with, get_mut)]
 struct Rgb(
     #[fieldwork(name = red)]
@@ -54,6 +58,16 @@ impl Rgb {
         self
     }
 }
+#[automatically_derived]
+impl ::core::clone::Clone for Rgb {
+    #[inline]
+    fn clone(&self) -> Rgb {
+        let _: ::core::clone::AssertParamIsClone<u8>;
+        *self
+    }
+}
+#[automatically_derived]
+impl ::core::marker::Copy for Rgb {}
 #[fieldwork(get, set, with, get_mut, option_set_some)]
 struct Color(#[fieldwork(name = rgb, copy)] Rgb, #[fieldwork(name = alpha)] Option<u8>);
 impl Color {
@@ -114,8 +128,8 @@ impl OnlyGet {
         self.1.as_deref()
     }
 }
-#[fieldwork(get, get_mut)]
-struct OptionMultiDeref<'a, T>(
+#[fieldwork(get, get_mut, bounds = "T: Clone + Deref + DerefMut")]
+struct OptionMultiDeref<'a, T: Clone>(
     #[field = "a"]
     Option<std::rc::Rc<PathBuf>>,
     #[field = "b"]
@@ -124,10 +138,13 @@ struct OptionMultiDeref<'a, T>(
     Option<Arc<Vec<u8>>>,
     #[field = "d"]
     Option<Box<Vec<T>>>,
-    #[field(deref = U, name = e)]
+    #[field(deref = T::Target, name = e)]
     Option<Box<T>>,
 );
-impl<'a, T> OptionMultiDeref<'a, T> {
+impl<'a, T: Clone> OptionMultiDeref<'a, T>
+where
+    T: Clone + Deref + DerefMut,
+{
     pub fn a(&self) -> Option<&std::path::Path> {
         self.0.as_ref().map(|a| &***a)
     }
@@ -152,10 +169,10 @@ impl<'a, T> OptionMultiDeref<'a, T> {
     pub fn d_mut(&mut self) -> Option<&mut [T]> {
         self.3.as_mut().map(|d| &mut ***d)
     }
-    pub fn e(&self) -> Option<&U> {
+    pub fn e(&self) -> Option<&T::Target> {
         self.4.as_ref().map(|e| &***e)
     }
-    pub fn e_mut(&mut self) -> Option<&mut U> {
+    pub fn e_mut(&mut self) -> Option<&mut T::Target> {
         self.4.as_mut().map(|e| &mut ***e)
     }
 }

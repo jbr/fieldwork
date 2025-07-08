@@ -1,13 +1,20 @@
 #![allow(dead_code)]
 
-#[derive(fieldwork::Fieldwork)]
-#[fieldwork(get(copy = false))]
-struct Collection {
-    /// length
-    len: usize,
+use std::{
+    borrow::Cow,
+    ops::{Deref, DerefMut},
+    path::PathBuf,
+    sync::Arc,
+};
 
-    /// enabled
-    enabled: bool,
-}
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut, bounds = "T: Clone + Deref + DerefMut")]
+struct OptionMultiDeref<'a, T: Clone>(
+    #[field = "a"] Option<std::rc::Rc<PathBuf>>,
+    #[field = "b"] Option<Box<Arc<Cow<'a, T>>>>,
+    #[field = "c"] Option<Arc<Vec<u8>>>,
+    #[field = "d"] Option<Box<Vec<T>>>,
+    #[field(deref = T::Target, name = e)] Option<Box<T>>,
+);
 
 fn main() {}

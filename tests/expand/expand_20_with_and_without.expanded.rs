@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 #[fieldwork(with, without)]
 struct WithAndWithout {
     tls: bool,

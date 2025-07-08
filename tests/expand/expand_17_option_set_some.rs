@@ -21,5 +21,5 @@ struct BobTheBuilder {
 #[fieldwork(set, with, get, get_mut, option_set_some)]
 struct HandlesNonOptionTypes {
     string: String,
-    bool: Bool,
+    bool: bool,
 }

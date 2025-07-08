@@ -1,3 +1,17 @@
+struct DerefType;
+struct OwnedType(DerefType);
+impl std::ops::Deref for OwnedType {
+    type Target = DerefType;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl std::ops::DerefMut for OwnedType {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, get_mut)]
 struct OptionBehavior {
@@ -62,8 +76,8 @@ struct OptionAndDerefInteraction {
     c: Option<String>,
     #[fieldwork(deref)]
     d: Option<String>, // remains Option<String>
-    #[fieldwork(option_borrow_inner, deref = "Option<&CustomDeref>")]
-    e: Option<CustomOwned>,
+    #[fieldwork(option_borrow_inner, deref = "Option<&DerefType>")]
+    e: Option<OwnedType>,
 }
 
 #[derive(fieldwork::Fieldwork)]

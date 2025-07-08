@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(with, without)]
 struct WithAndWithout {

@@ -99,17 +99,20 @@ impl AllCopyTypes {
         self.bool
     }
 }
-#[fieldwork(get)]
-struct CopyInteractsWithDeref {
-    box_bool: Box<bool>,
-    arc_usize: Arc<usize>,
-}
-impl CopyInteractsWithDeref {
-    pub fn box_bool(&self) -> bool {
-        *self.box_bool
+mod x {
+    use std::sync::Arc;
+    #[fieldwork(get)]
+    struct CopyInteractsWithDeref {
+        box_bool: Box<bool>,
+        arc_usize: Arc<usize>,
     }
-    pub fn arc_usize(&self) -> usize {
-        *self.arc_usize
+    impl CopyInteractsWithDeref {
+        pub fn box_bool(&self) -> bool {
+            *self.box_bool
+        }
+        pub fn arc_usize(&self) -> usize {
+            *self.arc_usize
+        }
     }
 }
 #[fieldwork(get)]
@@ -128,11 +131,11 @@ impl<T: Copy> AllowSpecifyingCopyAtFieldAttribute<T> {
     }
 }
 #[fieldwork(get)]
-struct AllowSpecifyingCopyFalseAtFieldAttribute<T: Copy> {
+struct AllowSpecifyingCopyFalseAtFieldAttribute {
     #[fieldwork(copy = false)]
     usize: usize,
 }
-impl<T: Copy> AllowSpecifyingCopyFalseAtFieldAttribute<T> {
+impl AllowSpecifyingCopyFalseAtFieldAttribute {
     pub fn usize(&self) -> &usize {
         &self.usize
     }
