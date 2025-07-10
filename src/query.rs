@@ -144,10 +144,11 @@ impl<'a> Query<'a> {
             With => Cow::Owned(Ident::new(&format!("with_{ident}"), self.field.span)),
             GetMut => Cow::Owned(Ident::new(&format!("{ident}_mut"), self.field.span)),
             Without => Cow::Owned(Ident::new(&format!("without_{ident}"), self.field.span)),
+            Take => Cow::Owned(Ident::new(&format!("take_{ident}"), self.field.span)),
         })
     }
 
-    pub(crate) fn variable_ident(&self) -> &'a Member {
+    pub(crate) fn member(&self) -> &'a Member {
         &self.field.member
     }
 
@@ -307,7 +308,7 @@ impl<'a> Query<'a> {
     }
 
     pub(crate) fn mut_access_expr_and_type(&self) -> (Expr, Type) {
-        let member = self.variable_ident();
+        let member = self.member();
         let span = self.span();
         let mut access_expr: Expr = parse_quote_spanned!(span => self.#member);
         let mut current_type: Type = self.ty().clone();
@@ -354,7 +355,7 @@ impl<'a> Query<'a> {
 
     pub(crate) fn get_access_expr_type_and_copy(&self) -> (Expr, Type, bool) {
         let span = self.span();
-        let member = self.variable_ident();
+        let member = self.member();
         let mut access_expr: Expr = parse_quote_spanned!(span => self.#member);
         let mut current_type: Type = self.ty().clone();
 
@@ -472,7 +473,7 @@ impl<'a> Query<'a> {
 
         if let Some((ty, mutability)) = option_type_mut(current_type).and_then(ref_inner_mut) {
             if let Type::Array(TypeArray { elem, .. }) = ty {
-                let member = self.variable_ident();
+                let member = self.member();
                 let field_name = self.field_name();
                 *access_expr = if mutability {
                     parse_quote_spanned!(span => self.#member.as_mut().map(|#field_name| &mut #field_name[..]))
@@ -482,7 +483,7 @@ impl<'a> Query<'a> {
                 *ty = parse_quote_spanned!(span => [#elem]);
             }
         } else if let Type::Array(TypeArray { elem, .. }) = current_type {
-            let member = self.variable_ident();
+            let member = self.member();
             *access_expr = parse_quote_spanned!(span => self.#member[..]);
             *current_type = parse_quote_spanned!(span => [#elem]);
         }

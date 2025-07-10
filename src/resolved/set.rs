@@ -14,7 +14,7 @@ pub(crate) struct ResolvedSet<'a> {
     pub(crate) doc: Option<Cow<'a, str>>,
     pub(crate) fn_ident: Cow<'a, Ident>,
     pub(crate) span: Span,
-    pub(crate) variable_ident: &'a Member,
+    pub(crate) member: &'a Member,
     pub(crate) vis: Cow<'a, Visibility>,
 }
 impl<'a> ResolvedSet<'a> {
@@ -27,7 +27,7 @@ impl<'a> ResolvedSet<'a> {
             doc,
             fn_ident,
             span,
-            variable_ident,
+            member,
             vis,
         } = self;
 
@@ -37,7 +37,7 @@ impl<'a> ResolvedSet<'a> {
             quote_spanned! {*span=>
                 #doc
                 #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) -> &mut Self {
-                    self.#variable_ident = #assigned_value;
+                    self.#member = #assigned_value;
                     self
                 }
             }
@@ -45,7 +45,7 @@ impl<'a> ResolvedSet<'a> {
             quote_spanned! {*span=>
                 #doc
                 #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) {
-                    self.#variable_ident = #assigned_value;
+                    self.#member = #assigned_value;
                 }
             }
         }
@@ -55,7 +55,7 @@ impl<'a> ResolvedSet<'a> {
         let span = query.span();
         let vis = query.vis();
         let fn_ident = query.fn_ident()?;
-        let variable_ident = query.variable_ident();
+        let member = query.member();
         let argument_ident = query.argument_ident()?;
         let chainable_set = query.chainable_set();
         let (argument_ty, assigned_value) =
@@ -71,7 +71,7 @@ impl<'a> ResolvedSet<'a> {
             doc,
             fn_ident,
             span,
-            variable_ident,
+            member,
             vis,
         })
     }

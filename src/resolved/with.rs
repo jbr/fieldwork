@@ -12,7 +12,7 @@ pub(crate) struct ResolvedWith<'a> {
     pub(crate) doc: Option<Cow<'a, str>>,
     pub(crate) fn_ident: Cow<'a, Ident>,
     pub(crate) span: Span,
-    pub(crate) variable_ident: &'a Member,
+    pub(crate) member: &'a Member,
     pub(crate) vis: Cow<'a, Visibility>,
 }
 
@@ -21,7 +21,7 @@ impl<'a> ResolvedWith<'a> {
         let ResolvedWith {
             vis,
             fn_ident,
-            variable_ident,
+            member,
             argument_ident_and_ty,
             doc,
             assigned_value,
@@ -33,7 +33,7 @@ impl<'a> ResolvedWith<'a> {
                 #doc
                 #[must_use]
                 #vis fn #fn_ident(mut self, #argument_ident: #argument_ty) -> Self {
-                    self.#variable_ident = #assigned_value;
+                    self.#member = #assigned_value;
                     self
                 }
             }
@@ -42,7 +42,7 @@ impl<'a> ResolvedWith<'a> {
                 #doc
                 #[must_use]
                 #vis fn #fn_ident(mut self) -> Self {
-                    self.#variable_ident = #assigned_value;
+                    self.#member = #assigned_value;
                     self
                 }
             }
@@ -53,7 +53,7 @@ impl<'a> ResolvedWith<'a> {
         let span = query.span();
         let vis = query.vis();
         let fn_ident = query.fn_ident()?;
-        let variable_ident = query.variable_ident();
+        let member = query.member();
         let argument_ident = query.argument_ident()?;
         let (argument_ty, assigned_value) =
             query.determine_argument_ty_and_assigned_value(&argument_ident)?;
@@ -67,7 +67,7 @@ impl<'a> ResolvedWith<'a> {
             doc,
             fn_ident,
             span,
-            variable_ident,
+            member,
             vis,
         })
     }
