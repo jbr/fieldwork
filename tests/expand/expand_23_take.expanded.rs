@@ -11,16 +11,13 @@ impl MyStruct {
 struct MyStruct2 {
     /// the users's name
     name: Option<String>,
-    #[take = false]
+    #[field(take = false)]
     not_take: Option<()>,
 }
 impl MyStruct2 {
     ///Takes the users's name, leaving a None in its place
     pub fn take_name(&mut self) -> Option<String> {
         self.name.take()
-    }
-    pub fn take_not_take(&mut self) -> Option<()> {
-        self.not_take.take()
     }
 }
 #[fieldwork(take(template = "remove_{}"))]
