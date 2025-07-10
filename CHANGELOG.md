@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.5...fieldwork-v0.4.6) - 2025-07-10
+
+### Added
+
+- take
+
+### Fixed
+
+- option_set_some with borrows
+
+### Other
+
+- remove duplication of valid keys
+- fix take test
+- remove mod.expanded.rs
+- rename variable_ident to member for accuracy
+
 ## [0.4.5](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.4...fieldwork-v0.4.5) - 2025-07-08
 
 ### Fixed
