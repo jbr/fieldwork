@@ -3,12 +3,14 @@ use proc_macro2::TokenStream;
 mod get;
 mod get_mut;
 mod set;
+mod take;
 mod with;
 mod without;
 
 use get::ResolvedGet;
 use get_mut::ResolvedGetMut;
 use set::ResolvedSet;
+use take::ResolvedTake;
 use with::ResolvedWith;
 use without::ResolvedWithout;
 
@@ -22,6 +24,7 @@ impl<'a> Resolved<'a> {
             Resolved::With(resolved) => resolved.build(),
             Resolved::Without(resolved) => resolved.build(),
             Resolved::GetMut(resolved) => resolved.build(),
+            Resolved::Take(resolved) => resolved.build(),
         }
     }
 
@@ -35,6 +38,7 @@ impl<'a> Resolved<'a> {
             Method::With => ResolvedWith::from_query(query).map(Self::With),
             Method::GetMut => ResolvedGetMut::from_query(query).map(Self::GetMut),
             Method::Without => ResolvedWithout::from_query(query).map(Self::Without),
+            Method::Take => ResolvedTake::from_query(query).map(Self::Take),
         }
     }
 }
@@ -46,4 +50,5 @@ pub(crate) enum Resolved<'a> {
     With(ResolvedWith<'a>),
     Without(ResolvedWithout<'a>),
     GetMut(ResolvedGetMut<'a>),
+    Take(ResolvedTake<'a>),
 }

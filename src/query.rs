@@ -7,7 +7,7 @@ use crate::{
     deref_handling::auto_deref,
     option_handling::{extract_option_type, option_type_mut, ref_inner, ref_inner_mut, strip_ref},
 };
-use Method::{Get, GetMut, Set, With, Without};
+use Method::{Get, GetMut, Set, Take, With, Without};
 use proc_macro2::Span;
 use syn::{Expr, Ident, Member, Type, TypeArray, Visibility, parse_quote_spanned};
 
@@ -189,6 +189,7 @@ impl<'a> Query<'a> {
             Set if self.chainable_set() => "Sets {}, returning `&mut Self` for chaining",
             Set => "Sets {}",
             With | Without => "Owned chainable setter for {}, returning `Self`",
+            Take => "Takes {}, leaving a None in its place",
             GetMut => "Mutably borrow {}",
         }
     }

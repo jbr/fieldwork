@@ -42,6 +42,7 @@ impl StructAttributes {
         "set",
         "with",
         "get_mut",
+        "take",
     ];
 
     pub(crate) fn build(attributes: &[Attribute]) -> syn::Result<Self> {
