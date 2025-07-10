@@ -1,10 +1,9 @@
+use crate::{CommonSettings, errors::invalid_key, with_common_settings};
 use proc_macro2::Span;
 use syn::{
     Error, Expr, ExprAssign, ExprLit, ExprPath, Lit, LitBool, punctuated::Punctuated,
     spanned::Spanned, token::Comma,
 };
-
-use crate::{CommonSettings, errors::invalid_key};
 
 // this represents the configuration passed to #[fieldwork] for a particular method
 
@@ -18,22 +17,7 @@ pub(crate) struct StructMethodAttributes {
 }
 
 impl StructMethodAttributes {
-    const VALID_KEYS: &[&str] = &[
-        "chain",
-        "copy",
-        "deref",
-        "doc_template",
-        "into",
-        "opt_in",
-        "option",
-        "option_borrow_inner",
-        "option_set_some",
-        "rename_predicate",
-        "rename_predicates",
-        "skip",
-        "template",
-        "vis",
-    ];
+    const VALID_KEYS: &[&str] = with_common_settings!("doc_template", "template",);
 
     pub(crate) fn build(exprs: &Punctuated<Expr, Comma>) -> syn::Result<Self> {
         let mut struct_method_attributes = Self::default();

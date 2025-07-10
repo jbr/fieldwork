@@ -12,6 +12,13 @@ pub(crate) enum Method {
     Take,
 }
 
+macro_rules! with_methods {
+    ($macro:ident!($($inner:literal,)*)) => {
+        $macro!($($inner,)* "get", "set", "with", "get_mut", "without", "take", )
+    };
+}
+pub(crate) use with_methods;
+
 impl Method {
     pub(crate) const fn all() -> &'static [Method] {
         &[

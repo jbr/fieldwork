@@ -32,11 +32,11 @@ mod struct_method_attributes;
 #[cfg(test)]
 mod coverage_tests;
 
-pub(crate) use common_settings::CommonSettings;
+pub(crate) use common_settings::{CommonSettings, with_common_settings};
 pub(crate) use field::Field;
 pub(crate) use field_attributes::FieldAttributes;
 pub(crate) use field_method_attributes::FieldMethodAttributes;
-pub(crate) use method::Method;
+pub(crate) use method::{Method, MethodSettings, with_methods};
 pub(crate) use query::Query;
 pub(crate) use resolved::Resolved;
 pub(crate) use r#struct::Struct;

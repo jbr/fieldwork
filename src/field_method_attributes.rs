@@ -1,11 +1,10 @@
+use crate::{CommonSettings, errors::invalid_key, with_common_settings};
 use proc_macro2::Span;
 use std::string::ToString;
 use syn::{
     Error, Expr, ExprAssign, ExprLit, ExprPath, Ident, Lit, LitBool, LitStr, Path, Type, TypePath,
     punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
-
-use crate::{CommonSettings, errors::invalid_key};
 
 // this represents the configuration for the field, for a particular method
 #[cfg_attr(feature = "debug", derive(Debug))]
@@ -20,23 +19,8 @@ pub(crate) struct FieldMethodAttributes {
 }
 
 impl FieldMethodAttributes {
-    pub(crate) const VALID_KEYS: &[&str] = &[
-        "argument",
-        "chain",
-        "copy",
-        "deref",
-        "doc",
-        "into",
-        "name",
-        "opt_in",
-        "option",
-        "option_borrow_inner",
-        "option_set_some",
-        "rename",
-        "rename_predicate",
-        "skip",
-        "vis",
-    ];
+    pub(crate) const VALID_KEYS: &[&str] =
+        with_common_settings!("argument", "doc", "name", "rename",);
 
     pub(crate) fn build(exprs: &Punctuated<Expr, Comma>) -> syn::Result<FieldMethodAttributes> {
         let mut field_method_attributes = Self::default();
