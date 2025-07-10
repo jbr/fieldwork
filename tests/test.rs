@@ -3,7 +3,7 @@ mod expand;
 #[test]
 fn macrotest() {
     println!("`MACROTEST=overwrite cargo test` to accept");
-    macrotest::expand("tests/expand/*.rs");
+    macrotest::expand("tests/expand/expand_*.rs");
 }
 
 #[rustversion::stable]
