@@ -9,7 +9,7 @@ struct MyStruct {
 struct MyStruct2 {
     /// the users's name
     name: Option<String>,
-    #[take = false]
+    #[field(take = false)]
     not_take: Option<()>,
 }
 

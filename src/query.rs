@@ -447,7 +447,7 @@ impl<'a> Query<'a> {
 
         if option_set_some {
             if let Some(ty) = extract_option_type(&self.field.ty) {
-                argument_ty = Cow::Borrowed(strip_ref(ty));
+                argument_ty = Cow::Borrowed(ty);
             } else {
                 option_set_some = false;
             }
