@@ -31,6 +31,28 @@ impl Vis {
     }
 }
 
+macro_rules! with_common_settings {
+    ($($key:literal,)+) => {
+        &[
+            "chain",
+            "copy",
+            "debug",
+            "deref",
+            "inspect",
+            "into",
+            "opt_in",
+            "option_borrow_inner",
+            "option_set_some",
+            "rename_predicate",
+            "rename_predicates",
+            "skip",
+            "vis",
+            $($key,)+
+        ]
+    }
+}
+pub(crate) use with_common_settings;
+
 impl CommonSettings {
     pub const DEFAULTS: &'static Self = &Self {
         chainable_set: Some(true),

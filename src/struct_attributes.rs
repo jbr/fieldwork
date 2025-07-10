@@ -1,6 +1,6 @@
 use crate::{
-    CommonSettings, Method, StructMethodAttributes, errors::invalid_key, is_fieldwork_attr,
-    method::MethodSettings,
+    CommonSettings, Method, MethodSettings, StructMethodAttributes, errors::invalid_key,
+    is_fieldwork_attr, with_common_settings, with_methods,
 };
 use proc_macro2::Span;
 use quote::ToTokens;
@@ -24,26 +24,7 @@ pub(crate) struct StructAttributes {
 }
 
 impl StructAttributes {
-    const VALID_KEYS: &[&str] = &[
-        "chain",
-        "copy",
-        "deref",
-        "into",
-        "opt_in",
-        "option",
-        "option_borrow_inner",
-        "option_set_some",
-        "rename_predicate",
-        "rename_predicates",
-        "vis",
-        "where_clause",
-        "bounds",
-        "get",
-        "set",
-        "with",
-        "get_mut",
-        "take",
-    ];
+    const VALID_KEYS: &[&str] = with_methods!(with_common_settings!("where_clause", "bounds",));
 
     pub(crate) fn build(attributes: &[Attribute]) -> syn::Result<Self> {
         let mut struct_attributes = Self::default();

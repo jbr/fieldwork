@@ -1,13 +1,13 @@
+use crate::{
+    CommonSettings, FieldMethodAttributes, Method, MethodSettings, errors::invalid_key,
+    with_common_settings, with_methods,
+};
 use proc_macro2::Span;
 use quote::ToTokens;
 use syn::{
     Attribute, Error, Expr, ExprAssign, ExprCall, ExprLit, ExprPath, Ident, Lit, LitBool, LitStr,
     Meta, MetaList, MetaNameValue, Path, Type, TypePath, punctuated::Punctuated, spanned::Spanned,
     token::Comma,
-};
-
-use crate::{
-    CommonSettings, FieldMethodAttributes, Method, errors::invalid_key, method::MethodSettings,
 };
 
 // this represents the configuration for the field
@@ -24,27 +24,13 @@ pub(crate) struct FieldAttributes {
 }
 
 impl FieldAttributes {
-    const VALID_KEYS: &[&str] = &[
+    const VALID_KEYS: &[&str] = with_methods!(with_common_settings!(
         "argument",
-        "chain",
-        "copy",
-        "deref",
-        "get",
-        "get_mut",
-        "into",
         "name",
-        "opt_in",
-        "option",
-        "option_borrow_inner",
         "option_set_some",
         "rename",
-        "rename_predicate",
-        "set",
         "skip",
-        "vis",
-        "with",
-        "take",
-    ];
+    ));
 
     fn handle_assign(&mut self, assign: &ExprAssign) -> syn::Result<()> {
         let ExprAssign { left, right, .. } = assign;
