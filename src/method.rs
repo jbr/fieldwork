@@ -9,6 +9,7 @@ pub(crate) enum Method {
     With,
     GetMut,
     Without,
+    Take,
 }
 
 impl Method {
@@ -19,6 +20,7 @@ impl Method {
             Self::Set,
             Self::With,
             Self::Without,
+            Self::Take,
         ]
     }
 
@@ -29,6 +31,7 @@ impl Method {
             "with" => Ok(Self::With),
             "get_mut" => Ok(Self::GetMut),
             "without" => Ok(Self::Without),
+            "take" => Ok(Self::Take),
             _ => Err(Error::new(span, "unrecognized method")),
         }
     }
@@ -48,6 +51,8 @@ impl TryFrom<&Path> for Method {
             Ok(Self::GetMut)
         } else if path.is_ident("without") {
             Ok(Self::Without)
+        } else if path.is_ident("take") {
+            Ok(Self::Take)
         } else {
             Err(Error::new(path.span(), "unrecognized method"))
         }
@@ -55,7 +60,7 @@ impl TryFrom<&Path> for Method {
 }
 
 #[derive(Debug)]
-pub(crate) struct MethodSettings<T>([Option<T>; 5]);
+pub(crate) struct MethodSettings<T>([Option<T>; 6]);
 
 impl<T> Default for MethodSettings<T> {
     fn default() -> Self {

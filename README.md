@@ -1,7 +1,10 @@
 # ⛏️ fieldwork – field accessor generation
-
+[![ci][ci-badge]][ci]
+[![codecov](https://codecov.io/gh/jbr/fieldwork/graph/badge.svg?token=tlWtminkYf)](https://codecov.io/gh/jbr/fieldwork)
 [![crates.io version badge][version-badge]][crate]
 
+[ci]: https://github.com/jbr/fieldwork/actions?query=workflow%3ACI
+[ci-badge]: https://github.com/jbr/fieldwork/workflows/CI/badge.svg
 [version-badge]: https://img.shields.io/crates/v/fieldwork.svg?style=flat-square
 [crate]: https://crates.io/crates/fieldwork
 
@@ -23,7 +26,7 @@ concisely.
 use std::path::PathBuf;
 
 #[derive(fieldwork::Fieldwork, Default)]
-#[fieldwork(get, set, with, without, get_mut, into, rename_predicates)]
+#[fieldwork(get, set, with, without, get_mut, take, into, rename_predicates)]
 struct ServerConfig {
     /// server hostname
     host: String,
@@ -33,7 +36,6 @@ struct ServerConfig {
     port: u16,
 
     /// path to SSL certificate file
-    #[field(option_borrow_inner = false)]
     ssl_cert: Option<PathBuf>,
 
     /// path to log directory  
@@ -72,7 +74,7 @@ config
     .set_port(9090)
     .set_verbose(true);
 
-let cert = config.ssl_cert_mut().take();
+let cert = config.take_ssl_cert_mut();
 assert_eq!(cert, Some(PathBuf::from("/etc/ssl/cert.pem")));
 
 // Without methods provide convenient clearing
@@ -86,12 +88,6 @@ The compile time cost of using a proc macro crate is always worth considering. A
 made to keep this crate as lightweight as possible and featureful enough to be worth the tradeoff.
 
 ## Testing
-
-[![ci][ci-badge]][ci]
-[![codecov](https://codecov.io/gh/jbr/fieldwork/graph/badge.svg?token=tlWtminkYf)](https://codecov.io/gh/jbr/fieldwork)
-
-[ci]: https://github.com/jbr/fieldwork/actions?query=workflow%3ACI
-[ci-badge]: https://github.com/jbr/fieldwork/workflows/CI/badge.svg
 
 This crate has a full suite of macro-expansion tests in
 [tests/expand](https://github.com/jbr/fieldwork/tree/main/tests/expand). These tests are also used

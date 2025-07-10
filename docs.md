@@ -45,7 +45,8 @@ configuration](#field-method-configuration). The most specific configuration alw
 ## Quick Links (TOC)
 
 
-[**Methods**](#methods): [`get`](#get), [`set`](#set), [`get_mut`](#get_mut), [`with`](#with), [`without`](#without)
+[**Methods**](#methods): [`get`](#get), [`set`](#set), [`get_mut`](#get_mut), [`with`](#with),
+[`without`](#without), [`take`](#take)
 
 [**Struct configuration**](#struct-configuration): [`vis`](#struct-vis),
 [`where_clause`](#struct-where-clause), [`option_borrow_inner`](#struct-option),
@@ -80,7 +81,7 @@ fields](#how-fieldwork-selects-which-methods-to-generate-for-which-fields)
 use std::path::PathBuf;
 
 #[derive(fieldwork::Fieldwork, Default)]
-#[fieldwork(get, set, with, without, get_mut, into, rename_predicates)]
+#[fieldwork(get, set, with, without, get_mut, take, into, rename_predicates)]
 struct ServerConfig {
     /// server hostname
     host: String,
@@ -90,7 +91,6 @@ struct ServerConfig {
     port: u16,
 
     /// path to SSL certificate file
-    #[field(option_borrow_inner = false)]
     ssl_cert: Option<PathBuf>,
 
     /// path to log directory  
@@ -129,7 +129,7 @@ config
     .set_port(9090)
     .set_verbose(true);
 
-let cert = config.ssl_cert_mut().take();
+let cert = config.take_ssl_cert();
 assert_eq!(cert, Some(PathBuf::from("/etc/ssl/cert.pem")));
 
 // Without methods provide convenient clearing
@@ -463,6 +463,33 @@ impl Config {
     pub fn without_name(mut self) -> Self {
         self.name = None;
         self
+    }
+}
+
+```
+
+
+
+### `take`
+
+Take is only ever generated for Option fields. It calls `Option::take` on the field, returning the
+contained value and leaving `None` in its place.
+
+```rust
+// With `without` - the `with` methods change behavior
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(take)]
+struct Config {
+    name: Option<String>,
+}
+```
+
+```rust
+// GENERATED
+# struct Config { name: Option<String>, }
+impl Config {
+    pub fn take_name(&mut self) -> Option<String> {
+        self.name.take()
     }
 }
 

@@ -43,6 +43,7 @@ impl FieldAttributes {
         "skip",
         "vis",
         "with",
+        "take",
     ];
 
     fn handle_assign(&mut self, assign: &ExprAssign) -> syn::Result<()> {
