@@ -2,7 +2,7 @@ use quote::ToTokens;
 use regex::Regex;
 use std::error::Error;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::{collections::HashSet, env};
 use syn::{Attribute, File, Item, ItemImpl, ItemStruct, ItemTrait, ItemUse, Type, TypePath};
@@ -23,50 +23,89 @@ struct ExtractedCode {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // Check if we're in verbose mode
     let verbose = env::args().any(|arg| arg == "--verbose" || arg == "-v");
     let verify = env::args().any(|arg| arg == "--verify");
 
-    let docs_path = env::args()
+    let docs_dir = env::args()
         .skip(1)
         .find(|arg| !arg.starts_with("--"))
-        .unwrap_or_else(|| "docs.md".to_string());
-    let content = fs::read_to_string(&docs_path)?;
+        .unwrap_or_else(|| "docs".to_string());
 
-    println!("Looking for examples in {docs_path}...");
-    let examples = find_expandable_examples(&content)?;
-    println!("Found {} examples", examples.len());
+    let md_files = find_markdown_files(Path::new(&docs_dir))?;
+    println!("Found {} markdown files in {docs_dir}/", md_files.len());
 
-    if verbose {
-        for (i, example) in examples.iter().enumerate() {
-            println!(
-                "Example {}: {} chars of input code",
-                i + 1,
-                example.input_code.len()
-            );
-            println!(
-                "  First line: {}",
-                example.input_code.lines().next().unwrap_or("")
-            );
+    let example_file = env::current_dir()?.join("examples/docs-expansion.rs");
+    let mut any_changed = false;
+
+    for path in &md_files {
+        let changed = process_file(path, &example_file, verbose, verify)?;
+        if changed {
+            any_changed = true;
         }
     }
+
+    if verify && any_changed {
+        eprintln!("❌ Documentation is out of date! Run `cargo run --bin docs-gen` to update.");
+        std::process::exit(1);
+    } else if verify {
+        println!("✅ Documentation is up to date.");
+    }
+
+    Ok(())
+}
+
+fn find_markdown_files(dir: &Path) -> Result<Vec<PathBuf>, Box<dyn Error>> {
+    let mut files = Vec::new();
+    if !dir.exists() {
+        return Ok(files);
+    }
+    collect_markdown_files(dir, &mut files)?;
+    files.sort();
+    Ok(files)
+}
+
+fn collect_markdown_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<(), Box<dyn Error>> {
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            collect_markdown_files(&path, files)?;
+        } else if path.extension().and_then(|e| e.to_str()) == Some("md") {
+            files.push(path);
+        }
+    }
+    Ok(())
+}
+
+fn process_file(
+    path: &Path,
+    example_file: &Path,
+    verbose: bool,
+    verify: bool,
+) -> Result<bool, Box<dyn Error>> {
+    let display = path.display();
+    let content = fs::read_to_string(path)?;
+
+    println!("Looking for examples in {display}...");
+    let examples = find_expandable_examples(&content)?;
+
+    if examples.is_empty() {
+        return Ok(false);
+    }
+
+    println!("Found {} examples", examples.len());
 
     let mut new_content = content.clone();
     let mut updated_count = 0;
 
-    let example_file = env::current_dir()?.join("examples/docs-expansion.rs");
-
-    // Process examples in reverse order to avoid position shifts
     for (i, example) in examples.iter().rev().enumerate() {
         let example_num = examples.len() - i;
-
         println!(
-            "🔄 Processing example {} of {}...",
-            example_num,
+            "🔄 Processing example {example_num} of {}...",
             examples.len()
         );
 
-        match process_example(&example.input_code, &example_file) {
+        match process_example(&example.input_code, example_file) {
             Ok(formatted) => {
                 if verbose {
                     println!("Generated output ({} chars):", formatted.len());
@@ -79,17 +118,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
 
-                // Since we're processing in reverse, original positions should still be valid
                 let start = example.output_start;
                 let end = example.output_end;
 
-                // Ensure we're on character boundaries and validate range
                 let safe_start = if start >= new_content.len() {
                     new_content.len()
                 } else if new_content.is_char_boundary(start) {
                     start
                 } else {
-                    // Find previous char boundary
                     (0..=start)
                         .rev()
                         .find(|&i| new_content.is_char_boundary(i))
@@ -101,13 +137,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 } else if new_content.is_char_boundary(end) {
                     end
                 } else {
-                    // Find next char boundary
                     (end..new_content.len())
                         .find(|&i| new_content.is_char_boundary(i))
                         .unwrap_or(new_content.len())
                 };
 
-                // Ensure we have a valid range
                 if safe_start <= safe_end {
                     new_content.replace_range(safe_start..safe_end, &formatted);
                 } else {
@@ -127,21 +161,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    if verify {
-        if new_content != content {
-            eprintln!("❌ Documentation is out of date! Run `cargo run --bin docs-gen` to update.");
-            std::process::exit(1);
-        } else {
-            println!("✅ Documentation is up to date.");
-        }
-    } else {
-        // Normal mode: write changes
-        if updated_count > 0 {
-            fs::write(docs_path, new_content)?;
-            println!("📝 Updated {updated_count} examples");
-        }
+    let changed = new_content != content;
+
+    if !verify && updated_count > 0 {
+        fs::write(path, new_content)?;
+        println!("📝 Updated {updated_count} examples in {display}");
     }
-    Ok(())
+
+    Ok(changed)
 }
 
 fn find_expandable_examples(content: &str) -> Result<Vec<CodeExample>, Box<dyn Error>> {
@@ -169,8 +196,6 @@ fn find_expandable_examples(content: &str) -> Result<Vec<CodeExample>, Box<dyn E
 
             if let Some(next_block) = blocks.get(i + 1) {
                 let next_full = next_block.get(0).unwrap();
-
-                // Calculate byte positions for the content inside the next code block
                 let output_start = next_full.start() + 8; // +8 for "```rust\n"
                 let output_end = next_full.end() - 4; // -4 for "\n```"
 
@@ -186,18 +211,10 @@ fn find_expandable_examples(content: &str) -> Result<Vec<CodeExample>, Box<dyn E
     Ok(examples)
 }
 
-// ... rest of your functions remain the same ...
 fn process_example(input: &str, example_file: &Path) -> Result<String, Box<dyn Error>> {
-    // First, find the struct names in the input to know what we're looking for
     let target_structs = extract_struct_names_from_input(input)?;
-
-    // Expand the code
     let expanded = expand_single_example(input, example_file)?;
-
-    // Parse with syn and extract what we need
     let extracted = extract_fieldwork_code(&expanded, &target_structs)?;
-
-    // Format the output
     format_extracted_code(&extracted)
 }
 
@@ -231,7 +248,6 @@ fn extract_fieldwork_code(
                 use_statements.push(use_item);
             }
             Item::Trait(item_trait) => {
-                // Include all trait definitions found in the expanded code
                 trait_definitions.push(item_trait);
             }
             Item::Struct(item_struct) => {
@@ -245,7 +261,7 @@ fn extract_fieldwork_code(
                     fieldwork_impls.push(item_impl);
                 }
             }
-            _ => {} // Skip other items (use statements, other impls, etc.)
+            _ => {}
         }
     }
 
@@ -258,12 +274,10 @@ fn extract_fieldwork_code(
 }
 
 fn is_fieldwork_impl(item_impl: &ItemImpl, target_structs: &HashSet<String>) -> bool {
-    // Must be an inherent impl (not a trait impl)
     if item_impl.trait_.is_some() {
         return false;
     }
 
-    // Check if this impl is for one of our target structs
     if let Type::Path(TypePath { path, .. }) = &*item_impl.self_ty {
         if let Some(segment) = path.segments.last() {
             let type_name = segment.ident.to_string();
@@ -277,7 +291,6 @@ fn is_fieldwork_impl(item_impl: &ItemImpl, target_structs: &HashSet<String>) -> 
 fn format_extracted_code(extracted: &ExtractedCode) -> Result<String, Box<dyn Error>> {
     let mut result = vec!["// GENERATED".to_string()];
 
-    // Add commented trait definitions
     for use_statement in &extracted.use_statements {
         let formatted_use = concise_format(&use_statement.to_token_stream().to_string());
         for line in formatted_use.lines() {
@@ -290,7 +303,6 @@ fn format_extracted_code(extracted: &ExtractedCode) -> Result<String, Box<dyn Er
         }
     }
 
-    // Add commented trait definitions
     for trait_def in &extracted.trait_definitions {
         let formatted_trait = concise_format(&trait_def.to_token_stream().to_string());
         for line in formatted_trait.lines() {
@@ -300,15 +312,12 @@ fn format_extracted_code(extracted: &ExtractedCode) -> Result<String, Box<dyn Er
         }
     }
 
-    // Add commented struct definitions (strip fieldwork attributes)
     for struct_def in &extracted.struct_definitions {
         let mut cleaned_struct = struct_def.clone();
-        // Remove fieldwork attributes from the struct itself
         cleaned_struct
             .attrs
             .retain(|attr| !is_fieldwork_attr(attr) && !attr.path().is_ident("doc"));
 
-        // Remove fieldwork attributes from all fields
         for field in &mut cleaned_struct.fields {
             field
                 .attrs
@@ -323,7 +332,6 @@ fn format_extracted_code(extracted: &ExtractedCode) -> Result<String, Box<dyn Er
         }
     }
 
-    // Add fieldwork impl blocks using prettyplease
     for impl_block in &extracted.fieldwork_impls {
         let formatted_impl = prettyplease::unparse(&syn::parse_quote! { #impl_block });
         result.push(formatted_impl);
@@ -349,11 +357,9 @@ fn concise_format(s: &str) -> String {
 }
 
 fn expand_single_example(input: &str, example_file: &Path) -> Result<String, Box<dyn Error>> {
-    // Write the example code to the .rs file in examples/
     let file_content = format!("use fieldwork::Fieldwork;\n\n{input}");
     fs::write(example_file, file_content)?;
 
-    // Run cargo expand on the example file
     let output = Command::new("cargo")
         .current_dir(env::current_dir()?)
         .args(["expand", "--example", "docs-expansion"])
@@ -381,20 +387,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_byte_to_char_conversion() {
-        let text = "Hello 🦀 World";
-        assert_eq!(byte_to_char_pos(text, 0), 0);
-        assert_eq!(byte_to_char_pos(text, 6), 6); // Just before 🦀
-        assert_eq!(byte_to_char_pos(text, 10), 7); // Just after 🦀
-    }
-
-    #[test]
     fn test_extract_struct_names() {
         let input = r#"
         #[derive(fieldwork::Fieldwork)]
         struct User { name: String }
-        
-        #[derive(fieldwork::Fieldwork)]  
+
+        #[derive(fieldwork::Fieldwork)]
         struct Post { title: String }
         "#;
 

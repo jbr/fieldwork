@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "docs-gen"]
+members = [".", "fieldwork-derive", "docs-gen"]
 
 [package]
 name = "fieldwork"
@@ -15,17 +15,10 @@ categories = ["development-tools"]
 [features]
 debug = []
 
-[lib]
-proc-macro = true
-
-
 [dependencies]
-proc-macro2 = "1.0.95"
-quote = "1.0.40"
-syn = { version = "2.0.101", features = ["full", "extra-traits"] }
+fieldwork-derive = { path = "./fieldwork-derive", version = "0.4.6" }
 
 [dev-dependencies]
 macrotest = { version = "1.1.0" }
-runtime-macros = { version = "1.1.1" }
 rustversion = "1.0.21"
-trybuild = "1.0.105"
+trybuild = "1.0.106"
