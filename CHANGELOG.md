@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.7](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.6...fieldwork-v0.4.7) - 2026-02-19
+
+### Other
+
+- restructure into a façade crate so docs can be split up
+
 ## [0.4.6](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.5...fieldwork-v0.4.6) - 2025-07-10
 
 ### Added
