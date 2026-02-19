@@ -8,7 +8,7 @@ use super::derive_fieldwork_internal;
 
 #[test]
 fn code_coverage() {
-    let tests_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests");
+    let tests_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../tests");
     let paths = vec![tests_dir.join("expand"), tests_dir.join("ui")];
 
     for path in paths {

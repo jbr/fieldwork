@@ -59,6 +59,9 @@ impl Rgb {
     }
 }
 #[automatically_derived]
+#[doc(hidden)]
+unsafe impl ::core::clone::TrivialClone for Rgb {}
+#[automatically_derived]
 impl ::core::clone::Clone for Rgb {
     #[inline]
     fn clone(&self) -> Rgb {
