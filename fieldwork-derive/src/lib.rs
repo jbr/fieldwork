@@ -28,8 +28,8 @@ mod option_handling;
 mod query;
 mod resolved;
 mod r#struct;
-mod struct_attributes;
-mod struct_method_attributes;
+mod item_attributes;
+mod item_method_attributes;
 
 #[cfg(test)]
 mod coverage_tests;
@@ -42,8 +42,8 @@ pub(crate) use method::{Method, MethodSettings, with_methods};
 pub(crate) use query::Query;
 pub(crate) use resolved::Resolved;
 pub(crate) use r#struct::Struct;
-pub(crate) use struct_attributes::StructAttributes;
-pub(crate) use struct_method_attributes::StructMethodAttributes;
+pub(crate) use item_attributes::ItemAttributes;
+pub(crate) use item_method_attributes::ItemMethodAttributes;
 use syn::Attribute;
 
 /// Derive field accessor methods for a struct. See [`fieldwork`](https://docs.rs/fieldwork) for

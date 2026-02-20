@@ -4,14 +4,14 @@ use syn::{
     spanned::Spanned,
 };
 
-use crate::{Field, StructAttributes};
+use crate::{Field, ItemAttributes};
 
 // this represents the struct that we called derive on
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Struct {
     pub(crate) ident: Ident,
     pub(crate) fields: Vec<Field>,
-    pub(crate) attributes: StructAttributes,
+    pub(crate) attributes: ItemAttributes,
     pub(crate) generics: Generics,
 }
 
@@ -25,7 +25,7 @@ impl Parse for Struct {
             ));
         };
         let ident = input.ident;
-        let mut attributes = StructAttributes::build(&input.attrs)?;
+        let mut attributes = ItemAttributes::build(&input.attrs)?;
         let fields = ds
             .fields
             .iter()

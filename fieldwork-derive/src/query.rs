@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use crate::{
     CommonSettings, Field, FieldAttributes, FieldMethodAttributes, Method, Resolved,
-    StructAttributes, StructMethodAttributes,
+    ItemAttributes, ItemMethodAttributes,
     copy_detection::{enable_copy_for_type, is_type},
     deref_handling::auto_deref,
     option_handling::{extract_option_type, option_type_mut, ref_inner, ref_inner_mut, strip_ref},
@@ -17,8 +17,8 @@ pub(crate) struct Query<'a> {
     field_method_attributes: Option<&'a FieldMethodAttributes>,
     method: &'a Method,
     span: &'a Span,
-    struct_attributes: &'a StructAttributes,
-    struct_method_attributes: Option<&'a StructMethodAttributes>,
+    item_attributes: &'a ItemAttributes,
+    item_method_attributes: Option<&'a ItemMethodAttributes>,
 }
 
 impl<'a> Query<'a> {
@@ -33,14 +33,14 @@ impl<'a> Query<'a> {
     pub(crate) fn new(
         method: &'a Method,
         field: &'a Field,
-        struct_attributes: &'a StructAttributes,
+        item_attributes: &'a ItemAttributes,
     ) -> Self {
         let (span, field_method_attributes) = field
             .attributes
             .method_attributes
             .retrieve(*method)
             .map_or((None, None), |(s, fma)| (Some(s), Some(fma)));
-        let struct_method_attributes = struct_attributes.methods.retrieve(*method);
+        let item_method_attributes = item_attributes.methods.retrieve(*method);
         let span = span.unwrap_or(&field.span);
 
         Self {
@@ -48,8 +48,8 @@ impl<'a> Query<'a> {
             field_method_attributes,
             method,
             span,
-            struct_attributes,
-            struct_method_attributes,
+            item_attributes,
+            item_method_attributes,
         }
     }
 
@@ -65,8 +65,8 @@ impl<'a> Query<'a> {
         self.field_method_attributes
     }
 
-    pub(crate) fn struct_method_attribute(&self) -> Option<&'a StructMethodAttributes> {
-        self.struct_method_attributes
+    pub(crate) fn struct_method_attribute(&self) -> Option<&'a ItemMethodAttributes> {
+        self.item_method_attributes
     }
 
     pub(crate) fn is_get_copy(&self, ty: &Type) -> bool {
@@ -222,11 +222,11 @@ impl<'a> Query<'a> {
     pub(crate) fn enabled(&self) -> bool {
         let struct_method_attr = self.struct_method_attribute();
         let field_method_attr = self.field_method_attribute();
-        let StructAttributes {
+        let ItemAttributes {
             include,
             common_settings: CommonSettings { opt_in, .. },
             ..
-        } = self.struct_attributes;
+        } = self.item_attributes;
         let FieldAttributes {
             decorated,
             common_settings:
@@ -294,8 +294,8 @@ impl<'a> Query<'a> {
         [
             self.field_method_attributes.map(|x| &x.common_settings),
             Some(&self.field.attributes.common_settings),
-            self.struct_method_attributes.map(|x| &x.common_settings),
-            Some(&self.struct_attributes.common_settings),
+            self.item_method_attributes.map(|x| &x.common_settings),
+            Some(&self.item_attributes.common_settings),
         ]
         .into_iter()
         .flatten()
@@ -447,7 +447,7 @@ impl<'a> Query<'a> {
         }
 
         let with_without_pair = self.method == &With && {
-            Query::new(&Without, self.field, self.struct_attributes).enabled()
+            Query::new(&Without, self.field, self.item_attributes).enabled()
         };
 
         let mut option_set_some = self
