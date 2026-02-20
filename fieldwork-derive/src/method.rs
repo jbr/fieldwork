@@ -10,11 +10,12 @@ pub(crate) enum Method {
     GetMut,
     Without,
     Take,
+    IntoField,
 }
 
 macro_rules! with_methods {
     ($macro:ident!($($inner:literal,)*)) => {
-        $macro!($($inner,)* "get", "set", "with", "get_mut", "without", "take", )
+        $macro!($($inner,)* "get", "set", "with", "get_mut", "without", "take", "into_field", )
     };
 }
 pub(crate) use with_methods;
@@ -28,6 +29,7 @@ impl Method {
             Self::With,
             Self::Without,
             Self::Take,
+            Self::IntoField,
         ]
     }
 
@@ -39,6 +41,7 @@ impl Method {
             "get_mut" => Ok(Self::GetMut),
             "without" => Ok(Self::Without),
             "take" => Ok(Self::Take),
+            "into_field" => Ok(Self::IntoField),
             _ => Err(Error::new(span, "unrecognized method")),
         }
     }
@@ -60,6 +63,8 @@ impl TryFrom<&Path> for Method {
             Ok(Self::Without)
         } else if path.is_ident("take") {
             Ok(Self::Take)
+        } else if path.is_ident("into_field") {
+            Ok(Self::IntoField)
         } else {
             Err(Error::new(path.span(), "unrecognized method"))
         }
@@ -67,7 +72,7 @@ impl TryFrom<&Path> for Method {
 }
 
 #[derive(Debug)]
-pub(crate) struct MethodSettings<T>([Option<T>; 6]);
+pub(crate) struct MethodSettings<T>([Option<T>; 7]);
 
 impl<T> Default for MethodSettings<T> {
     fn default() -> Self {
