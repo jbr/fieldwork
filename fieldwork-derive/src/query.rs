@@ -313,7 +313,14 @@ impl<'a> Query<'a> {
     pub(crate) fn mut_access_expr_and_type(&self) -> (Expr, Type) {
         let member = self.member();
         let span = self.span();
-        let mut access_expr: Expr = parse_quote_spanned!(span => self.#member);
+        self.apply_mut_transforms(parse_quote_spanned!(span => self.#member))
+    }
+
+    /// Apply mutable borrow transforms (deref, option unwrap) to an arbitrary base expression.
+    /// Used by struct code via [`Self::mut_access_expr_and_type`] and directly by enum code.
+    pub(crate) fn apply_mut_transforms(&self, base_expr: Expr) -> (Expr, Type) {
+        let span = self.span();
+        let mut access_expr: Expr = base_expr.clone();
         let mut current_type: Type = self.ty().clone();
 
         if let Some(inner_type) = self.borrow_inner(&current_type) {
@@ -335,7 +342,7 @@ impl<'a> Query<'a> {
                 current_type = parse_quote_spanned!(span => Option<&mut #inner_type>);
             }
 
-            self.coerce_slices(span, &mut access_expr, &mut current_type);
+            self.coerce_slices(span, &base_expr, &mut access_expr, &mut current_type);
 
             return (access_expr, current_type);
         }
@@ -348,7 +355,7 @@ impl<'a> Query<'a> {
             current_type = deref_type.into_owned();
         }
 
-        self.coerce_slices(span, &mut access_expr, &mut current_type);
+        self.coerce_slices(span, &base_expr, &mut access_expr, &mut current_type);
 
         (
             parse_quote_spanned!(span => &mut #access_expr),
@@ -359,7 +366,15 @@ impl<'a> Query<'a> {
     pub(crate) fn get_access_expr_type_and_copy(&self) -> (Expr, Type, bool) {
         let span = self.span();
         let member = self.member();
-        let mut access_expr: Expr = parse_quote_spanned!(span => self.#member);
+        self.apply_get_transforms(parse_quote_spanned!(span => self.#member))
+    }
+
+    /// Apply immutable borrow/copy transforms (deref, option unwrap, copy) to an arbitrary base
+    /// expression. Used by struct code via [`Self::get_access_expr_type_and_copy`] and directly
+    /// by enum code.
+    pub(crate) fn apply_get_transforms(&self, base_expr: Expr) -> (Expr, Type, bool) {
+        let span = self.span();
+        let mut access_expr: Expr = base_expr.clone();
         let mut current_type: Type = self.ty().clone();
 
         if let Some(result) = self.check_copy(&access_expr, &current_type) {
@@ -392,7 +407,7 @@ impl<'a> Query<'a> {
             current_type = deref_type.into_owned();
         }
 
-        self.coerce_slices(span, &mut access_expr, &mut current_type);
+        self.coerce_slices(span, &base_expr, &mut access_expr, &mut current_type);
 
         self.check_copy(&access_expr, &current_type)
             .unwrap_or_else(|| {
@@ -469,25 +484,29 @@ impl<'a> Query<'a> {
         Some((Some(argument_ty), assigned_value))
     }
 
-    fn coerce_slices(&self, span: Span, access_expr: &mut Expr, current_type: &mut Type) {
+    fn coerce_slices(
+        &self,
+        span: Span,
+        base_expr: &Expr,
+        access_expr: &mut Expr,
+        current_type: &mut Type,
+    ) {
         if !self.common_setting(|x| x.auto_deref) {
             return;
         }
 
         if let Some((ty, mutability)) = option_type_mut(current_type).and_then(ref_inner_mut) {
             if let Type::Array(TypeArray { elem, .. }) = ty {
-                let member = self.member();
                 let field_name = self.field_name();
                 *access_expr = if mutability {
-                    parse_quote_spanned!(span => self.#member.as_mut().map(|#field_name| &mut #field_name[..]))
+                    parse_quote_spanned!(span => #base_expr.as_mut().map(|#field_name| &mut #field_name[..]))
                 } else {
-                    parse_quote_spanned!(span => self.#member.as_ref().map(|#field_name| &#field_name[..]))
+                    parse_quote_spanned!(span => #base_expr.as_ref().map(|#field_name| &#field_name[..]))
                 };
                 *ty = parse_quote_spanned!(span => [#elem]);
             }
         } else if let Type::Array(TypeArray { elem, .. }) = current_type {
-            let member = self.member();
-            *access_expr = parse_quote_spanned!(span => self.#member[..]);
+            *access_expr = parse_quote_spanned!(span => #base_expr[..]);
             *current_type = parse_quote_spanned!(span => [#elem]);
         }
     }
