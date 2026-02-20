@@ -24,6 +24,7 @@
 //! | [`with`] | `with_field_name()` | Owned chainable setter |
 //! | [`without`] | `without_field_name()` | Set bool to `false` or Option to `None` |
 //! | [`take`] | `take_field_name()` | Take the value out of an `Option` field |
+//! | [`into_field`] | `into_field_name()` | Consume `self`, returning an owned field value |
 //!
 //! ## Configuration
 //!
@@ -84,6 +85,10 @@ pub mod without {}
 #[cfg(doc)]
 #[doc = include_str!("../docs/take.md")]
 pub mod take {}
+
+#[cfg(doc)]
+#[doc = include_str!("../docs/into_field.md")]
+pub mod into_field {}
 
 #[cfg(doc)]
 #[doc = include_str!("../docs/into.md")]

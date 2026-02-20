@@ -7,7 +7,7 @@ use crate::{
     deref_handling::auto_deref,
     option_handling::{extract_option_type, option_type_mut, ref_inner, ref_inner_mut, strip_ref},
 };
-use Method::{Get, GetMut, Set, Take, With, Without};
+use Method::{Get, GetMut, IntoField, Set, Take, With, Without};
 use proc_macro2::Span;
 use syn::{Expr, Ident, Member, Type, TypeArray, Visibility, parse_quote_spanned};
 
@@ -145,6 +145,7 @@ impl<'a> Query<'a> {
             GetMut => Cow::Owned(Ident::new(&format!("{ident}_mut"), self.field.span)),
             Without => Cow::Owned(Ident::new(&format!("without_{ident}"), self.field.span)),
             Take => Cow::Owned(Ident::new(&format!("take_{ident}"), self.field.span)),
+            IntoField => Cow::Owned(Ident::new(&format!("into_{ident}"), self.field.span)),
         })
     }
 
@@ -191,6 +192,7 @@ impl<'a> Query<'a> {
             With | Without => "Owned chainable setter for {}, returning `Self`",
             Take => "Takes {}, leaving a None in its place",
             GetMut => "Mutably borrow {}",
+            IntoField => "Consumes self, returning {}",
         }
     }
 
