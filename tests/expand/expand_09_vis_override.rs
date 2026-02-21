@@ -39,3 +39,29 @@ struct MyStruct2 {
     #[fieldwork(vis = "pub(crate)", get(vis = ""))]
     method_override_field: (),
 }
+
+/// Enum: vis override at the enum level
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(vis = "pub(crate)", get, set)]
+enum State {
+    Active { value: i32 },
+    Inactive { value: i32 },
+}
+
+/// Enum: field-level vis override
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(vis = "pub(crate)", get, set)]
+enum Mixed {
+    Alpha {
+        /// pub(crate) by default
+        shared: i32,
+        /// this field overrides to pub
+        #[fieldwork(get(vis = "pub"))]
+        prominent: String,
+    },
+    Beta {
+        shared: i32,
+        #[fieldwork(vis = "pub")]
+        prominent: String,
+    },
+}

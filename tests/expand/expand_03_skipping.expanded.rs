@@ -124,3 +124,74 @@ impl<T> GetMutEqualsFalseDoesNothing<T> {
         &self.field
     }
 }
+/// Enum: skip a specific field; it's excluded from all method generation
+#[fieldwork(get, set)]
+enum SkipField {
+    Alpha { name: String, #[field(skip)] internal: u32 },
+    Beta { name: String },
+}
+impl SkipField {
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Alpha { name, .. } | Self::Beta { name, .. } => &**name,
+        }
+    }
+    pub fn set_name(&mut self, name: String) -> &mut Self {
+        match self {
+            Self::Alpha { name: name_binding, .. } => {
+                *name_binding = name;
+            }
+            Self::Beta { name: name_binding, .. } => {
+                *name_binding = name;
+            }
+        }
+        self
+    }
+}
+/// Enum: #[variant(skip)] makes all fields in that variant behave as if absent
+/// → partial coverage (Option return + `_ => None`) even for fields shared with other variants
+#[fieldwork(get, set)]
+enum SkipVariant {
+    Active { value: i32 },
+    #[variant(skip)]
+    Debug { value: i32, extra: String },
+    Inactive { value: i32 },
+}
+impl SkipVariant {
+    pub fn value(&self) -> Option<i32> {
+        match self {
+            Self::Active { value, .. } => Some(*value),
+            Self::Inactive { value, .. } => Some(*value),
+            _ => None,
+        }
+    }
+}
+/// Enum: per-method field skip
+#[fieldwork(get, set)]
+enum PerMethodSkip {
+    Foo {
+        #[fieldwork(get(skip))]
+        write_only: i32,
+        #[fieldwork(set(skip))]
+        read_only: i32,
+    },
+    Bar { write_only: i32, read_only: i32 },
+}
+impl PerMethodSkip {
+    pub fn read_only(&self) -> i32 {
+        match self {
+            Self::Foo { read_only, .. } | Self::Bar { read_only, .. } => *read_only,
+        }
+    }
+    pub fn set_write_only(&mut self, write_only: i32) -> &mut Self {
+        match self {
+            Self::Foo { write_only: write_only_binding, .. } => {
+                *write_only_binding = write_only;
+            }
+            Self::Bar { write_only: write_only_binding, .. } => {
+                *write_only_binding = write_only;
+            }
+        }
+        self
+    }
+}

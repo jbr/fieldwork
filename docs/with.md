@@ -49,6 +49,11 @@ impl Request {
 
 ```
 
+## Enums
+
+On enums, `with` is only generated for full-coverage fields. See
+[`enums`](crate::enums).
+
 ## Options
 
 | Option | Description |

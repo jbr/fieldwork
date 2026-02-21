@@ -69,3 +69,36 @@ where
         self
     }
 }
+/// Enum: generic with explicit bounds
+#[fieldwork(bounds = "T: Clone", get, set)]
+enum Container<T> {
+    Filled { value: T, label: String },
+    Empty { label: String },
+}
+impl<T> Container<T>
+where
+    T: Clone,
+{
+    pub fn label(&self) -> &str {
+        match self {
+            Self::Filled { label, .. } | Self::Empty { label, .. } => &**label,
+        }
+    }
+    pub fn set_label(&mut self, label: String) -> &mut Self {
+        match self {
+            Self::Filled { label: label_binding, .. } => {
+                *label_binding = label;
+            }
+            Self::Empty { label: label_binding, .. } => {
+                *label_binding = label;
+            }
+        }
+        self
+    }
+    pub fn value(&self) -> Option<&T> {
+        match self {
+            Self::Filled { value, .. } => Some(value),
+            _ => None,
+        }
+    }
+}

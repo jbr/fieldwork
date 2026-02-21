@@ -23,3 +23,32 @@ struct HandlesNonOptionTypes {
     string: String,
     bool: bool,
 }
+
+/// Enum: option_set_some on full-coverage Option fields
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(set, with, get, option_set_some)]
+enum EnumWithOptions {
+    HasBoth {
+        name: Option<String>,
+        tag: Option<u32>,
+    },
+    HasName {
+        name: Option<String>,
+        tag: Option<u32>,
+    },
+}
+
+/// Enum: option_set_some = false to opt out per field
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(set, option_set_some)]
+enum SelectiveOptionSet {
+    A {
+        #[fieldwork(option_set_some = false)]
+        no_some: Option<String>,
+        with_some: Option<u32>,
+    },
+    B {
+        no_some: Option<String>,
+        with_some: Option<u32>,
+    },
+}

@@ -10,3 +10,11 @@ struct DebugStruct {
     option_box_array: Option<Box<[u8; 10]>>,
     option_arc_box_array: Option<Arc<Box<[u8; 10]>>>,
 }
+
+/// Enum: array fields (full and partial coverage)
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut)]
+enum WithArrays {
+    Fixed { data: [u8; 16], extra: [u8; 4] },
+    Large { data: [u8; 16] },
+}

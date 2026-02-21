@@ -296,3 +296,104 @@ mod x {
         }
     }
 }
+/// Enum: auto-deref on full-coverage String fields → &str
+#[fieldwork(get, get_mut)]
+enum AutoDerefEnum {
+    First { name: String, path: std::path::PathBuf },
+    Second { name: String, path: std::path::PathBuf },
+}
+impl AutoDerefEnum {
+    pub fn name(&self) -> &str {
+        match self {
+            Self::First { name, .. } | Self::Second { name, .. } => &**name,
+        }
+    }
+    pub fn name_mut(&mut self) -> &mut str {
+        match self {
+            Self::First { name, .. } => &mut **name,
+            Self::Second { name, .. } => &mut **name,
+        }
+    }
+    pub fn path(&self) -> &std::path::Path {
+        match self {
+            Self::First { path, .. } | Self::Second { path, .. } => &**path,
+        }
+    }
+    pub fn path_mut(&mut self) -> &mut std::path::Path {
+        match self {
+            Self::First { path, .. } => &mut **path,
+            Self::Second { path, .. } => &mut **path,
+        }
+    }
+}
+/// Enum: auto-deref with partial coverage — Option wraps the borrowed form
+#[fieldwork(get)]
+enum PartialAutoDeref {
+    WithLabel { id: u32, label: String },
+    WithoutLabel { id: u32 },
+}
+impl PartialAutoDeref {
+    pub fn id(&self) -> u32 {
+        match self {
+            Self::WithLabel { id, .. } | Self::WithoutLabel { id, .. } => *id,
+        }
+    }
+    pub fn label(&self) -> Option<&str> {
+        match self {
+            Self::WithLabel { label, .. } => Some(&**label),
+            _ => None,
+        }
+    }
+}
+/// Enum: deref = false disables auto-deref on enum fields
+#[fieldwork(get, get_mut, deref = false)]
+enum NoAutoDeref {
+    A { name: String },
+    B { name: String },
+}
+impl NoAutoDeref {
+    pub fn name(&self) -> &String {
+        match self {
+            Self::A { name, .. } | Self::B { name, .. } => name,
+        }
+    }
+    pub fn name_mut(&mut self) -> &mut String {
+        match self {
+            Self::A { name, .. } => name,
+            Self::B { name, .. } => name,
+        }
+    }
+}
+/// Enum: multi-level deref through Option (full and partial coverage)
+/// Option<Vec<u8>> → as_deref() → Option<&[u8]>  (single deref level)
+/// Option<std::sync::Arc<Vec<u8>>> → as_ref().map() → Option<&[u8]>  (two deref levels)
+#[fieldwork(get, get_mut)]
+enum DeepDeref {
+    Full { single: Option<Vec<u8>>, multi: Option<std::sync::Arc<Vec<u8>>> },
+    Partial { single: Option<Vec<u8>> },
+}
+impl DeepDeref {
+    pub fn multi(&self) -> Option<&[u8]> {
+        match self {
+            Self::Full { multi, .. } => multi.as_ref().map(|multi| &***multi),
+            _ => None,
+        }
+    }
+    pub fn multi_mut(&mut self) -> Option<&mut std::sync::Arc<Vec<u8>>> {
+        match self {
+            Self::Full { multi, .. } => multi.as_mut(),
+            _ => None,
+        }
+    }
+    pub fn single(&self) -> Option<&[u8]> {
+        match self {
+            Self::Full { single, .. } | Self::Partial { single, .. } => single.as_deref(),
+        }
+    }
+    pub fn single_mut(&mut self) -> Option<&mut [u8]> {
+        match self {
+            Self::Full { single, .. } => single.as_deref_mut(),
+            Self::Partial { single, .. } => single.as_deref_mut(),
+        }
+    }
+}

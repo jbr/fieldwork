@@ -23,3 +23,26 @@ struct MyStruct2<T> {
     /// opting back in
     generic: T,
 }
+
+/// Enum: chain = false at enum-method level; setter returns ()
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(set(chain = false))]
+enum Point {
+    TwoD { x: i32, y: i32 },
+    ThreeD { x: i32, y: i32, z: i32 },
+}
+
+/// Enum: chain = false for specific field, opting back in for another
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(set)]
+enum Mixed {
+    A {
+        #[fieldwork(set(chain = false))]
+        no_chain: i32,
+        chained: i32,
+    },
+    B {
+        no_chain: i32,
+        chained: i32,
+    },
+}

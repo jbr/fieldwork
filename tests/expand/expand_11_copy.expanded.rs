@@ -155,3 +155,58 @@ impl<T: Copy> AllowOptingBackInAtFieldAttribute<T> {
         self.generic
     }
 }
+/// Enum: Copy types auto-detected; full coverage returns T, partial returns Option<T>
+#[fieldwork(get)]
+enum Coord {
+    TwoD { x: f64, y: f64 },
+    ThreeD { x: f64, y: f64, z: f64 },
+}
+impl Coord {
+    pub fn x(&self) -> f64 {
+        match self {
+            Self::TwoD { x, .. } | Self::ThreeD { x, .. } => *x,
+        }
+    }
+    pub fn y(&self) -> f64 {
+        match self {
+            Self::TwoD { y, .. } | Self::ThreeD { y, .. } => *y,
+        }
+    }
+    pub fn z(&self) -> Option<f64> {
+        match self {
+            Self::ThreeD { z, .. } => Some(*z),
+            _ => None,
+        }
+    }
+}
+/// Enum: copy = false on a Copy type → returns &T even for Copy types
+#[fieldwork(get)]
+enum NoCopyEnum {
+    A { #[fieldwork(copy = false)] code: u32 },
+    B { #[fieldwork(copy = false)] code: u32 },
+}
+impl NoCopyEnum {
+    pub fn code(&self) -> &u32 {
+        match self {
+            Self::A { code, .. } | Self::B { code, .. } => code,
+        }
+    }
+}
+/// Enum: copy = false at enum level, opting back in per-field
+#[fieldwork(get, copy = false)]
+enum CopyOverride {
+    A { #[fieldwork(copy = true)] id: u32, name: String },
+    B { #[fieldwork(copy = true)] id: u32, name: String },
+}
+impl CopyOverride {
+    pub fn id(&self) -> u32 {
+        match self {
+            Self::A { id, .. } | Self::B { id, .. } => *id,
+        }
+    }
+    pub fn name(&self) -> &str {
+        match self {
+            Self::A { name, .. } | Self::B { name, .. } => &**name,
+        }
+    }
+}

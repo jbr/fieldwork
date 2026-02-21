@@ -133,3 +133,101 @@ impl HandlesNonOptionTypes {
         self
     }
 }
+/// Enum: option_set_some on full-coverage Option fields
+#[fieldwork(set, with, get, option_set_some)]
+enum EnumWithOptions {
+    HasBoth { name: Option<String>, tag: Option<u32> },
+    HasName { name: Option<String>, tag: Option<u32> },
+}
+impl EnumWithOptions {
+    pub fn name(&self) -> Option<&str> {
+        match self {
+            Self::HasBoth { name, .. } | Self::HasName { name, .. } => name.as_deref(),
+        }
+    }
+    pub fn set_name(&mut self, name: String) -> &mut Self {
+        match self {
+            Self::HasBoth { name: name_binding, .. } => {
+                *name_binding = Some(name);
+            }
+            Self::HasName { name: name_binding, .. } => {
+                *name_binding = Some(name);
+            }
+        }
+        self
+    }
+    #[must_use]
+    pub fn with_name(mut self, name: String) -> Self {
+        match &mut self {
+            Self::HasBoth { name: name_binding, .. } => {
+                *name_binding = Some(name);
+            }
+            Self::HasName { name: name_binding, .. } => {
+                *name_binding = Some(name);
+            }
+        }
+        self
+    }
+    pub fn tag(&self) -> Option<u32> {
+        match self {
+            Self::HasBoth { tag, .. } | Self::HasName { tag, .. } => *tag,
+        }
+    }
+    pub fn set_tag(&mut self, tag: u32) -> &mut Self {
+        match self {
+            Self::HasBoth { tag: tag_binding, .. } => {
+                *tag_binding = Some(tag);
+            }
+            Self::HasName { tag: tag_binding, .. } => {
+                *tag_binding = Some(tag);
+            }
+        }
+        self
+    }
+    #[must_use]
+    pub fn with_tag(mut self, tag: u32) -> Self {
+        match &mut self {
+            Self::HasBoth { tag: tag_binding, .. } => {
+                *tag_binding = Some(tag);
+            }
+            Self::HasName { tag: tag_binding, .. } => {
+                *tag_binding = Some(tag);
+            }
+        }
+        self
+    }
+}
+/// Enum: option_set_some = false to opt out per field
+#[fieldwork(set, option_set_some)]
+enum SelectiveOptionSet {
+    A {
+        #[fieldwork(option_set_some = false)]
+        no_some: Option<String>,
+        with_some: Option<u32>,
+    },
+    B { no_some: Option<String>, with_some: Option<u32> },
+}
+impl SelectiveOptionSet {
+    pub fn set_no_some(&mut self, no_some: Option<String>) -> &mut Self {
+        match self {
+            Self::A { no_some: no_some_binding, .. } => {
+                *no_some_binding = no_some;
+            }
+            Self::B { no_some: no_some_binding, .. } => {
+                *no_some_binding = no_some;
+            }
+        }
+        self
+    }
+    pub fn set_with_some(&mut self, with_some: u32) -> &mut Self {
+        match self {
+            Self::A { with_some: with_some_binding, .. } => {
+                *with_some_binding = Some(with_some);
+            }
+            Self::B { with_some: with_some_binding, .. } => {
+                *with_some_binding = Some(with_some);
+            }
+        }
+        self
+    }
+}

@@ -5,6 +5,7 @@ use crate::{FieldAttributes, is_fieldwork_attr};
 
 // this represents a field within a struct that Access has been derived for
 #[cfg_attr(feature = "debug", derive(Debug))]
+#[derive(Clone)]
 pub(crate) struct Field {
     pub(crate) member: Member,
     pub(crate) span: Span,

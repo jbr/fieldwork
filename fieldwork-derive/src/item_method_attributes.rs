@@ -9,20 +9,20 @@ use syn::{
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 #[derive(Default)]
-pub(crate) struct StructMethodAttributes {
+pub(crate) struct ItemMethodAttributes {
     pub(crate) template: Option<String>,
     pub(crate) doc_template: Option<String>,
 
     pub(crate) common_settings: CommonSettings,
 }
 
-impl StructMethodAttributes {
+impl ItemMethodAttributes {
     const VALID_KEYS: &[&str] = with_common_settings!("doc_template", "template",);
 
     pub(crate) fn build(exprs: &Punctuated<Expr, Comma>) -> syn::Result<Self> {
-        let mut struct_method_attributes = Self::default();
-        struct_method_attributes.handle_exprs(exprs)?;
-        Ok(struct_method_attributes)
+        let mut item_method_attributes = Self::default();
+        item_method_attributes.handle_exprs(exprs)?;
+        Ok(item_method_attributes)
     }
 
     fn handle_exprs(&mut self, exprs: &Punctuated<Expr, Comma>) -> syn::Result<()> {

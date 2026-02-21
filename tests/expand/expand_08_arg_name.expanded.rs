@@ -69,3 +69,48 @@ impl<T> MyStruct<T> {
         self
     }
 }
+/// Enum: custom argument name in setters
+#[fieldwork(get, set)]
+enum Item {
+    Widget {
+        #[fieldwork(argument = the_name)]
+        name: String,
+        #[fieldwork(set(argument = new_price))]
+        price: f64,
+    },
+    Gadget { name: String, price: f64 },
+}
+impl Item {
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Widget { name, .. } | Self::Gadget { name, .. } => &**name,
+        }
+    }
+    pub fn set_name(&mut self, the_name: String) -> &mut Self {
+        match self {
+            Self::Widget { name, .. } => {
+                *name = the_name;
+            }
+            Self::Gadget { name, .. } => {
+                *name = the_name;
+            }
+        }
+        self
+    }
+    pub fn price(&self) -> f64 {
+        match self {
+            Self::Widget { price, .. } | Self::Gadget { price, .. } => *price,
+        }
+    }
+    pub fn set_price(&mut self, new_price: f64) -> &mut Self {
+        match self {
+            Self::Widget { price, .. } => {
+                *price = new_price;
+            }
+            Self::Gadget { price, .. } => {
+                *price = new_price;
+            }
+        }
+        self
+    }
+}

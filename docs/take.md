@@ -3,6 +3,9 @@
 The `take` method is only generated for `Option<T>` fields. It calls `Option::take` on the field,
 returning `Option<T>` and leaving `None` in its place. Non-option fields are silently skipped.
 
+On enums, `take` is only generated for full-coverage `Option<T>` fields. See
+[`enums`](crate::enums).
+
 ```rust
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(take)]

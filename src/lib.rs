@@ -8,11 +8,12 @@
     rustdoc::missing_crate_level_docs
 )]
 #![warn(clippy::pedantic)]
-//! `fieldwork` generates field accessor methods for structs via a derive macro.
+//! `fieldwork` generates field accessor methods for structs and enums via a
+//! derive macro.
 //!
-//! Add [`#[derive(Fieldwork)]`](derive@Fieldwork) to a struct, then declare which methods to
-//! generate with `#[fieldwork(...)]` on the struct and refine individual fields with
-//! `#[field(...)]`.
+//! Add [`#[derive(Fieldwork)]`](derive@Fieldwork) to a struct or enum, then
+//! declare which methods to generate with `#[fieldwork(...)]` on the item and
+//! refine individual fields with `#[field(...)]`.
 //!
 //! ## Methods
 //!
@@ -25,6 +26,12 @@
 //! | [`without`] | `without_field_name()` | Set bool to `false` or Option to `None` |
 //! | [`take`] | `take_field_name()` | Take the value out of an `Option` field |
 //! | [`into_field`] | `into_field_name()` | Consume `self`, returning an owned field value |
+//!
+//! ## Enum support
+//!
+//! All method types work on enums. Whether a field appears in all variants or
+//! only some determines the return type and whether setters are generated. See
+//! [`enums`] for the full/partial coverage concept and examples.
 //!
 //! ## Configuration
 //!
@@ -97,6 +104,10 @@ pub mod into {}
 #[cfg(doc)]
 #[doc = include_str!("../docs/option_set_some.md")]
 pub mod option_set_some {}
+
+#[cfg(doc)]
+#[doc = include_str!("../docs/enums.md")]
+pub mod enums {}
 
 #[cfg(doc)]
 #[doc = include_str!("../docs/configuration.md")]

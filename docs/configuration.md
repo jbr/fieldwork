@@ -1,19 +1,22 @@
 # Configuration
 
-Fieldwork has four levels of configuration that cascade from broadest to most specific. The most
-specific level always wins.
+Fieldwork has four levels of configuration that cascade from broadest to most
+specific. The most specific level always wins.
 
 | Level | Syntax | Scope |
 |-------|--------|-------|
-| Struct | `#[fieldwork(option_borrow_inner = false)]` | All methods on all fields |
-| Struct-method | `#[fieldwork(get(copy = false))]` | One method type across all fields |
+| Item | `#[fieldwork(option_borrow_inner = false)]` | All methods on all fields |
+| Item-method | `#[fieldwork(get(copy = false))]` | One method type across all fields |
 | Field | `#[field(into)]` | All methods on one field |
 | Field-method | `#[field(get(copy = false))]` | One method on one field |
 
+For enums, a `#[variant(...)]` level sits between item-method and field — see
+[`enums`](crate::enums) for details.
+
 ## Selecting which methods to generate
 
-Methods are enabled at the struct level: `#[fieldwork(get, set, with)]`. This generates those
-methods for every field unless a field opts out.
+Methods are enabled at the item level: `#[fieldwork(get, set, with)]`. This
+generates those methods for every field unless a field opts out.
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
@@ -47,15 +50,15 @@ impl User {
 
 ## Opt-in mode
 
-By default fieldwork operates in **opt-out** mode: all fields get the struct-level methods unless
-they individually opt out. With `opt_in` on the struct, no field gets any methods unless it
-explicitly requests them via `#[field(...)]`:
+By default fieldwork operates in **opt-out** mode: all fields get the
+item-level methods unless they individually opt out. With `opt_in` on the item,
+no field gets any methods unless it explicitly requests them via `#[field(...)]`:
 
 ```rust
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(opt_in, get, set)]
 struct User {
-    // field = true: inherits struct-level methods (get + set)
+    // field = true: inherits item-level methods (get + set)
     #[field = true]
     name: String,
 
@@ -127,7 +130,7 @@ By default all generated methods are `pub`. Override at any level:
 struct Internal {
     name: String,
 
-    // vis = "pub" overrides the struct-level pub(crate)
+    // vis = "pub" overrides the item-level pub(crate)
     #[field(vis = "pub")]
     version: u32,
 }

@@ -8,7 +8,7 @@ The types detected automatically are: `bool`, `char`, all numeric primitives (`u
 
 ## Opting out
 
-To return references for these types instead, disable `copy` at the struct level:
+To return references for these types instead, disable `copy` at the item level:
 
 ```rust
 #[derive(fieldwork::Fieldwork)]

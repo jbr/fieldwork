@@ -48,3 +48,34 @@ impl DebugStruct {
         self.option_arc_box_array.as_mut()
     }
 }
+/// Enum: array fields (full and partial coverage)
+#[fieldwork(get, get_mut)]
+enum WithArrays {
+    Fixed { data: [u8; 16], extra: [u8; 4] },
+    Large { data: [u8; 16] },
+}
+impl WithArrays {
+    pub fn data(&self) -> &[u8] {
+        match self {
+            Self::Fixed { data, .. } | Self::Large { data, .. } => &data[..],
+        }
+    }
+    pub fn data_mut(&mut self) -> &mut [u8] {
+        match self {
+            Self::Fixed { data, .. } => &mut data[..],
+            Self::Large { data, .. } => &mut data[..],
+        }
+    }
+    pub fn extra(&self) -> Option<&[u8]> {
+        match self {
+            Self::Fixed { extra, .. } => Some(&extra[..]),
+            _ => None,
+        }
+    }
+    pub fn extra_mut(&mut self) -> Option<&mut [u8]> {
+        match self {
+            Self::Fixed { extra, .. } => Some(&mut extra[..]),
+            _ => None,
+        }
+    }
+}

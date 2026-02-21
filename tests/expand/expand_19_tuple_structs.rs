@@ -3,6 +3,24 @@ use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
 use std::sync::Arc;
 
+/// Enum: tuple variants with named fields via #[field = "name"]
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, into_field)]
+enum ColorEnum {
+    Rgb(#[field = "r"] u8, #[field = "g"] u8, #[field = "b"] u8),
+    Named(#[field = "name"] String),
+    Transparent,
+}
+
+/// Enum: mixed named-field and tuple variants
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set)]
+enum Payload {
+    Tuple(#[field = "data"] Vec<u8>, #[field = "id"] u32),
+    Named { data: Vec<u8>, id: u32 },
+    Empty,
+}
+
 #[derive(fieldwork::Fieldwork, Clone, Copy)]
 #[fieldwork(get, set, with, get_mut)]
 struct Rgb(

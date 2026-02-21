@@ -22,3 +22,6 @@ mod expand_21_lifetimes;
 mod expand_22_arrays;
 mod expand_23_take;
 mod expand_24_into_field;
+mod expand_25_enum_basic;
+// expand_26_enum_is_variant: is_variant not yet implemented
+// expand_27_enum_partial: partial = "result"/"noop"/"panic" not yet implemented

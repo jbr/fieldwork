@@ -8,7 +8,7 @@ use syn::{
 
 // this represents the configuration for the field, for a particular method
 #[cfg_attr(feature = "debug", derive(Debug))]
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(crate) struct FieldMethodAttributes {
     pub(crate) fn_ident: Option<Ident>,
     pub(crate) argument_ident: Option<Ident>,

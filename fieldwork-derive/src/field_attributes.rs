@@ -11,7 +11,7 @@ use syn::{
 };
 
 // this represents the configuration for the field
-#[derive(Default)]
+#[derive(Clone, Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct FieldAttributes {
     pub(crate) decorated: bool,

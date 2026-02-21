@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use syn::{Error, LitStr, Visibility, token::Pub};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(crate) struct CommonSettings {
     pub(crate) auto_deref: Option<bool>,
     pub(crate) chainable_set: Option<bool>,
@@ -18,6 +18,7 @@ pub(crate) struct CommonSettings {
 }
 
 #[cfg_attr(feature = "debug", derive(Debug))]
+#[derive(Clone)]
 pub enum Vis {
     Default,
     Visibility(Visibility),

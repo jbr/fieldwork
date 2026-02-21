@@ -61,3 +61,54 @@ impl OnlyDerefForMethods {
         self
     }
 }
+/// Enum: explicit deref target on full-coverage field
+#[fieldwork(get, get_mut)]
+enum HasDeref {
+    First { #[fieldwork(deref = DerefType)] owned: OwnedType },
+    Second { #[fieldwork(deref = DerefType)] owned: OwnedType },
+}
+impl HasDeref {
+    pub fn owned(&self) -> &DerefType {
+        match self {
+            Self::First { owned, .. } | Self::Second { owned, .. } => &**owned,
+        }
+    }
+    pub fn owned_mut(&mut self) -> &mut DerefType {
+        match self {
+            Self::First { owned, .. } => &mut **owned,
+            Self::Second { owned, .. } => &mut **owned,
+        }
+    }
+}
+/// Enum: deref for get only, partial coverage
+#[fieldwork(get, get_mut)]
+enum PartialDeref {
+    WithValue { #[fieldwork(get(deref = DerefType))] field: OwnedType },
+    Empty { other: i32 },
+}
+impl PartialDeref {
+    pub fn field(&self) -> Option<&DerefType> {
+        match self {
+            Self::WithValue { field, .. } => Some(&**field),
+            _ => None,
+        }
+    }
+    pub fn field_mut(&mut self) -> Option<&mut OwnedType> {
+        match self {
+            Self::WithValue { field, .. } => Some(field),
+            _ => None,
+        }
+    }
+    pub fn other(&self) -> Option<i32> {
+        match self {
+            Self::Empty { other, .. } => Some(*other),
+            _ => None,
+        }
+    }
+    pub fn other_mut(&mut self) -> Option<&mut i32> {
+        match self {
+            Self::Empty { other, .. } => Some(other),
+            _ => None,
+        }
+    }
+}

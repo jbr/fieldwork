@@ -117,3 +117,77 @@ impl MyStruct2 {
         self
     }
 }
+/// Enum: vis override at the enum level
+#[fieldwork(vis = "pub(crate)", get, set)]
+enum State {
+    Active { value: i32 },
+    Inactive { value: i32 },
+}
+impl State {
+    pub(crate) fn value(&self) -> i32 {
+        match self {
+            Self::Active { value, .. } | Self::Inactive { value, .. } => *value,
+        }
+    }
+    pub(crate) fn set_value(&mut self, value: i32) -> &mut Self {
+        match self {
+            Self::Active { value: value_binding, .. } => {
+                *value_binding = value;
+            }
+            Self::Inactive { value: value_binding, .. } => {
+                *value_binding = value;
+            }
+        }
+        self
+    }
+}
+/// Enum: field-level vis override
+#[fieldwork(vis = "pub(crate)", get, set)]
+enum Mixed {
+    Alpha {
+        /// pub(crate) by default
+        shared: i32,
+        /// this field overrides to pub
+        #[fieldwork(get(vis = "pub"))]
+        prominent: String,
+    },
+    Beta { shared: i32, #[fieldwork(vis = "pub")] prominent: String },
+}
+impl Mixed {
+    ///Borrows this field overrides to pub
+    pub fn prominent(&self) -> &str {
+        match self {
+            Self::Alpha { prominent, .. } | Self::Beta { prominent, .. } => &**prominent,
+        }
+    }
+    ///Sets this field overrides to pub, returning `&mut Self` for chaining
+    pub(crate) fn set_prominent(&mut self, prominent: String) -> &mut Self {
+        match self {
+            Self::Alpha { prominent: prominent_binding, .. } => {
+                *prominent_binding = prominent;
+            }
+            Self::Beta { prominent: prominent_binding, .. } => {
+                *prominent_binding = prominent;
+            }
+        }
+        self
+    }
+    ///Borrows pub(crate) by default
+    pub(crate) fn shared(&self) -> i32 {
+        match self {
+            Self::Alpha { shared, .. } | Self::Beta { shared, .. } => *shared,
+        }
+    }
+    ///Sets pub(crate) by default, returning `&mut Self` for chaining
+    pub(crate) fn set_shared(&mut self, shared: i32) -> &mut Self {
+        match self {
+            Self::Alpha { shared: shared_binding, .. } => {
+                *shared_binding = shared;
+            }
+            Self::Beta { shared: shared_binding, .. } => {
+                *shared_binding = shared;
+            }
+        }
+        self
+    }
+}

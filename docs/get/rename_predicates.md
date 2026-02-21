@@ -43,7 +43,7 @@ impl Connection {
 ## Enabling per-field
 
 `rename_predicates` can also be set at the field level to selectively rename individual bool
-getters when it isn't enabled struct-wide:
+getters when it isn't enabled item-wide:
 
 ```rust
 #[derive(fieldwork::Fieldwork)]

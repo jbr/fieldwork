@@ -38,3 +38,21 @@ struct RenameWithEquals {
     #[field = "setting_enabled"]
     enabled: bool,
 }
+
+/// Enum: field rename with various syntaxes (same field name across variants = full coverage)
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set)]
+enum RenameEnum {
+    Metric {
+        #[fieldwork(rename = radius_px)]
+        radius: f64,
+        #[field = "label"]
+        name: String,
+    },
+    Imperial {
+        #[fieldwork(rename = radius_px)]
+        radius: f64,
+        #[field = "label"]
+        name: String,
+    },
+}

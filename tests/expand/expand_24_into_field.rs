@@ -47,3 +47,41 @@ struct OptionFields {
     opt_copy: Option<u8>,
     opt_string: Option<String>,
 }
+
+/// Enum: into_field skips Copy types (same as struct behavior)
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(into_field)]
+enum Coords {
+    TwoD { x: i32, y: i32 },
+    ThreeD { x: i32, y: i32 },
+}
+
+/// Enum: into_field with copy = false on Copy type → generates into_field
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(into_field)]
+enum ExplicitNoCopy {
+    A {
+        #[field(copy = false)]
+        id: u32,
+    },
+    B {
+        #[field(copy = false)]
+        id: u32,
+    },
+}
+
+/// Enum: into_field on non-Copy full coverage
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(into_field)]
+enum Messages {
+    Simple { text: String, code: u32 },
+    Detailed { text: String, code: u32 },
+}
+
+/// Enum: into_field on partial non-Copy field — nothing generates (same as set)
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(into_field)]
+enum PartialOwned {
+    Rich { name: String, code: u32 },
+    Simple { code: u32 },
+}

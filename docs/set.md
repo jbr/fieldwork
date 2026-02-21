@@ -41,6 +41,12 @@ impl Server {
 
 ```
 
+## Enums
+
+On enums, `set` is only generated for full-coverage fields (those that appear
+in every variant). Partial-coverage fields are silently skipped. See
+[`enums`](crate::enums).
+
 ## Options
 
 | Option | Description |
@@ -52,5 +58,5 @@ impl Server {
 `into` and `option_set_some` apply equally to `set` and `with` and are documented at the crate
 level as well: [`into`](crate::into), [`option_set_some`](crate::option_set_some).
 
-See [`configuration`](crate::configuration) for how options cascade across struct, method, field,
+See [`configuration`](crate::configuration) for how options cascade across item, method, field,
 and field-method levels.
