@@ -32,7 +32,6 @@ mod option_handling;
 mod query;
 mod resolved;
 mod r#struct;
-mod variant_attributes;
 
 #[cfg(test)]
 mod coverage_tests;
@@ -48,11 +47,10 @@ pub(crate) use method::{Method, MethodSettings, with_methods};
 pub(crate) use query::Query;
 pub(crate) use resolved::Resolved;
 pub(crate) use r#struct::Struct;
-pub(crate) use variant_attributes::VariantAttributes;
 
 /// Derive field accessor methods for a struct or enum. See
 /// [`fieldwork`](https://docs.rs/fieldwork) for full documentation.
-#[proc_macro_derive(Fieldwork, attributes(fieldwork, field, variant))]
+#[proc_macro_derive(Fieldwork, attributes(fieldwork, field))]
 pub fn derive_fieldwork(input: TokenStream) -> TokenStream {
     derive_fieldwork_internal(input.into()).into()
 }

@@ -61,7 +61,7 @@ enum SkipField {
     },
 }
 
-/// Enum: #[variant(skip)] makes all fields in that variant behave as if absent
+/// Enum: #[field = false] makes all fields in that variant behave as if absent
 /// → partial coverage (Option return + `_ => None`) even for fields shared with other variants
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set)]
@@ -69,9 +69,10 @@ enum SkipVariant {
     Active {
         value: i32,
     },
-    #[variant(skip)]
     Debug {
+        #[field = false]
         value: i32,
+        #[field = false]
         extra: String,
     },
     Inactive {

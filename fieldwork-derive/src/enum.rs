@@ -8,7 +8,7 @@ use syn::{
     spanned::Spanned,
 };
 
-use crate::{Field, ItemAttributes, Method, Query, VariantAttributes};
+use crate::{Field, ItemAttributes, Method, Query};
 
 /// A parsed `#[derive(Fieldwork)]` enum.
 #[cfg_attr(feature = "debug", derive(Debug))]
@@ -24,7 +24,6 @@ pub(crate) struct EnumVariant {
     pub(crate) ident: Ident,
     /// Only fields that have a usable name (natural or via `#[field = name]`).
     pub(crate) fields: Vec<Field>,
-    pub(crate) attributes: VariantAttributes,
 }
 
 /// One variant's participation in a virtual field's match arm.
@@ -32,7 +31,7 @@ pub(crate) struct EnumVariant {
 pub(crate) struct VariantArm {
     /// The variant name, e.g. `Click`.
     pub(crate) variant_ident: Ident,
-    /// The binding name used in the match pattern (== the field's fn_ident).
+    /// The binding name used in the match pattern (== the field's `fn_ident`).
     pub(crate) binding: Ident,
     /// The original member in the variant (Named or Unnamed index), used to
     /// produce the correct struct/tuple pattern syntax.
@@ -45,9 +44,9 @@ pub(crate) struct VariantArm {
 pub(crate) struct VirtualField {
     /// A representative `Field` used to construct a `Query`.
     pub(crate) field: Field,
-    /// Variants that contain this field (already filtered for `#[variant(skip)]`).
+    /// Variants that contain this field.
     pub(crate) arms: Vec<VariantArm>,
-    /// Total non-skipped variants in the enum (denominator for coverage).
+    /// Total variants in the enum (denominator for coverage).
     pub(crate) total_variants: usize,
 }
 
@@ -60,7 +59,6 @@ impl VirtualField {
 impl EnumVariant {
     fn build(variant: &Variant) -> syn::Result<Self> {
         let ident = variant.ident.clone();
-        let attributes = VariantAttributes::build(&variant.attrs)?;
         // Only keep fields that have a usable name: either a natural ident or
         // an explicit `#[field = name]` override.
         let fields = variant
@@ -76,7 +74,6 @@ impl EnumVariant {
         Ok(Self {
             ident,
             fields,
-            attributes,
         })
     }
 
@@ -122,24 +119,14 @@ impl Parse for Enum {
 
 impl Enum {
     /// Collect all virtual fields across variants, with coverage information.
-    /// Variants marked `#[variant(skip)]` are excluded from coverage.
     pub(crate) fn virtual_fields(&self) -> Vec<VirtualField> {
-        let active_variants: Vec<&EnumVariant> = self
-            .variants
-            .iter()
-            .filter(|v| !v.attributes.skip)
-            .collect();
-        // Use the total enum variant count (including skipped) as the denominator.
-        // A skipped variant is treated as "not having any field", so any field
-        // that would otherwise be full-coverage becomes partial when variants are
-        // skipped — forcing Option return types and a `_ => None` wildcard arm
-        // instead of an exhaustive or-pattern that would miss skipped variants.
+
         let total_variants = self.variants.len();
 
         // Map field name → (first seen Field, Vec<VariantArm>)
         let mut by_name: BTreeMap<String, (Field, Vec<VariantArm>)> = BTreeMap::new();
 
-        for variant in &active_variants {
+        for variant in &self.variants {
             for field in &variant.fields {
                 let binding = variant.binding_for(field);
                 let key = binding.to_string();

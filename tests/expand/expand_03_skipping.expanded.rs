@@ -148,22 +148,35 @@ impl SkipField {
         self
     }
 }
-/// Enum: #[variant(skip)] makes all fields in that variant behave as if absent
+/// Enum: #[field = false] makes all fields in that variant behave as if absent
 /// → partial coverage (Option return + `_ => None`) even for fields shared with other variants
 #[fieldwork(get, set)]
 enum SkipVariant {
     Active { value: i32 },
-    #[variant(skip)]
-    Debug { value: i32, extra: String },
+    Debug { #[field = false] value: i32, #[field = false] extra: String },
     Inactive { value: i32 },
 }
 impl SkipVariant {
-    pub fn value(&self) -> Option<i32> {
+    pub fn value(&self) -> i32 {
         match self {
-            Self::Active { value, .. } => Some(*value),
-            Self::Inactive { value, .. } => Some(*value),
-            _ => None,
+            Self::Active { value, .. }
+            | Self::Debug { value, .. }
+            | Self::Inactive { value, .. } => *value,
         }
+    }
+    pub fn set_value(&mut self, value: i32) -> &mut Self {
+        match self {
+            Self::Active { value: value_binding, .. } => {
+                *value_binding = value;
+            }
+            Self::Debug { value: value_binding, .. } => {
+                *value_binding = value;
+            }
+            Self::Inactive { value: value_binding, .. } => {
+                *value_binding = value;
+            }
+        }
+        self
     }
 }
 /// Enum: per-method field skip
