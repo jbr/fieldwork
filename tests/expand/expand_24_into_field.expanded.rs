@@ -69,3 +69,43 @@ impl OptionFields {
         self.opt_string
     }
 }
+/// Enum: into_field skips Copy types (same as struct behavior)
+#[fieldwork(into_field)]
+enum Coords {
+    TwoD { x: i32, y: i32 },
+    ThreeD { x: i32, y: i32 },
+}
+impl Coords {}
+/// Enum: into_field with copy = false on Copy type → generates into_field
+#[fieldwork(into_field)]
+enum ExplicitNoCopy {
+    A { #[field(copy = false)] id: u32 },
+    B { #[field(copy = false)] id: u32 },
+}
+impl ExplicitNoCopy {
+    pub fn into_id(self) -> u32 {
+        match self {
+            Self::A { id, .. } | Self::B { id, .. } => id,
+        }
+    }
+}
+/// Enum: into_field on non-Copy full coverage
+#[fieldwork(into_field)]
+enum Messages {
+    Simple { text: String, code: u32 },
+    Detailed { text: String, code: u32 },
+}
+impl Messages {
+    pub fn into_text(self) -> String {
+        match self {
+            Self::Simple { text, .. } | Self::Detailed { text, .. } => text,
+        }
+    }
+}
+/// Enum: into_field on partial non-Copy field — nothing generates (same as set)
+#[fieldwork(into_field)]
+enum PartialOwned {
+    Rich { name: String, code: u32 },
+    Simple { code: u32 },
+}
+impl PartialOwned {}

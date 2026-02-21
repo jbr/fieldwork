@@ -77,3 +77,41 @@ struct AllowOptingBackInAtFieldAttribute<T: Copy> {
     #[field(copy)]
     generic: T,
 }
+
+/// Enum: Copy types auto-detected; full coverage returns T, partial returns Option<T>
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get)]
+enum Coord {
+    TwoD { x: f64, y: f64 },
+    ThreeD { x: f64, y: f64, z: f64 },
+}
+
+/// Enum: copy = false on a Copy type → returns &T even for Copy types
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get)]
+enum NoCopyEnum {
+    A {
+        #[fieldwork(copy = false)]
+        code: u32,
+    },
+    B {
+        #[fieldwork(copy = false)]
+        code: u32,
+    },
+}
+
+/// Enum: copy = false at enum level, opting back in per-field
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, copy = false)]
+enum CopyOverride {
+    A {
+        #[fieldwork(copy = true)]
+        id: u32,
+        name: String,
+    },
+    B {
+        #[fieldwork(copy = true)]
+        id: u32,
+        name: String,
+    },
+}

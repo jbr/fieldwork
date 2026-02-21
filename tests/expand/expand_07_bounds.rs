@@ -8,3 +8,11 @@ struct MyStruct<T> {
     /// must be clone
     generic: T,
 }
+
+/// Enum: generic with explicit bounds
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(bounds = "T: Clone", get, set)]
+enum Container<T> {
+    Filled { value: T, label: String },
+    Empty { label: String },
+}

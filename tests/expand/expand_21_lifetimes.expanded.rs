@@ -96,3 +96,86 @@ impl<'a> MyStruct<'a> {
         self
     }
 }
+/// Enum: lifetime parameters on fields (same type across variants → full coverage)
+#[fieldwork(get, set, with)]
+enum Borrowed<'a> {
+    Short { content: &'a str, id: u32 },
+    Long { content: &'a str, id: u32 },
+}
+impl<'a> Borrowed<'a> {
+    pub fn content(&self) -> &'a str {
+        match self {
+            Self::Short { content, .. } | Self::Long { content, .. } => *content,
+        }
+    }
+    pub fn set_content(&mut self, content: &'a str) -> &mut Self {
+        match self {
+            Self::Short { content: content_binding, .. } => {
+                *content_binding = content;
+            }
+            Self::Long { content: content_binding, .. } => {
+                *content_binding = content;
+            }
+        }
+        self
+    }
+    #[must_use]
+    pub fn with_content(mut self, content: &'a str) -> Self {
+        match &mut self {
+            Self::Short { content: content_binding, .. } => {
+                *content_binding = content;
+            }
+            Self::Long { content: content_binding, .. } => {
+                *content_binding = content;
+            }
+        }
+        self
+    }
+    pub fn id(&self) -> u32 {
+        match self {
+            Self::Short { id, .. } | Self::Long { id, .. } => *id,
+        }
+    }
+    pub fn set_id(&mut self, id: u32) -> &mut Self {
+        match self {
+            Self::Short { id: id_binding, .. } => {
+                *id_binding = id;
+            }
+            Self::Long { id: id_binding, .. } => {
+                *id_binding = id;
+            }
+        }
+        self
+    }
+    #[must_use]
+    pub fn with_id(mut self, id: u32) -> Self {
+        match &mut self {
+            Self::Short { id: id_binding, .. } => {
+                *id_binding = id;
+            }
+            Self::Long { id: id_binding, .. } => {
+                *id_binding = id;
+            }
+        }
+        self
+    }
+}
+/// Enum: Option with lifetime
+#[fieldwork(get)]
+enum WithOptionalBorrow<'a> {
+    Named { name: &'a str, tag: Option<&'a str> },
+    Anonymous { tag: Option<&'a str> },
+}
+impl<'a> WithOptionalBorrow<'a> {
+    pub fn name(&self) -> Option<&'a str> {
+        match self {
+            Self::Named { name, .. } => Some(*name),
+            _ => None,
+        }
+    }
+    pub fn tag(&self) -> Option<&'a str> {
+        match self {
+            Self::Named { tag, .. } | Self::Anonymous { tag, .. } => *tag,
+        }
+    }
+}

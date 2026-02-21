@@ -233,3 +233,104 @@ impl Mixed {
         self
     }
 }
+/// Enum: with/without on full-coverage bool and Option fields
+/// Bool → no argument; sets to true (with) / false (without)
+/// Option → with takes inner T; without sets to None
+#[fieldwork(with, without)]
+enum Toggle {
+    On { active: bool, name: Option<String> },
+    Off { active: bool, name: Option<String> },
+}
+impl Toggle {
+    #[must_use]
+    pub fn with_active(mut self) -> Self {
+        match &mut self {
+            Self::On { active, .. } => {
+                *active = true;
+            }
+            Self::Off { active, .. } => {
+                *active = true;
+            }
+        }
+        self
+    }
+    #[must_use]
+    pub fn without_active(mut self) -> Self {
+        match &mut self {
+            Self::On { active, .. } => {
+                *active = false;
+            }
+            Self::Off { active, .. } => {
+                *active = false;
+            }
+        }
+        self
+    }
+    #[must_use]
+    pub fn with_name(mut self, name: String) -> Self {
+        match &mut self {
+            Self::On { name: name_binding, .. } => {
+                *name_binding = Some(name);
+            }
+            Self::Off { name: name_binding, .. } => {
+                *name_binding = Some(name);
+            }
+        }
+        self
+    }
+    #[must_use]
+    pub fn without_name(mut self) -> Self {
+        match &mut self {
+            Self::On { name, .. } => {
+                *name = None;
+            }
+            Self::Off { name, .. } => {
+                *name = None;
+            }
+        }
+        self
+    }
+}
+/// Enum: without on a partial-coverage Option field → generates with `_ => {}` fallthrough
+/// with_token does NOT generate (with requires full coverage)
+#[fieldwork(with, without)]
+enum Connection {
+    Authenticated { token: Option<String>, active: bool },
+    Anonymous { active: bool },
+}
+impl Connection {
+    #[must_use]
+    pub fn with_active(mut self) -> Self {
+        match &mut self {
+            Self::Authenticated { active, .. } => {
+                *active = true;
+            }
+            Self::Anonymous { active, .. } => {
+                *active = true;
+            }
+        }
+        self
+    }
+    #[must_use]
+    pub fn without_active(mut self) -> Self {
+        match &mut self {
+            Self::Authenticated { active, .. } => {
+                *active = false;
+            }
+            Self::Anonymous { active, .. } => {
+                *active = false;
+            }
+        }
+        self
+    }
+    #[must_use]
+    pub fn without_token(mut self) -> Self {
+        match &mut self {
+            Self::Authenticated { token, .. } => {
+                *token = None;
+            }
+            _ => {}
+        }
+        self
+    }
+}

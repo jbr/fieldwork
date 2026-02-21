@@ -71,7 +71,7 @@ impl TryFrom<&Path> for Method {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct MethodSettings<T>([Option<T>; 7]);
 
 impl<T> Default for MethodSettings<T> {

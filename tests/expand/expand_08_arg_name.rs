@@ -11,3 +11,19 @@ struct MyStruct<T> {
     #[fieldwork(argument = "the_gen", set(argument = the_generic))]
     generic: T,
 }
+
+/// Enum: custom argument name in setters
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set)]
+enum Item {
+    Widget {
+        #[fieldwork(argument = the_name)]
+        name: String,
+        #[fieldwork(set(argument = new_price))]
+        price: f64,
+    },
+    Gadget {
+        name: String,
+        price: f64,
+    },
+}

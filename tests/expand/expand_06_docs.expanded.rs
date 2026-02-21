@@ -92,6 +92,73 @@ Some more information about this type:
         self
     }
 }
+/// Enum: doc comments on variants and fields
+#[fieldwork(get, set)]
+enum LogLevel {
+    /// A debug-level message
+    Debug { message: String },
+    /// A warning-level message
+    Warn {
+        /// The warning message content
+        #[fieldwork(
+            get(doc = "borrow the warning text"),
+            set(doc = "update the warning text")
+        )]
+        message: String,
+    },
+}
+impl LogLevel {
+    pub fn message(&self) -> &str {
+        match self {
+            Self::Debug { message, .. } | Self::Warn { message, .. } => &**message,
+        }
+    }
+    pub fn set_message(&mut self, message: String) -> &mut Self {
+        match self {
+            Self::Debug { message: message_binding, .. } => {
+                *message_binding = message;
+            }
+            Self::Warn { message: message_binding, .. } => {
+                *message_binding = message;
+            }
+        }
+        self
+    }
+}
+/// Enum: doc_template applies to all methods
+#[fieldwork(
+    get(doc_template = "# gets {} from this variant"),
+    set(doc_template = "# sets {} on this variant")
+)]
+enum Documented {
+    /// the first variant
+    First {
+        /// the value field
+        value: String,
+    },
+    /// the second variant
+    Second { value: String },
+}
+impl Documented {
+    ///# gets the value field from this variant
+    pub fn value(&self) -> &str {
+        match self {
+            Self::First { value, .. } | Self::Second { value, .. } => &**value,
+        }
+    }
+    ///# sets the value field on this variant
+    pub fn set_value(&mut self, value: String) -> &mut Self {
+        match self {
+            Self::First { value: value_binding, .. } => {
+                *value_binding = value;
+            }
+            Self::Second { value: value_binding, .. } => {
+                *value_binding = value;
+            }
+        }
+        self
+    }
+}
 #[fieldwork(
     set(doc_template = " # ssssets {}
 

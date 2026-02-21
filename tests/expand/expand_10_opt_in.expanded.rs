@@ -180,3 +180,65 @@ impl MyStruct2 {
         &self.only_get
     }
 }
+/// Enum: opt_in — only annotated fields get methods
+#[fieldwork(opt_in, get, set)]
+enum OptInEnum {
+    Foo {
+        /// generated
+        #[fieldwork]
+        name: String,
+        /// not generated
+        internal: u32,
+    },
+    Bar {
+        /// also generated (using #[field])
+        #[field]
+        name: String,
+        /// not generated
+        data: Vec<u8>,
+    },
+}
+impl OptInEnum {
+    ///Borrows generated
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Foo { name, .. } | Self::Bar { name, .. } => &**name,
+        }
+    }
+    ///Sets generated, returning `&mut Self` for chaining
+    pub fn set_name(&mut self, name: String) -> &mut Self {
+        match self {
+            Self::Foo { name: name_binding, .. } => {
+                *name_binding = name;
+            }
+            Self::Bar { name: name_binding, .. } => {
+                *name_binding = name;
+            }
+        }
+        self
+    }
+}
+/// Enum: opt_in per-field with method-level opt-in
+#[fieldwork(opt_in, get, set)]
+enum SelectiveMethods {
+    Alpha { #[fieldwork(get)] read_only: String, #[fieldwork(set)] write_only: String },
+    Beta { #[fieldwork] read_only: String, #[fieldwork] write_only: String },
+}
+impl SelectiveMethods {
+    pub fn read_only(&self) -> &str {
+        match self {
+            Self::Alpha { read_only, .. } | Self::Beta { read_only, .. } => &**read_only,
+        }
+    }
+    pub fn set_write_only(&mut self, write_only: String) -> &mut Self {
+        match self {
+            Self::Alpha { write_only: write_only_binding, .. } => {
+                *write_only_binding = write_only;
+            }
+            Self::Beta { write_only: write_only_binding, .. } => {
+                *write_only_binding = write_only;
+            }
+        }
+        self
+    }
+}

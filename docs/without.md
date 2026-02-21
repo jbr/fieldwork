@@ -61,7 +61,12 @@ impl Config {
 
 ```
 
+## Enums
+
+On enums, `without` is only generated for full-coverage `bool` and `Option<T>`
+fields. See [`enums`](crate::enums).
+
 ## Skipping `without` for a field
 
 Use `#[field(without = false)]` or `#[field(without(skip))]` to suppress the `without` method
-for a specific field while keeping it enabled struct-wide.
+for a specific field while keeping it enabled item-wide.

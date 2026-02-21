@@ -74,3 +74,22 @@ struct Mixed {
     count: u32,           // gets only with_count(u32), without silently skipped
     data: String,         // gets only with_data(String), without silently skipped
 }
+
+/// Enum: with/without on full-coverage bool and Option fields
+/// Bool → no argument; sets to true (with) / false (without)
+/// Option → with takes inner T; without sets to None
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(with, without)]
+enum Toggle {
+    On { active: bool, name: Option<String> },
+    Off { active: bool, name: Option<String> },
+}
+
+/// Enum: without on a partial-coverage Option field → generates with `_ => {}` fallthrough
+/// with_token does NOT generate (with requires full coverage)
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(with, without)]
+enum Connection {
+    Authenticated { token: Option<String>, active: bool },
+    Anonymous { active: bool },
+}

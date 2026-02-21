@@ -46,3 +46,51 @@ struct SkipWithAssignment<T> {
 struct GetMutEqualsFalseDoesNothing<T> {
     field: T,
 }
+
+/// Enum: skip a specific field; it's excluded from all method generation
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set)]
+enum SkipField {
+    Alpha {
+        name: String,
+        #[field(skip)]
+        internal: u32,
+    },
+    Beta {
+        name: String,
+    },
+}
+
+/// Enum: #[variant(skip)] makes all fields in that variant behave as if absent
+/// → partial coverage (Option return + `_ => None`) even for fields shared with other variants
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set)]
+enum SkipVariant {
+    Active {
+        value: i32,
+    },
+    #[variant(skip)]
+    Debug {
+        value: i32,
+        extra: String,
+    },
+    Inactive {
+        value: i32,
+    },
+}
+
+/// Enum: per-method field skip
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set)]
+enum PerMethodSkip {
+    Foo {
+        #[fieldwork(get(skip))]
+        write_only: i32,
+        #[fieldwork(set(skip))]
+        read_only: i32,
+    },
+    Bar {
+        write_only: i32,
+        read_only: i32,
+    },
+}

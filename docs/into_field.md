@@ -40,6 +40,34 @@ impl Config {
 
 `max_connections` is `u32` (Copy) so no `into_max_connections` is generated.
 
+## Enums
+
+On enums, `into_field` is only generated for full-coverage fields. The method
+consumes `self` and returns the field value via an exhaustive or-pattern match.
+Partial-coverage fields are not generated. See [`enums`](crate::enums).
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(into_field)]
+enum Status {
+    Active { name: String },
+    Inactive { name: String },
+}
+```
+
+```rust
+// GENERATED
+# enum Status { Active { name: String }, Inactive { name: String }, }
+impl Status {
+    pub fn into_name(self) -> String {
+        match self {
+            Self::Active { name, .. } | Self::Inactive { name, .. } => name,
+        }
+    }
+}
+
+```
+
 ## Newtype pattern
 
 The most common use of `into_field` is the conventional `into_inner` for newtype wrappers.

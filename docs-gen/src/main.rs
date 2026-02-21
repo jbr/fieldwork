@@ -5,7 +5,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::{collections::HashSet, env};
-use syn::{Attribute, File, Item, ItemImpl, ItemStruct, ItemTrait, ItemUse, Type, TypePath};
+use syn::{
+    Attribute, File, Item, ItemEnum, ItemImpl, ItemStruct, ItemTrait, ItemUse, Type, TypePath,
+};
 
 #[derive(Debug)]
 struct CodeExample {
@@ -19,6 +21,7 @@ struct ExtractedCode {
     use_statements: Vec<ItemUse>,
     trait_definitions: Vec<ItemTrait>,
     struct_definitions: Vec<ItemStruct>,
+    enum_definitions: Vec<ItemEnum>,
     fieldwork_impls: Vec<ItemImpl>,
 }
 
@@ -99,11 +102,7 @@ fn process_file(
     let mut updated_count = 0;
 
     for (i, example) in examples.iter().rev().enumerate() {
-        let example_num = examples.len() - i;
-        println!(
-            "🔄 Processing example {example_num} of {}...",
-            examples.len()
-        );
+        println!("🔄 Processing example {i} of {}...", examples.len());
 
         match process_example(&example.input_code, example_file) {
             Ok(formatted) => {
@@ -145,14 +144,14 @@ fn process_file(
                 if safe_start <= safe_end {
                     new_content.replace_range(safe_start..safe_end, &formatted);
                 } else {
-                    eprintln!("⚠️  Invalid range for example {example_num}, skipping replacement");
+                    eprintln!("⚠️  Invalid range for example {i}, skipping replacement");
                 }
 
                 updated_count += 1;
-                println!("✅ Example {example_num} updated successfully");
+                println!("✅ Example {i} updated successfully");
             }
             Err(e) => {
-                eprintln!("❌ Failed to process example {example_num}: {e}");
+                eprintln!("❌ Failed to process example {i}: {e}");
                 if verbose {
                     eprintln!("Input code was:\n{}", example.input_code);
                 }
@@ -212,34 +211,41 @@ fn find_expandable_examples(content: &str) -> Result<Vec<CodeExample>, Box<dyn E
 }
 
 fn process_example(input: &str, example_file: &Path) -> Result<String, Box<dyn Error>> {
-    let target_structs = extract_struct_names_from_input(input)?;
+    let target_items = extract_item_names_from_input(input)?;
     let expanded = expand_single_example(input, example_file)?;
-    let extracted = extract_fieldwork_code(&expanded, &target_structs)?;
+    let extracted = extract_fieldwork_code(&expanded, &target_items)?;
     format_extracted_code(&extracted)
 }
 
-fn extract_struct_names_from_input(input: &str) -> Result<HashSet<String>, Box<dyn Error>> {
+fn extract_item_names_from_input(input: &str) -> Result<HashSet<String>, Box<dyn Error>> {
     let parsed: File = syn::parse_str(input)?;
-    let mut struct_names = HashSet::new();
+    let mut item_names = HashSet::new();
 
     for item in parsed.items {
-        if let Item::Struct(item_struct) = item {
-            struct_names.insert(item_struct.ident.to_string());
+        match item {
+            Item::Struct(s) => {
+                item_names.insert(s.ident.to_string());
+            }
+            Item::Enum(e) => {
+                item_names.insert(e.ident.to_string());
+            }
+            _ => {}
         }
     }
 
-    Ok(struct_names)
+    Ok(item_names)
 }
 
 fn extract_fieldwork_code(
     expanded: &str,
-    target_structs: &HashSet<String>,
+    target_items: &HashSet<String>,
 ) -> Result<ExtractedCode, Box<dyn Error>> {
     let parsed: File = syn::parse_str(expanded)?;
 
     let mut use_statements = vec![];
     let mut trait_definitions = vec![];
     let mut struct_definitions = vec![];
+    let mut enum_definitions = vec![];
     let mut fieldwork_impls = vec![];
 
     for item in parsed.items {
@@ -251,13 +257,17 @@ fn extract_fieldwork_code(
                 trait_definitions.push(item_trait);
             }
             Item::Struct(item_struct) => {
-                let struct_name = item_struct.ident.to_string();
-                if target_structs.contains(&struct_name) {
+                if target_items.contains(&item_struct.ident.to_string()) {
                     struct_definitions.push(item_struct);
                 }
             }
+            Item::Enum(item_enum) => {
+                if target_items.contains(&item_enum.ident.to_string()) {
+                    enum_definitions.push(item_enum);
+                }
+            }
             Item::Impl(item_impl) => {
-                if is_fieldwork_impl(&item_impl, target_structs) {
+                if is_fieldwork_impl(&item_impl, target_items) {
                     fieldwork_impls.push(item_impl);
                 }
             }
@@ -268,12 +278,13 @@ fn extract_fieldwork_code(
     Ok(ExtractedCode {
         trait_definitions,
         struct_definitions,
+        enum_definitions,
         fieldwork_impls,
         use_statements,
     })
 }
 
-fn is_fieldwork_impl(item_impl: &ItemImpl, target_structs: &HashSet<String>) -> bool {
+fn is_fieldwork_impl(item_impl: &ItemImpl, target_items: &HashSet<String>) -> bool {
     if item_impl.trait_.is_some() {
         return false;
     }
@@ -281,7 +292,7 @@ fn is_fieldwork_impl(item_impl: &ItemImpl, target_structs: &HashSet<String>) -> 
     if let Type::Path(TypePath { path, .. }) = &*item_impl.self_ty {
         if let Some(segment) = path.segments.last() {
             let type_name = segment.ident.to_string();
-            return target_structs.contains(&type_name);
+            return target_items.contains(&type_name);
         }
     }
 
@@ -332,6 +343,27 @@ fn format_extracted_code(extracted: &ExtractedCode) -> Result<String, Box<dyn Er
         }
     }
 
+    for enum_def in &extracted.enum_definitions {
+        let mut cleaned_enum = enum_def.clone();
+        cleaned_enum
+            .attrs
+            .retain(|attr| !is_fieldwork_attr(attr) && !attr.path().is_ident("doc"));
+
+        for variant in &mut cleaned_enum.variants {
+            variant.attrs.retain(|attr| !is_fieldwork_attr(attr));
+            for field in &mut variant.fields {
+                field.attrs.retain(|attr| !is_fieldwork_attr(attr));
+            }
+        }
+
+        let formatted_enum = concise_format(&cleaned_enum.into_token_stream().to_string());
+        for line in formatted_enum.lines() {
+            if !line.trim().is_empty() {
+                result.push(format!("# {line}"));
+            }
+        }
+    }
+
     for impl_block in &extracted.fieldwork_impls {
         let formatted_impl = prettyplease::unparse(&syn::parse_quote! { #impl_block });
         result.push(formatted_impl);
@@ -342,7 +374,7 @@ fn format_extracted_code(extracted: &ExtractedCode) -> Result<String, Box<dyn Er
 
 fn is_fieldwork_attr(attr: &Attribute) -> bool {
     let path = attr.path();
-    path.is_ident("fieldwork") || path.is_ident("field")
+    path.is_ident("fieldwork") || path.is_ident("field") || path.is_ident("variant")
 }
 
 fn concise_format(s: &str) -> String {
@@ -387,18 +419,22 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_extract_struct_names() {
+    fn test_extract_item_names() {
         let input = r#"
         #[derive(fieldwork::Fieldwork)]
         struct User { name: String }
 
         #[derive(fieldwork::Fieldwork)]
         struct Post { title: String }
+
+        #[derive(fieldwork::Fieldwork)]
+        enum Status { Active { name: String }, Inactive { name: String } }
         "#;
 
-        let names = extract_struct_names_from_input(input).unwrap();
+        let names = extract_item_names_from_input(input).unwrap();
         assert!(names.contains("User"));
         assert!(names.contains("Post"));
-        assert_eq!(names.len(), 2);
+        assert!(names.contains("Status"));
+        assert_eq!(names.len(), 3);
     }
 }

@@ -5,7 +5,7 @@ use std::borrow::Cow;
 use syn::{Ident, Member, Type, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
-pub(crate) struct ResolvedIntoField<'a> {
+pub(crate) struct IntoField<'a> {
     doc: Option<Cow<'a, str>>,
     fn_ident: Cow<'a, Ident>,
     span: Span,
@@ -14,9 +14,9 @@ pub(crate) struct ResolvedIntoField<'a> {
     vis: Cow<'a, Visibility>,
 }
 
-impl<'a> ResolvedIntoField<'a> {
+impl<'a> IntoField<'a> {
     pub(crate) fn build(&self) -> TokenStream {
-        let ResolvedIntoField {
+        let IntoField {
             doc,
             fn_ident,
             span,

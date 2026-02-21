@@ -95,3 +95,48 @@ mod x {
         e: Option<Box<T>>,
     }
 }
+
+/// Enum: auto-deref on full-coverage String fields → &str
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut)]
+enum AutoDerefEnum {
+    First {
+        name: String,
+        path: std::path::PathBuf,
+    },
+    Second {
+        name: String,
+        path: std::path::PathBuf,
+    },
+}
+
+/// Enum: auto-deref with partial coverage — Option wraps the borrowed form
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get)]
+enum PartialAutoDeref {
+    WithLabel { id: u32, label: String },
+    WithoutLabel { id: u32 },
+}
+
+/// Enum: deref = false disables auto-deref on enum fields
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut, deref = false)]
+enum NoAutoDeref {
+    A { name: String },
+    B { name: String },
+}
+
+/// Enum: multi-level deref through Option (full and partial coverage)
+/// Option<Vec<u8>> → as_deref() → Option<&[u8]>  (single deref level)
+/// Option<std::sync::Arc<Vec<u8>>> → as_ref().map() → Option<&[u8]>  (two deref levels)
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut)]
+enum DeepDeref {
+    Full {
+        single: Option<Vec<u8>>,
+        multi: Option<std::sync::Arc<Vec<u8>>>,
+    },
+    Partial {
+        single: Option<Vec<u8>>,
+    },
+}

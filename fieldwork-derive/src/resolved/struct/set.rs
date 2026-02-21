@@ -6,33 +6,37 @@ use syn::{Expr, Ident, Member, Type, Visibility};
 use crate::Query;
 
 #[cfg_attr(feature = "debug", derive(Debug))]
-pub(crate) struct ResolvedWith<'a> {
-    pub(crate) argument_ident_and_ty: Option<(Cow<'a, Ident>, Cow<'a, Type>)>,
+pub(crate) struct Set<'a> {
+    pub(crate) argument_ident: Cow<'a, Ident>,
+    pub(crate) argument_ty: Cow<'a, Type>,
     pub(crate) assigned_value: Expr,
+    pub(crate) chainable_set: bool,
     pub(crate) doc: Option<Cow<'a, str>>,
     pub(crate) fn_ident: Cow<'a, Ident>,
     pub(crate) span: Span,
     pub(crate) member: &'a Member,
     pub(crate) vis: Cow<'a, Visibility>,
 }
-
-impl<'a> ResolvedWith<'a> {
+impl<'a> Set<'a> {
     pub(crate) fn build(&self) -> TokenStream2 {
-        let ResolvedWith {
-            vis,
-            fn_ident,
-            member,
-            argument_ident_and_ty,
-            doc,
+        let Set {
+            argument_ident,
+            argument_ty,
             assigned_value,
+            chainable_set,
+            doc,
+            fn_ident,
             span,
+            member,
+            vis,
         } = self;
+
         let doc = doc.as_deref().map(|d| quote_spanned!(*span => #[doc = #d]));
-        if let Some((argument_ident, argument_ty)) = argument_ident_and_ty {
+
+        if *chainable_set {
             quote_spanned! {*span=>
                 #doc
-                #[must_use]
-                #vis fn #fn_ident(mut self, #argument_ident: #argument_ty) -> Self {
+                #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) -> &mut Self {
                     self.#member = #assigned_value;
                     self
                 }
@@ -40,10 +44,8 @@ impl<'a> ResolvedWith<'a> {
         } else {
             quote_spanned! {*span=>
                 #doc
-                #[must_use]
-                #vis fn #fn_ident(mut self) -> Self {
+                #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) {
                     self.#member = #assigned_value;
-                    self
                 }
             }
         }
@@ -55,15 +57,17 @@ impl<'a> ResolvedWith<'a> {
         let fn_ident = query.fn_ident()?;
         let member = query.member();
         let argument_ident = query.argument_ident()?;
+        let chainable_set = query.chainable_set();
         let (argument_ty, assigned_value) =
             query.determine_argument_ty_and_assigned_value(&argument_ident)?;
+        let argument_ty = argument_ty?;
         let doc = query.docs(false);
 
-        let argument_ident_and_ty = argument_ty.map(|ty| (argument_ident, ty));
-
         Some(Self {
-            argument_ident_and_ty,
+            argument_ident,
+            argument_ty,
             assigned_value,
+            chainable_set,
             doc,
             fn_ident,
             span,

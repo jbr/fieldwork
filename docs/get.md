@@ -51,6 +51,44 @@ impl User {
 
 ```
 
+## Enums
+
+On enums, `get` determines the return type based on field coverage. See
+[`enums`](crate::enums) for the full/partial coverage concept.
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get)]
+enum Packet {
+    Data { id: u32, payload: String },
+    Heartbeat { id: u32 },
+}
+```
+
+```rust
+// GENERATED
+# enum Packet { Data { id: u32, payload: String }, Heartbeat { id: u32 }, }
+impl Packet {
+    pub fn id(&self) -> u32 {
+        match self {
+            Self::Data { id, .. } | Self::Heartbeat { id, .. } => *id,
+        }
+    }
+    pub fn payload(&self) -> Option<&str> {
+        match self {
+            Self::Data { payload, .. } => Some(&**payload),
+            _ => None,
+        }
+    }
+}
+
+```
+
+`id` appears in both variants (full coverage): returns `u32` by value (Copy).
+`payload` appears in only `Data` (partial coverage): returns `Option<&str>`.
+Smart defaults (deref, option unwrapping) apply to the inner type for partial
+fields just as they do for struct fields.
+
 ## Options
 
 | Option | Description |
@@ -60,7 +98,7 @@ impl User {
 | [`option_borrow_inner`](crate::get::option_borrow_inner) | Control how `Option` fields are returned |
 | [`rename_predicates`](crate::get::rename_predicates) | Prefix `bool`-returning getters with `is_` |
 
-All options can be set at the struct level (`#[fieldwork(get(copy = false))]`), per-field
+All options can be set at the item level (`#[fieldwork(get(copy = false))]`), per-field
 (`#[field(get(copy))]`), or combined with field-level configuration
 (`#[field(copy)]` applies to all methods for that field). See [`configuration`](crate::configuration)
 for the full cascade rules.

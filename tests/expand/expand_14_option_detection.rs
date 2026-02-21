@@ -88,3 +88,35 @@ struct BackwardsCompat {
 
     not_borrow_inner: Option<String>,
 }
+
+/// Enum: Option fields with full coverage → Option<&T> (borrow inner applied)
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut)]
+enum WithOptions {
+    Foo { token: Option<String>, id: u32 },
+    Bar { token: Option<String> },
+}
+
+/// Enum: option_borrow_inner = false disables unwrapping
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut, option_borrow_inner = false)]
+enum NoOptionDetection {
+    Foo { data: Option<String> },
+    Bar { data: Option<String> },
+}
+
+/// Enum: opt-in option detection per field
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, option_borrow_inner = false)]
+enum SelectiveOption {
+    Foo {
+        #[fieldwork(option_borrow_inner)]
+        detected: Option<String>,
+        raw: Option<String>,
+    },
+    Bar {
+        #[fieldwork(option_borrow_inner)]
+        detected: Option<String>,
+        raw: Option<String>,
+    },
+}

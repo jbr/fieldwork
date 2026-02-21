@@ -19,6 +19,39 @@ struct MyStruct<T> {
     generic: T,
 }
 
+/// Enum: doc comments on variants and fields
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set)]
+enum LogLevel {
+    /// A debug-level message
+    Debug { message: String },
+    /// A warning-level message
+    Warn {
+        /// The warning message content
+        #[fieldwork(
+            get(doc = "borrow the warning text"),
+            set(doc = "update the warning text")
+        )]
+        message: String,
+    },
+}
+
+/// Enum: doc_template applies to all methods
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(
+    get(doc_template = "# gets {} from this variant"),
+    set(doc_template = "# sets {} on this variant")
+)]
+enum Documented {
+    /// the first variant
+    First {
+        /// the value field
+        value: String,
+    },
+    /// the second variant
+    Second { value: String },
+}
+
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(
     set(doc_template = " # ssssets {}

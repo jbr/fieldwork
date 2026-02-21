@@ -9,3 +9,11 @@ struct MyStruct<T> {
     /// it's really whatever you want
     generic: T,
 }
+
+/// Enum: custom method templates on get/set
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get(template = "fetch_{}"), set(template = "assign_{}"))]
+enum Config {
+    Dev { host: String, port: u16 },
+    Prod { host: String, port: u16 },
+}

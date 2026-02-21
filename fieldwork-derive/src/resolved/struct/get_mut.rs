@@ -6,7 +6,7 @@ use syn::{Expr, Ident, Type, Visibility};
 use crate::Query;
 
 #[cfg_attr(feature = "debug", derive(Debug))]
-pub(crate) struct ResolvedGetMut<'a> {
+pub(crate) struct GetMut<'a> {
     pub(crate) doc: Option<Cow<'a, str>>,
     pub(crate) fn_ident: Cow<'a, Ident>,
     pub(crate) span: Span,
@@ -15,7 +15,7 @@ pub(crate) struct ResolvedGetMut<'a> {
     pub(crate) access_expr: Expr,
 }
 
-impl<'a> ResolvedGetMut<'a> {
+impl<'a> GetMut<'a> {
     pub(crate) fn from_query(query: &Query<'a>) -> Option<Self> {
         let span = query.span();
         let vis = query.vis();
@@ -35,7 +35,7 @@ impl<'a> ResolvedGetMut<'a> {
     }
 
     pub(crate) fn build(&self) -> TokenStream {
-        let ResolvedGetMut {
+        let GetMut {
             doc,
             fn_ident,
             span,

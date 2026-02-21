@@ -61,7 +61,7 @@ impl Image {
 
 ## Opting out
 
-Disable deref detection for a whole struct, a specific method, or a single field:
+Disable deref detection for a whole item, a specific method, or a single field:
 
 ```rust
 # use std::sync::Arc;
@@ -91,5 +91,5 @@ impl Cache {
 
 ```
 
-At the struct level: `#[fieldwork(get, deref = false)]` disables deref for all `get` accessors.
+At the item level: `#[fieldwork(get, deref = false)]` disables deref for all `get` accessors.
 Individual fields can opt back in with `#[field(deref = true)]` or a specific type.

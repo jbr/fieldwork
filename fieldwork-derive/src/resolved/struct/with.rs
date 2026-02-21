@@ -1,12 +1,13 @@
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Expr, Ident, Member, Visibility};
+use syn::{Expr, Ident, Member, Type, Visibility};
 
 use crate::Query;
 
 #[cfg_attr(feature = "debug", derive(Debug))]
-pub(crate) struct ResolvedWithout<'a> {
+pub(crate) struct With<'a> {
+    pub(crate) argument_ident_and_ty: Option<(Cow<'a, Ident>, Cow<'a, Type>)>,
     pub(crate) assigned_value: Expr,
     pub(crate) doc: Option<Cow<'a, str>>,
     pub(crate) fn_ident: Cow<'a, Ident>,
@@ -15,24 +16,35 @@ pub(crate) struct ResolvedWithout<'a> {
     pub(crate) vis: Cow<'a, Visibility>,
 }
 
-impl<'a> ResolvedWithout<'a> {
+impl<'a> With<'a> {
     pub(crate) fn build(&self) -> TokenStream2 {
-        let ResolvedWithout {
+        let With {
             vis,
             fn_ident,
             member,
+            argument_ident_and_ty,
             doc,
             assigned_value,
             span,
         } = self;
         let doc = doc.as_deref().map(|d| quote_spanned!(*span => #[doc = #d]));
-
-        quote_spanned! {*span=>
-            #doc
-            #[must_use]
-            #vis fn #fn_ident(mut self) -> Self {
-                self.#member = #assigned_value;
-                self
+        if let Some((argument_ident, argument_ty)) = argument_ident_and_ty {
+            quote_spanned! {*span=>
+                #doc
+                #[must_use]
+                #vis fn #fn_ident(mut self, #argument_ident: #argument_ty) -> Self {
+                    self.#member = #assigned_value;
+                    self
+                }
+            }
+        } else {
+            quote_spanned! {*span=>
+                #doc
+                #[must_use]
+                #vis fn #fn_ident(mut self) -> Self {
+                    self.#member = #assigned_value;
+                    self
+                }
             }
         }
     }
@@ -43,11 +55,14 @@ impl<'a> ResolvedWithout<'a> {
         let fn_ident = query.fn_ident()?;
         let member = query.member();
         let argument_ident = query.argument_ident()?;
-        let (_, assigned_value) =
+        let (argument_ty, assigned_value) =
             query.determine_argument_ty_and_assigned_value(&argument_ident)?;
         let doc = query.docs(false);
 
+        let argument_ident_and_ty = argument_ty.map(|ty| (argument_ident, ty));
+
         Some(Self {
+            argument_ident_and_ty,
             assigned_value,
             doc,
             fn_ident,

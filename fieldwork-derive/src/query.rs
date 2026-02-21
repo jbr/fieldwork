@@ -1,10 +1,11 @@
 use std::borrow::Cow;
 
 use crate::{
-    CommonSettings, Field, FieldAttributes, FieldMethodAttributes, Method, Resolved,
-    ItemAttributes, ItemMethodAttributes,
+    CommonSettings, Field, FieldAttributes, FieldMethodAttributes, ItemAttributes,
+    ItemMethodAttributes, Method, Resolved,
     copy_detection::{enable_copy_for_type, is_type},
     deref_handling::auto_deref,
+    r#enum::VirtualField,
     option_handling::{extract_option_type, option_type_mut, ref_inner, ref_inner_mut, strip_ref},
 };
 use Method::{Get, GetMut, IntoField, Set, Take, With, Without};
@@ -19,9 +20,19 @@ pub(crate) struct Query<'a> {
     span: &'a Span,
     item_attributes: &'a ItemAttributes,
     item_method_attributes: Option<&'a ItemMethodAttributes>,
+    virtual_field: Option<&'a VirtualField>,
 }
 
 impl<'a> Query<'a> {
+    pub(crate) fn with_virtual_field(mut self, virtual_field: &'a VirtualField) -> Self {
+        self.virtual_field = Some(virtual_field);
+        self
+    }
+
+    pub(crate) fn virtual_field(&self) -> Option<&'a VirtualField> {
+        self.virtual_field
+    }
+
     pub(crate) fn method(&self) -> Method {
         *self.method
     }
@@ -50,6 +61,7 @@ impl<'a> Query<'a> {
             span,
             item_attributes,
             item_method_attributes,
+            virtual_field: None,
         }
     }
 
@@ -325,20 +337,22 @@ impl<'a> Query<'a> {
 
         if let Some(inner_type) = self.borrow_inner(&current_type) {
             if let Some((deref_type, deref_count)) = self.deref_and_count(inner_type) {
+                let receiver = as_method_receiver(access_expr);
                 access_expr = if deref_count == 1 {
-                    parse_quote_spanned!(span => #access_expr.as_deref_mut())
+                    parse_quote_spanned!(span => #receiver.as_deref_mut())
                 } else {
                     let ident = self.field_name();
                     let mut deref_expr: Expr = parse_quote_spanned!(span => #ident);
                     for _ in 0..deref_count {
                         deref_expr = parse_quote_spanned!(span => *#deref_expr);
                     }
-                    parse_quote_spanned!(span => #access_expr.as_mut().map(|#ident| &mut *#deref_expr))
+                    parse_quote_spanned!(span => #receiver.as_mut().map(|#ident| &mut *#deref_expr))
                 };
 
                 current_type = parse_quote_spanned!(span => Option<&mut #deref_type>);
             } else if ref_inner(inner_type).is_none() {
-                access_expr = parse_quote_spanned!(span => #access_expr.as_mut());
+                let receiver = as_method_receiver(access_expr);
+                access_expr = parse_quote_spanned!(span => #receiver.as_mut());
                 current_type = parse_quote_spanned!(span => Option<&mut #inner_type>);
             }
 
@@ -358,7 +372,7 @@ impl<'a> Query<'a> {
         self.coerce_slices(span, &base_expr, &mut access_expr, &mut current_type);
 
         (
-            parse_quote_spanned!(span => &mut #access_expr),
+            binding_or_mut_ref(access_expr, span),
             parse_quote_spanned!(span => &mut #current_type),
         )
     }
@@ -383,20 +397,22 @@ impl<'a> Query<'a> {
 
         if let Some(inner_type) = self.borrow_inner(&current_type) {
             if let Some((deref_type, deref_count)) = self.deref_and_count(inner_type) {
+                let receiver = as_method_receiver(access_expr);
                 access_expr = if deref_count == 1 {
-                    parse_quote_spanned!(span => #access_expr.as_deref())
+                    parse_quote_spanned!(span => #receiver.as_deref())
                 } else {
                     let ident = self.field_name();
                     let mut deref_expr: Expr = parse_quote_spanned!(span => #ident);
                     for _ in 0..deref_count {
                         deref_expr = parse_quote_spanned!(span => *#deref_expr);
                     }
-                    parse_quote_spanned!(span => #access_expr.as_ref().map(|#ident| &*#deref_expr))
+                    parse_quote_spanned!(span => #receiver.as_ref().map(|#ident| &*#deref_expr))
                 };
 
                 current_type = parse_quote_spanned!(span => Option<&#deref_type>);
             } else if ref_inner(inner_type).is_none() {
-                access_expr = parse_quote_spanned!(span => #access_expr.as_ref());
+                let receiver = as_method_receiver(access_expr);
+                access_expr = parse_quote_spanned!(span => #receiver.as_ref());
                 current_type = parse_quote_spanned!(span => Option<&#inner_type>);
             }
         } else if let Some((deref_type, deref_count)) = self.deref_and_count(&current_type) {
@@ -412,7 +428,7 @@ impl<'a> Query<'a> {
         self.check_copy(&access_expr, &current_type)
             .unwrap_or_else(|| {
                 (
-                    parse_quote_spanned!(span => &#access_expr),
+                    binding_or_ref(access_expr, span),
                     parse_quote_spanned!(span => &#current_type),
                     false,
                 )
@@ -495,19 +511,69 @@ impl<'a> Query<'a> {
             return;
         }
 
+        let base_receiver = as_method_receiver(base_expr.clone());
+
         if let Some((ty, mutability)) = option_type_mut(current_type).and_then(ref_inner_mut) {
             if let Type::Array(TypeArray { elem, .. }) = ty {
                 let field_name = self.field_name();
                 *access_expr = if mutability {
-                    parse_quote_spanned!(span => #base_expr.as_mut().map(|#field_name| &mut #field_name[..]))
+                    parse_quote_spanned!(span => #base_receiver.as_mut().map(|#field_name| &mut #field_name[..]))
                 } else {
-                    parse_quote_spanned!(span => #base_expr.as_ref().map(|#field_name| &#field_name[..]))
+                    parse_quote_spanned!(span => #base_receiver.as_ref().map(|#field_name| &#field_name[..]))
                 };
                 *ty = parse_quote_spanned!(span => [#elem]);
             }
         } else if let Type::Array(TypeArray { elem, .. }) = current_type {
-            *access_expr = parse_quote_spanned!(span => #base_expr[..]);
+            *access_expr = parse_quote_spanned!(span => #base_receiver[..]);
             *current_type = parse_quote_spanned!(span => [#elem]);
         }
     }
+}
+
+/// Strip one level of deref from `expr` when it will be used as a method-call or index receiver.
+/// If `expr` is `*inner`, return `inner` directly — the method call's auto-ref makes the deref
+/// redundant (e.g. enum binding `token: &Option<String>` → `token.as_deref()` rather than
+/// `(*token).as_deref()`). For all other expressions, return them unchanged.
+fn as_method_receiver(expr: Expr) -> Expr {
+    match expr {
+        Expr::Unary(syn::ExprUnary {
+            op: syn::UnOp::Deref(_),
+            expr: inner,
+            ..
+        }) => *inner,
+        other => other,
+    }
+}
+
+/// Wrap `expr` in `&expr`, unless `expr` is `*simple_ident` — in which case the binding is
+/// already `&T` and we return it directly, avoiding the redundant `&*binding` reborrow that
+/// appears in enum getters when no transforms are applied to the match arm binding.
+fn binding_or_ref(expr: Expr, span: Span) -> Expr {
+    if let Expr::Unary(syn::ExprUnary {
+        op: syn::UnOp::Deref(_),
+        expr: inner,
+        ..
+    }) = &expr
+    {
+        if matches!(**inner, Expr::Path(_)) {
+            return (**inner).clone();
+        }
+    }
+    parse_quote_spanned!(span => &#expr)
+}
+
+/// Same as [`binding_or_ref`] but wraps in `&mut` instead, eliminating `&mut *binding` reborrows
+/// in enum `get_mut` arms.
+fn binding_or_mut_ref(expr: Expr, span: Span) -> Expr {
+    if let Expr::Unary(syn::ExprUnary {
+        op: syn::UnOp::Deref(_),
+        expr: inner,
+        ..
+    }) = &expr
+    {
+        if matches!(**inner, Expr::Path(_)) {
+            return (**inner).clone();
+        }
+    }
+    parse_quote_spanned!(span => &mut #expr)
 }

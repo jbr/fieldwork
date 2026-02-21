@@ -39,6 +39,12 @@ impl User {
 
 ```
 
+## Enums
+
+`get_mut` follows the same full/partial coverage rules as `get`: full-coverage
+fields return `&mut T` (or `&mut BorrowedT`), partial-coverage fields return
+`Option<&mut T>`. See [`enums`](crate::enums).
+
 ## Options
 
 `get_mut` shares its configuration options with `get`:

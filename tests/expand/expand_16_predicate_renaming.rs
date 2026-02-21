@@ -13,3 +13,18 @@ struct NoPredicateRenaming {
     active: bool,
 }
 
+/// Enum: bool fields with rename_predicates — full coverage → is_enabled() -> bool
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, rename_predicates)]
+enum FeatureFlags {
+    Enabled { active: bool, debug: bool },
+    Disabled { active: bool, debug: bool },
+}
+
+/// Enum: partial-coverage bool field with rename_predicates
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, rename_predicates)]
+enum MixedFlags {
+    Full { active: bool, verbose: bool },
+    Partial { active: bool },
+}

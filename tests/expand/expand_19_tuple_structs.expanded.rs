@@ -2,6 +2,62 @@ use std::borrow::Cow;
 use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
 use std::sync::Arc;
+/// Enum: tuple variants with named fields via #[field = "name"]
+#[fieldwork(get, into_field)]
+enum ColorEnum {
+    Rgb(#[field = "r"] u8, #[field = "g"] u8, #[field = "b"] u8),
+    Named(#[field = "name"] String),
+    Transparent,
+}
+impl ColorEnum {
+    pub fn b(&self) -> Option<u8> {
+        match self {
+            Self::Rgb(_, _, b, ..) => Some(*b),
+            _ => None,
+        }
+    }
+    pub fn g(&self) -> Option<u8> {
+        match self {
+            Self::Rgb(_, g, ..) => Some(*g),
+            _ => None,
+        }
+    }
+    pub fn name(&self) -> Option<&str> {
+        match self {
+            Self::Named(name, ..) => Some(&**name),
+            _ => None,
+        }
+    }
+    pub fn r(&self) -> Option<u8> {
+        match self {
+            Self::Rgb(r, ..) => Some(*r),
+            _ => None,
+        }
+    }
+}
+/// Enum: mixed named-field and tuple variants
+#[fieldwork(get, set)]
+enum Payload {
+    Tuple(#[field = "data"] Vec<u8>, #[field = "id"] u32),
+    Named { data: Vec<u8>, id: u32 },
+    Empty,
+}
+impl Payload {
+    pub fn data(&self) -> Option<&[u8]> {
+        match self {
+            Self::Tuple(data, ..) => Some(&**data),
+            Self::Named { data, .. } => Some(&**data),
+            _ => None,
+        }
+    }
+    pub fn id(&self) -> Option<u32> {
+        match self {
+            Self::Tuple(_, id, ..) => Some(*id),
+            Self::Named { id, .. } => Some(*id),
+            _ => None,
+        }
+    }
+}
 #[fieldwork(get, set, with, get_mut)]
 struct Rgb(
     #[fieldwork(name = red)]

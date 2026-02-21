@@ -47,3 +47,60 @@ impl<T> MyStruct2<T> {
         self
     }
 }
+/// Enum: chain = false at enum-method level; setter returns ()
+#[fieldwork(set(chain = false))]
+enum Point {
+    TwoD { x: i32, y: i32 },
+    ThreeD { x: i32, y: i32, z: i32 },
+}
+impl Point {
+    pub fn set_x(&mut self, x: i32) {
+        match self {
+            Self::TwoD { x: x_binding, .. } => {
+                *x_binding = x;
+            }
+            Self::ThreeD { x: x_binding, .. } => {
+                *x_binding = x;
+            }
+        }
+    }
+    pub fn set_y(&mut self, y: i32) {
+        match self {
+            Self::TwoD { y: y_binding, .. } => {
+                *y_binding = y;
+            }
+            Self::ThreeD { y: y_binding, .. } => {
+                *y_binding = y;
+            }
+        }
+    }
+}
+/// Enum: chain = false for specific field, opting back in for another
+#[fieldwork(set)]
+enum Mixed {
+    A { #[fieldwork(set(chain = false))] no_chain: i32, chained: i32 },
+    B { no_chain: i32, chained: i32 },
+}
+impl Mixed {
+    pub fn set_chained(&mut self, chained: i32) -> &mut Self {
+        match self {
+            Self::A { chained: chained_binding, .. } => {
+                *chained_binding = chained;
+            }
+            Self::B { chained: chained_binding, .. } => {
+                *chained_binding = chained;
+            }
+        }
+        self
+    }
+    pub fn set_no_chain(&mut self, no_chain: i32) {
+        match self {
+            Self::A { no_chain: no_chain_binding, .. } => {
+                *no_chain_binding = no_chain;
+            }
+            Self::B { no_chain: no_chain_binding, .. } => {
+                *no_chain_binding = no_chain;
+            }
+        }
+    }
+}

@@ -1,5 +1,5 @@
 use crate::{
-    CommonSettings, Method, MethodSettings, ItemMethodAttributes, errors::invalid_key,
+    CommonSettings, ItemMethodAttributes, Method, MethodSettings, errors::invalid_key,
     is_fieldwork_attr, with_common_settings, with_methods,
 };
 use proc_macro2::Span;
@@ -140,8 +140,7 @@ impl ItemAttributes {
             if value {
                 // if they said `get = false`, we do nothing currently becuase it's opt in
                 self.include.insert(method, true);
-                self.methods
-                    .insert(method, ItemMethodAttributes::default());
+                self.methods.insert(method, ItemMethodAttributes::default());
             }
             Ok(())
         }

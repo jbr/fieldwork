@@ -5,7 +5,7 @@ use std::borrow::Cow;
 use syn::{Expr, Ident, Type, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
-pub(crate) struct ResolvedGet<'a> {
+pub(crate) struct Get<'a> {
     doc: Option<Cow<'a, str>>,
     fn_ident: Cow<'a, Ident>,
     span: Span,
@@ -14,9 +14,9 @@ pub(crate) struct ResolvedGet<'a> {
     vis: Cow<'a, Visibility>,
 }
 
-impl<'a> ResolvedGet<'a> {
+impl<'a> Get<'a> {
     pub(crate) fn build(&self) -> TokenStream {
-        let ResolvedGet {
+        let Get {
             doc,
             fn_ident,
             span,
@@ -43,7 +43,7 @@ impl<'a> ResolvedGet<'a> {
 
         let doc = query.docs(is_get_copy);
 
-        Some(ResolvedGet {
+        Some(Self {
             doc,
             fn_ident,
             span,

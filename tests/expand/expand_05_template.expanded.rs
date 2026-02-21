@@ -67,3 +67,43 @@ impl<T> MyStruct<T> {
         self
     }
 }
+/// Enum: custom method templates on get/set
+#[fieldwork(get(template = "fetch_{}"), set(template = "assign_{}"))]
+enum Config {
+    Dev { host: String, port: u16 },
+    Prod { host: String, port: u16 },
+}
+impl Config {
+    pub fn fetch_host(&self) -> &str {
+        match self {
+            Self::Dev { host, .. } | Self::Prod { host, .. } => &**host,
+        }
+    }
+    pub fn assign_host(&mut self, host: String) -> &mut Self {
+        match self {
+            Self::Dev { host: host_binding, .. } => {
+                *host_binding = host;
+            }
+            Self::Prod { host: host_binding, .. } => {
+                *host_binding = host;
+            }
+        }
+        self
+    }
+    pub fn fetch_port(&self) -> u16 {
+        match self {
+            Self::Dev { port, .. } | Self::Prod { port, .. } => *port,
+        }
+    }
+    pub fn assign_port(&mut self, port: u16) -> &mut Self {
+        match self {
+            Self::Dev { port: port_binding, .. } => {
+                *port_binding = port;
+            }
+            Self::Prod { port: port_binding, .. } => {
+                *port_binding = port;
+            }
+        }
+        self
+    }
+}

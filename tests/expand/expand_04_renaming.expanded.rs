@@ -181,3 +181,56 @@ impl RenameWithEquals {
         self
     }
 }
+/// Enum: field rename with various syntaxes (same field name across variants = full coverage)
+#[fieldwork(get, set)]
+enum RenameEnum {
+    Metric {
+        #[fieldwork(rename = radius_px)]
+        radius: f64,
+        #[field = "label"]
+        name: String,
+    },
+    Imperial {
+        #[fieldwork(rename = radius_px)]
+        radius: f64,
+        #[field = "label"]
+        name: String,
+    },
+}
+impl RenameEnum {
+    pub fn label(&self) -> &str {
+        match self {
+            Self::Metric { name: label, .. } | Self::Imperial { name: label, .. } => {
+                &**label
+            }
+        }
+    }
+    pub fn set_label(&mut self, label: String) -> &mut Self {
+        match self {
+            Self::Metric { name: label_binding, .. } => {
+                *label_binding = label;
+            }
+            Self::Imperial { name: label_binding, .. } => {
+                *label_binding = label;
+            }
+        }
+        self
+    }
+    pub fn radius_px(&self) -> f64 {
+        match self {
+            Self::Metric { radius: radius_px, .. }
+            | Self::Imperial { radius: radius_px, .. } => *radius_px,
+        }
+    }
+    pub fn set_radius_px(&mut self, radius_px: f64) -> &mut Self {
+        match self {
+            Self::Metric { radius: radius_px_binding, .. } => {
+                *radius_px_binding = radius_px;
+            }
+            Self::Imperial { radius: radius_px_binding, .. } => {
+                *radius_px_binding = radius_px;
+            }
+        }
+        self
+    }
+}

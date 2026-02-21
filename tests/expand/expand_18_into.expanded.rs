@@ -37,3 +37,86 @@ impl AcceptsAnythingInto {
         self
     }
 }
+/// Enum: into on full-coverage field
+#[fieldwork(get, set, with)]
+enum IntoEnum {
+    Alpha { #[fieldwork(into)] name: String, value: i32 },
+    Beta { #[fieldwork(into)] name: String, value: i32 },
+}
+impl IntoEnum {
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Alpha { name, .. } | Self::Beta { name, .. } => &**name,
+        }
+    }
+    pub fn set_name(&mut self, name: impl Into<String>) -> &mut Self {
+        match self {
+            Self::Alpha { name: name_binding, .. } => {
+                *name_binding = name.into();
+            }
+            Self::Beta { name: name_binding, .. } => {
+                *name_binding = name.into();
+            }
+        }
+        self
+    }
+    #[must_use]
+    pub fn with_name(mut self, name: impl Into<String>) -> Self {
+        match &mut self {
+            Self::Alpha { name: name_binding, .. } => {
+                *name_binding = name.into();
+            }
+            Self::Beta { name: name_binding, .. } => {
+                *name_binding = name.into();
+            }
+        }
+        self
+    }
+    pub fn value(&self) -> i32 {
+        match self {
+            Self::Alpha { value, .. } | Self::Beta { value, .. } => *value,
+        }
+    }
+    pub fn set_value(&mut self, value: i32) -> &mut Self {
+        match self {
+            Self::Alpha { value: value_binding, .. } => {
+                *value_binding = value;
+            }
+            Self::Beta { value: value_binding, .. } => {
+                *value_binding = value;
+            }
+        }
+        self
+    }
+    #[must_use]
+    pub fn with_value(mut self, value: i32) -> Self {
+        match &mut self {
+            Self::Alpha { value: value_binding, .. } => {
+                *value_binding = value;
+            }
+            Self::Beta { value: value_binding, .. } => {
+                *value_binding = value;
+            }
+        }
+        self
+    }
+}
+/// Enum: into on partial-coverage field
+#[fieldwork(set)]
+enum PartialInto {
+    Full { shared: i32, #[fieldwork(into)] label: String },
+    Minimal { shared: i32 },
+}
+impl PartialInto {
+    pub fn set_shared(&mut self, shared: i32) -> &mut Self {
+        match self {
+            Self::Full { shared: shared_binding, .. } => {
+                *shared_binding = shared;
+            }
+            Self::Minimal { shared: shared_binding, .. } => {
+                *shared_binding = shared;
+            }
+        }
+        self
+    }
+}

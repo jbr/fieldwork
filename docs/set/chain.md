@@ -3,7 +3,7 @@
 By default, `set` methods return `&mut Self` so that multiple setters can be chained in sequence.
 Set `chain = false` to return `()` instead.
 
-## Disabling chaining struct-wide
+## Disabling chaining item-wide
 
 ```rust
 #[derive(fieldwork::Fieldwork)]

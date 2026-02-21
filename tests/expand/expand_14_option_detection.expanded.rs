@@ -201,3 +201,81 @@ impl BackwardsCompat {
         &self.not_borrow_inner
     }
 }
+/// Enum: Option fields with full coverage → Option<&T> (borrow inner applied)
+#[fieldwork(get, get_mut)]
+enum WithOptions {
+    Foo { token: Option<String>, id: u32 },
+    Bar { token: Option<String> },
+}
+impl WithOptions {
+    pub fn id(&self) -> Option<u32> {
+        match self {
+            Self::Foo { id, .. } => Some(*id),
+            _ => None,
+        }
+    }
+    pub fn id_mut(&mut self) -> Option<&mut u32> {
+        match self {
+            Self::Foo { id, .. } => Some(id),
+            _ => None,
+        }
+    }
+    pub fn token(&self) -> Option<&str> {
+        match self {
+            Self::Foo { token, .. } | Self::Bar { token, .. } => token.as_deref(),
+        }
+    }
+    pub fn token_mut(&mut self) -> Option<&mut str> {
+        match self {
+            Self::Foo { token, .. } => token.as_deref_mut(),
+            Self::Bar { token, .. } => token.as_deref_mut(),
+        }
+    }
+}
+/// Enum: option_borrow_inner = false disables unwrapping
+#[fieldwork(get, get_mut, option_borrow_inner = false)]
+enum NoOptionDetection {
+    Foo { data: Option<String> },
+    Bar { data: Option<String> },
+}
+impl NoOptionDetection {
+    pub fn data(&self) -> &Option<String> {
+        match self {
+            Self::Foo { data, .. } | Self::Bar { data, .. } => data,
+        }
+    }
+    pub fn data_mut(&mut self) -> &mut Option<String> {
+        match self {
+            Self::Foo { data, .. } => data,
+            Self::Bar { data, .. } => data,
+        }
+    }
+}
+/// Enum: opt-in option detection per field
+#[fieldwork(get, option_borrow_inner = false)]
+enum SelectiveOption {
+    Foo {
+        #[fieldwork(option_borrow_inner)]
+        detected: Option<String>,
+        raw: Option<String>,
+    },
+    Bar {
+        #[fieldwork(option_borrow_inner)]
+        detected: Option<String>,
+        raw: Option<String>,
+    },
+}
+impl SelectiveOption {
+    pub fn detected(&self) -> Option<&str> {
+        match self {
+            Self::Foo { detected, .. } | Self::Bar { detected, .. } => {
+                detected.as_deref()
+            }
+        }
+    }
+    pub fn raw(&self) -> &Option<String> {
+        match self {
+            Self::Foo { raw, .. } | Self::Bar { raw, .. } => raw,
+        }
+    }
+}
