@@ -42,7 +42,7 @@ checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
 name = "fieldwork"
-version = "0.4.7"
+version = "0.4.8"
 dependencies = [
  "fieldwork-derive",
  "macrotest",
@@ -52,7 +52,7 @@ dependencies = [
 
 [[package]]
 name = "fieldwork-derive"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "proc-macro2",
  "quote",
