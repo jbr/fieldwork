@@ -141,6 +141,28 @@ impl State {
         self
     }
 }
+/// Item-method-level vis: get(vis = ...) in the item attribute restricts all getters
+#[fieldwork(get(vis = "pub(crate)"), set)]
+struct MethodVis {
+    value: i32,
+    name: String,
+}
+impl MethodVis {
+    pub(crate) fn value(&self) -> i32 {
+        self.value
+    }
+    pub fn set_value(&mut self, value: i32) -> &mut Self {
+        self.value = value;
+        self
+    }
+    pub(crate) fn name(&self) -> &str {
+        &*self.name
+    }
+    pub fn set_name(&mut self, name: String) -> &mut Self {
+        self.name = name;
+        self
+    }
+}
 /// Enum: field-level vis override
 #[fieldwork(vis = "pub(crate)", get, set)]
 enum Mixed {

@@ -1,5 +1,5 @@
 use syn::{
-    Attribute, Error, Expr, ExprAssign, ExprLit, ExprPath, Ident, Lit, Meta, MetaNameValue,
+    Attribute, Error, Expr, ExprAssign, ExprLit, ExprPath, Lit, Meta, MetaNameValue,
     punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
 
@@ -9,8 +9,6 @@ use syn::{
 pub(crate) struct VariantAttributes {
     /// Skip this variant from all field method coverage.
     pub(crate) skip: bool,
-    /// Override the variant's name used in generated method names (for `is_variant`).
-    pub(crate) fn_ident: Option<Ident>,
 }
 
 impl VariantAttributes {
@@ -24,22 +22,12 @@ impl VariantAttributes {
             Meta::Path(_) => {}
 
             Meta::NameValue(MetaNameValue { value, .. }) => match value {
-                Expr::Path(ExprPath { path, .. }) => {
-                    va.fn_ident = Some(path.require_ident()?.clone());
-                }
-                Expr::Lit(ExprLit {
-                    lit: Lit::Str(s), ..
-                }) => {
-                    va.fn_ident = Some(s.parse()?);
-                }
                 Expr::Lit(ExprLit {
                     lit: Lit::Bool(b), ..
                 }) => {
-                    if !b.value {
-                        va.skip = true;
-                    }
+                    va.skip = !b.value;
                 }
-                _ => return Err(Error::new(value.span(), "expected identifier or bool")),
+                _ => return Err(Error::new(value.span(), "expected bool")),
             },
 
             Meta::List(list) => {
@@ -65,22 +53,6 @@ impl VariantAttributes {
                             };
 
                             match lhs.as_str() {
-                                "name" => match &**right {
-                                    Expr::Path(ExprPath { path, .. }) => {
-                                        va.fn_ident = Some(path.require_ident()?.clone());
-                                    }
-                                    Expr::Lit(ExprLit {
-                                        lit: Lit::Str(s), ..
-                                    }) => {
-                                        va.fn_ident = Some(s.parse()?);
-                                    }
-                                    _ => {
-                                        return Err(Error::new(
-                                            right.span(),
-                                            "expected identifier",
-                                        ));
-                                    }
-                                },
                                 "skip" => match &**right {
                                     Expr::Lit(ExprLit {
                                         lit: Lit::Bool(b), ..
