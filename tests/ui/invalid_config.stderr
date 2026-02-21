@@ -184,3 +184,90 @@ error: unexpected attribute format
    |
 92 | struct S(#[fieldwork = 1.0] ());
    |                        ^^^
+
+error: not recognized
+  --> tests/ui/invalid_config.rs:98:17
+   |
+98 |     #[fieldwork(name = 1.0)]
+   |                 ^^^^
+
+error: unknown configuration `bad_method`
+
+       In this position, fieldwork recognizes:
+       `chain`, `copy`, `debug`, `deref`, `inspect`, `into`, `opt_in`, `option_borrow_inner`,
+       `option_set_some`, `rename_predicate`, `rename_predicates`, `skip`, `vis`, `argument`, `name`,
+       `option_set_some`, `rename`, `skip`, `get`, `set`, `with`, `get_mut`, `without`, `take`,
+       and `into_field`
+   --> tests/ui/invalid_config.rs:106:17
+    |
+106 |     #[fieldwork(bad_method(copy))]
+    |                 ^^^^^^^^^^
+
+error: not recognized
+   --> tests/ui/invalid_config.rs:114:17
+    |
+114 |     #[fieldwork("string")]
+    |                 ^^^^^^^^
+
+error: not recognized
+   --> tests/ui/invalid_config.rs:122:21
+    |
+122 |     #[fieldwork(get("string"))]
+    |                     ^^^^^^^^
+
+error: not recognized
+   --> tests/ui/invalid_config.rs:130:21
+    |
+130 |     #[fieldwork(get(name = 1.0))]
+    |                     ^^^^
+
+error: not recognized
+   --> tests/ui/invalid_config.rs:136:17
+    |
+136 | #[fieldwork(get("string"))]
+    |                 ^^^^^^^^
+
+error: not recognized
+   --> tests/ui/invalid_config.rs:143:17
+    |
+143 | #[fieldwork(get(template = 1.0))]
+    |                 ^^^^^^^^
+
+error: not recognized
+   --> tests/ui/invalid_config.rs:152:21
+    |
+152 |     #[fieldwork(get((name) = "foo"))]
+    |                     ^^^^^^
+
+error: unexpected attribute format
+   --> tests/ui/invalid_config.rs:158:1
+    |
+158 | #[fieldwork = "not_a_list"]
+    | ^
+
+error: not recognized
+   --> tests/ui/invalid_config.rs:165:13
+    |
+165 | #[fieldwork("string")]
+    |             ^^^^^^^^
+
+error: not recognized
+   --> tests/ui/invalid_config.rs:172:13
+    |
+172 | #[fieldwork(skip = 1.0)]
+    |             ^^^^
+
+error: not recognized
+   --> tests/ui/invalid_config.rs:179:17
+    |
+179 | #[fieldwork(get((template) = "foo"))]
+    |                 ^^^^^^^^^^
+
+error: fieldwork does not support unions
+   --> tests/ui/invalid_config.rs:186:1
+    |
+186 | / union FF {
+187 | |     x: i32,
+188 | |     y: f32,
+189 | | }
+    | |_^

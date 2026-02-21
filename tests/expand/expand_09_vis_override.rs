@@ -48,6 +48,14 @@ enum State {
     Inactive { value: i32 },
 }
 
+/// Item-method-level vis: get(vis = ...) in the item attribute restricts all getters
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get(vis = "pub(crate)"), set)]
+struct MethodVis {
+    value: i32,
+    name: String,
+}
+
 /// Enum: field-level vis override
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(vis = "pub(crate)", get, set)]

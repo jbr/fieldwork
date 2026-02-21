@@ -1,0 +1,35 @@
+error: unrecognized variant option `unknown`
+ --> tests/ui/invalid_variant_config.rs:5:15
+  |
+5 |     #[variant(unknown)]
+  |               ^^^^^^^
+
+error: expected bool
+  --> tests/ui/invalid_variant_config.rs:14:22
+   |
+14 |     #[variant(skip = "not_a_bool")]
+   |                      ^^^^^^^^^^^^
+
+error: unrecognized variant option `unknown`
+  --> tests/ui/invalid_variant_config.rs:23:15
+   |
+23 |     #[variant(unknown = true)]
+   |               ^^^^^^^
+
+error: expected bool
+  --> tests/ui/invalid_variant_config.rs:32:17
+   |
+32 |     #[variant = "string"]
+   |                 ^^^^^^^^
+
+error: expected identifier
+  --> tests/ui/invalid_variant_config.rs:41:15
+   |
+41 |     #[variant(42 = true)]
+   |               ^^
+
+error: not recognized
+  --> tests/ui/invalid_variant_config.rs:50:15
+   |
+50 |     #[variant(1.0)]
+   |               ^^^

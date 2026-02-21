@@ -14,6 +14,7 @@ mod expand_12_non_chain_set;
 mod expand_13_deref;
 mod expand_14_option_detection;
 mod expand_15_auto_deref;
+mod expand_16_predicate_renaming;
 mod expand_17_option_set_some;
 mod expand_18_into;
 mod expand_19_tuple_structs;
@@ -25,3 +26,4 @@ mod expand_24_into_field;
 mod expand_25_enum_basic;
 // expand_26_enum_is_variant: is_variant not yet implemented
 // expand_27_enum_partial: partial = "result"/"noop"/"panic" not yet implemented
+mod expand_28_variant_skip;
