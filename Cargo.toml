@@ -3,7 +3,7 @@ members = [".", "fieldwork-derive", "docs-gen"]
 
 [package]
 name = "fieldwork"
-version = "0.4.7"
+version = "0.4.8"
 edition = "2024"
 description = "derivable accessors for struct fields"
 license = "MIT OR Apache-2.0"
@@ -16,7 +16,7 @@ categories = ["development-tools"]
 debug = []
 
 [dependencies]
-fieldwork-derive = { path = "./fieldwork-derive", version = "0.4.6" }
+fieldwork-derive = { path = "./fieldwork-derive", version = "0.4.7" }
 
 [dev-dependencies]
 macrotest = { version = "1.1.0" }
