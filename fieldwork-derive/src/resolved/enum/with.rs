@@ -1,4 +1,4 @@
-use crate::{Query, r#enum::arm_pattern};
+use crate::{Query, arm_pattern};
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 use std::borrow::Cow;
@@ -55,8 +55,8 @@ impl<'a> With<'a> {
     }
 
     pub(crate) fn from_query(query: &Query<'a>) -> Option<Self> {
-        let virtual_field = query.virtual_field()?;
-        if !virtual_field.is_full_coverage() {
+        let fields = query.enum_fields()?;
+        if !query.is_full_coverage() {
             return None;
         }
         let span = query.span();
@@ -68,7 +68,7 @@ impl<'a> With<'a> {
             query.determine_argument_ty_and_assigned_value(&argument_ident)?;
         let argument_ident_and_ty = argument_ty.map(|ty| (argument_ident.clone(), ty));
 
-        let arm_binding = &virtual_field.arms.first()?.binding;
+        let arm_binding = fields.first()?.binding();
         // Only suffix when there's an actual function argument that could clash.
         let field_binding: Ident =
             if argument_ident_and_ty.is_some() && arm_binding == &*argument_ident {
@@ -76,10 +76,9 @@ impl<'a> With<'a> {
             } else {
                 arm_binding.clone()
             };
-        let patterns = virtual_field
-            .arms
+        let patterns = fields
             .iter()
-            .map(|arm| arm_pattern(&arm.variant_ident, arm, Some(&field_binding)))
+            .map(|field| arm_pattern(field, Some(&field_binding)))
             .collect();
 
         Some(Self {

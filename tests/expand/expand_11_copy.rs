@@ -86,7 +86,8 @@ enum Coord {
     ThreeD { x: f64, y: f64, z: f64 },
 }
 
-/// Enum: copy = false on a Copy type → returns &T even for Copy types
+/// Enum: copy = false on a Copy type → returns &T even for Copy types.
+/// Annotation on one variant; applies to the whole virtual field.
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get)]
 enum NoCopyEnum {
@@ -95,12 +96,12 @@ enum NoCopyEnum {
         code: u32,
     },
     B {
-        #[fieldwork(copy = false)]
         code: u32,
     },
 }
 
-/// Enum: copy = false at enum level, opting back in per-field
+/// Enum: copy = false at enum level, opting back in per-field.
+/// Annotation on one variant; applies to the whole virtual field.
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, copy = false)]
 enum CopyOverride {
@@ -110,7 +111,6 @@ enum CopyOverride {
         name: String,
     },
     B {
-        #[fieldwork(copy = true)]
         id: u32,
         name: String,
     },

@@ -80,7 +80,7 @@ impl Coords {}
 #[fieldwork(into_field)]
 enum ExplicitNoCopy {
     A { #[field(copy = false)] id: u32 },
-    B { #[field(copy = false)] id: u32 },
+    B { id: u32 },
 }
 impl ExplicitNoCopy {
     pub fn into_id(self) -> u32 {

@@ -8,7 +8,7 @@ struct AcceptsAnythingInto {
     option_string: Option<String>,
 }
 
-/// Enum: into on full-coverage field
+/// Enum: into on full-coverage field; annotation on one variant applies to the whole field.
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set, with)]
 enum IntoEnum {
@@ -18,7 +18,6 @@ enum IntoEnum {
         value: i32,
     },
     Beta {
-        #[fieldwork(into)]
         name: String,
         value: i32,
     },

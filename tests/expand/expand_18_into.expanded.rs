@@ -37,11 +37,11 @@ impl AcceptsAnythingInto {
         self
     }
 }
-/// Enum: into on full-coverage field
+/// Enum: into on full-coverage field; annotation on one variant applies to the whole field.
 #[fieldwork(get, set, with)]
 enum IntoEnum {
     Alpha { #[fieldwork(into)] name: String, value: i32 },
-    Beta { #[fieldwork(into)] name: String, value: i32 },
+    Beta { name: String, value: i32 },
 }
 impl IntoEnum {
     pub fn name(&self) -> &str {

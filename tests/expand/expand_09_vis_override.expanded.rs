@@ -163,26 +163,27 @@ impl MethodVis {
         self
     }
 }
-/// Enum: field-level vis override
+/// Enum: per-method vis override at field level — annotation on Alpha only; applies to both.
+/// Only the getter is widened to `pub`; the setter keeps the enum-level `pub(crate)`.
 #[fieldwork(vis = "pub(crate)", get, set)]
 enum Mixed {
     Alpha {
         /// pub(crate) by default
         shared: i32,
-        /// this field overrides to pub
+        /// getter is pub; setter remains pub(crate)
         #[fieldwork(get(vis = "pub"))]
         prominent: String,
     },
-    Beta { shared: i32, #[fieldwork(vis = "pub")] prominent: String },
+    Beta { shared: i32, prominent: String },
 }
 impl Mixed {
-    ///Borrows this field overrides to pub
+    ///Borrows getter is pub; setter remains pub(crate)
     pub fn prominent(&self) -> &str {
         match self {
             Self::Alpha { prominent, .. } | Self::Beta { prominent, .. } => &**prominent,
         }
     }
-    ///Sets this field overrides to pub, returning `&mut Self` for chaining
+    ///Sets getter is pub; setter remains pub(crate), returning `&mut Self` for chaining
     pub(crate) fn set_prominent(&mut self, prominent: String) -> &mut Self {
         match self {
             Self::Alpha { prominent: prominent_binding, .. } => {

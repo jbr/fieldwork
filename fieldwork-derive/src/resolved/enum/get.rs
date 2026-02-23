@@ -1,4 +1,4 @@
-use crate::{Query, r#enum::arm_pattern, option_handling::extract_option_type};
+use crate::{Query, arm_pattern, option_handling::extract_option_type};
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 use std::borrow::Cow;
@@ -45,17 +45,17 @@ impl<'a> Get<'a> {
     }
 
     pub(crate) fn from_query(query: &Query<'a>) -> Option<Self> {
-        let virtual_field = query.virtual_field()?;
+        let fields = query.enum_fields()?;
         let span = query.span();
         let fn_ident = query.fn_ident()?;
         let vis = query.vis();
         let doc = query.docs(false);
 
-        let first_binding = &virtual_field.arms.first()?.binding;
+        let first_binding = fields.first()?.binding();
         let base = parse_quote_spanned!(span => *#first_binding);
         let (arm_expr_typed, return_ty, _is_copy) = query.apply_get_transforms(base);
 
-        let full_coverage = virtual_field.is_full_coverage();
+        let full_coverage = query.is_full_coverage();
         let (return_ty, arm_expr) = if !full_coverage && extract_option_type(query.ty()).is_none() {
             (
                 parse_quote_spanned!(span => Option<#return_ty>),
@@ -65,10 +65,9 @@ impl<'a> Get<'a> {
             (return_ty, quote! { #arm_expr_typed })
         };
 
-        let patterns = virtual_field
-            .arms
+        let patterns = fields
             .iter()
-            .map(|arm| arm_pattern(&arm.variant_ident, arm, None))
+            .map(|field| arm_pattern(field, None))
             .collect();
 
         Some(Self {

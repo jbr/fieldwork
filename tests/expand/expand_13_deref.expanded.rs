@@ -61,11 +61,12 @@ impl OnlyDerefForMethods {
         self
     }
 }
-/// Enum: explicit deref target on full-coverage field
+/// Enum: explicit deref target on full-coverage field.
+/// Annotation on one variant; applies to the whole virtual field.
 #[fieldwork(get, get_mut)]
 enum HasDeref {
     First { #[fieldwork(deref = DerefType)] owned: OwnedType },
-    Second { #[fieldwork(deref = DerefType)] owned: OwnedType },
+    Second { owned: OwnedType },
 }
 impl HasDeref {
     pub fn owned(&self) -> &DerefType {

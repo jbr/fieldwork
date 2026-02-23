@@ -1,4 +1,4 @@
-use crate::{Query, r#enum::arm_pattern};
+use crate::{Query, arm_pattern};
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 use std::borrow::Cow;
@@ -50,7 +50,7 @@ impl<'a> Without<'a> {
     }
 
     pub(crate) fn from_query(query: &Query<'a>) -> Option<Self> {
-        let virtual_field = query.virtual_field()?;
+        let fields = query.enum_fields()?;
         let span = query.span();
         let fn_ident = query.fn_ident()?;
         let vis = query.vis();
@@ -61,11 +61,10 @@ impl<'a> Without<'a> {
 
         // `without` takes no function argument, so the field binding can always
         // be the field name itself with no risk of shadowing.
-        let field_binding = virtual_field.arms.first()?.binding.clone();
-        let patterns = virtual_field
-            .arms
+        let field_binding = fields.first()?.binding().clone();
+        let patterns = fields
             .iter()
-            .map(|arm| arm_pattern(&arm.variant_ident, arm, Some(&field_binding)))
+            .map(|field| arm_pattern(field, Some(&field_binding)))
             .collect();
 
         Some(Self {
@@ -76,7 +75,7 @@ impl<'a> Without<'a> {
             assigned_value,
             field_binding,
             patterns,
-            full_coverage: virtual_field.is_full_coverage(),
+            full_coverage: query.is_full_coverage(),
         })
     }
 }

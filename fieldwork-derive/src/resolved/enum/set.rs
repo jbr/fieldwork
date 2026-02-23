@@ -1,4 +1,4 @@
-use crate::{Query, r#enum::arm_pattern};
+use crate::{Query, arm_pattern};
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 use std::borrow::Cow;
@@ -56,8 +56,8 @@ impl<'a> Set<'a> {
     }
 
     pub(crate) fn from_query(query: &Query<'a>) -> Option<Self> {
-        let virtual_field = query.virtual_field()?;
-        if !virtual_field.is_full_coverage() {
+        let fields = query.enum_fields()?;
+        if !query.is_full_coverage() {
             return None;
         }
         let span = query.span();
@@ -70,16 +70,15 @@ impl<'a> Set<'a> {
         let argument_ty = argument_ty?;
         let chainable = query.chainable_set();
 
-        let arm_binding = &virtual_field.arms.first()?.binding;
+        let arm_binding = fields.first()?.binding();
         let field_binding: Ident = if arm_binding == &*argument_ident {
             Ident::new(&format!("{}_binding", arm_binding), span)
         } else {
             arm_binding.clone()
         };
-        let patterns = virtual_field
-            .arms
+        let patterns = fields
             .iter()
-            .map(|arm| arm_pattern(&arm.variant_ident, arm, Some(&field_binding)))
+            .map(|field| arm_pattern(field, Some(&field_binding)))
             .collect();
 
         Some(Self {

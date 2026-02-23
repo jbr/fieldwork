@@ -56,20 +56,20 @@ struct MethodVis {
     name: String,
 }
 
-/// Enum: field-level vis override
+/// Enum: per-method vis override at field level — annotation on Alpha only; applies to both.
+/// Only the getter is widened to `pub`; the setter keeps the enum-level `pub(crate)`.
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(vis = "pub(crate)", get, set)]
 enum Mixed {
     Alpha {
         /// pub(crate) by default
         shared: i32,
-        /// this field overrides to pub
+        /// getter is pub; setter remains pub(crate)
         #[fieldwork(get(vis = "pub"))]
         prominent: String,
     },
     Beta {
         shared: i32,
-        #[fieldwork(vis = "pub")]
         prominent: String,
     },
 }

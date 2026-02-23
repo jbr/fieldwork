@@ -259,11 +259,7 @@ enum SelectiveOption {
         detected: Option<String>,
         raw: Option<String>,
     },
-    Bar {
-        #[fieldwork(option_borrow_inner)]
-        detected: Option<String>,
-        raw: Option<String>,
-    },
+    Bar { detected: Option<String>, raw: Option<String> },
 }
 impl SelectiveOption {
     pub fn detected(&self) -> Option<&str> {

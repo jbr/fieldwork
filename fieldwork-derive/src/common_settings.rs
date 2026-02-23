@@ -76,6 +76,21 @@ impl CommonSettings {
         Ok(true)
     }
 
+    /// Returns `true` if any setting is explicitly configured (any `Option` is `Some`, or either
+    /// `bool` is `true`). Used to distinguish rename-only annotations from substantive ones.
+    pub(crate) fn any_active(&self) -> bool {
+        self.auto_deref.is_some()
+            || self.chainable_set.is_some()
+            || self.get_copy.is_some()
+            || self.option_borrow_inner.is_some()
+            || self.option_set_some.is_some()
+            || self.rename_predicates.is_some()
+            || self.opt_in
+            || self.skip
+            || self.vis.is_some()
+            || self.into.is_some()
+    }
+
     pub(crate) fn handle_assign_bool_lit(&mut self, lhs: &str, value: bool) -> bool {
         match lhs {
             "chain" => self.chainable_set = Some(value),

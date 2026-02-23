@@ -47,7 +47,7 @@ impl<'a> Resolved<'a> {
         if !query.enabled() {
             return None;
         }
-        if query.virtual_field().is_some() {
+        if query.is_enum() {
             match query.method() {
                 Method::Get => r#enum::Get::from_query(query).map(Self::EnumGet),
                 Method::Set => r#enum::Set::from_query(query).map(Self::EnumSet),

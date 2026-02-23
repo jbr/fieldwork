@@ -32,13 +32,12 @@ mod option_handling;
 mod query;
 mod resolved;
 mod r#struct;
-mod variant_attributes;
 
 #[cfg(test)]
 mod coverage_tests;
 
 pub(crate) use common_settings::{CommonSettings, with_common_settings};
-pub(crate) use r#enum::Enum;
+pub(crate) use r#enum::{Enum, arm_pattern};
 pub(crate) use field::Field;
 pub(crate) use field_attributes::FieldAttributes;
 pub(crate) use field_method_attributes::FieldMethodAttributes;
@@ -48,11 +47,10 @@ pub(crate) use method::{Method, MethodSettings, with_methods};
 pub(crate) use query::Query;
 pub(crate) use resolved::Resolved;
 pub(crate) use r#struct::Struct;
-pub(crate) use variant_attributes::VariantAttributes;
 
 /// Derive field accessor methods for a struct or enum. See
 /// [`fieldwork`](https://docs.rs/fieldwork) for full documentation.
-#[proc_macro_derive(Fieldwork, attributes(fieldwork, field, variant))]
+#[proc_macro_derive(Fieldwork, attributes(fieldwork, field))]
 pub fn derive_fieldwork(input: TokenStream) -> TokenStream {
     derive_fieldwork_internal(input.into()).into()
 }
@@ -86,9 +84,9 @@ fn derive_struct(input: TokenStream2) -> TokenStream2 {
     let impls = fields
         .iter()
         .flat_map(|field| {
-            Method::all()
-                .iter()
-                .filter_map(|method| Query::new(method, field, &attributes).resolve())
+            Method::all().iter().filter_map(|method| {
+                Query::new(method, std::slice::from_ref(field), &attributes, 1).resolve()
+            })
         })
         .map(|resolved| resolved.build())
         .collect::<TokenStream2>();
@@ -107,7 +105,10 @@ fn derive_enum(input: TokenStream2) -> TokenStream2 {
         Err(e) => return e.to_compile_error(),
     };
 
-    let methods = enum_item.generate_methods();
+    let methods = match enum_item.generate_methods() {
+        Ok(methods) => methods,
+        Err(e) => return e.to_compile_error(),
+    };
     let ident = &enum_item.ident;
     let (impl_generics, type_generics, where_clause) = enum_item.generics.split_for_impl();
 

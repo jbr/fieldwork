@@ -133,6 +133,153 @@ appear in only one variant each — partial coverage.
 
 ---
 
+## Per-field configuration
+
+`#[field]` and `#[fieldwork]` annotations on enum variant fields configure the
+*virtual field* — the generated method covering that field name across all variants.
+An annotation on **one** occurrence applies to the entire virtual field; every
+variant that structurally has that field participates.
+
+### Opting in from one variant
+
+When there is no item-level `#[fieldwork]` attribute (or when `opt_in` is set),
+annotating a single variant's field opts in method generation for the whole virtual
+field:
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+enum Message {
+    Request {
+        id: u64,
+        #[field(get, set)]
+        priority: u8,
+    },
+    Response { id: u64, priority: u8 },
+    Heartbeat { id: u64, priority: u8 },
+}
+```
+
+```rust
+// GENERATED
+# enum Message { Request { id: u64, priority: u8 }, Response { id: u64, priority: u8 }, Heartbeat { id: u64, priority: u8 }, }
+impl Message {
+    pub fn priority(&self) -> u8 {
+        match self {
+            Self::Request { priority, .. }
+            | Self::Response { priority, .. }
+            | Self::Heartbeat { priority, .. } => *priority,
+        }
+    }
+    pub fn set_priority(&mut self, priority: u8) -> &mut Self {
+        match self {
+            Self::Request { priority: priority_binding, .. } => {
+                *priority_binding = priority;
+            }
+            Self::Response { priority: priority_binding, .. } => {
+                *priority_binding = priority;
+            }
+            Self::Heartbeat { priority: priority_binding, .. } => {
+                *priority_binding = priority;
+            }
+        }
+        self
+    }
+}
+
+```
+
+`id` has no annotation and generates no methods. `priority` is in all three variants
+(full coverage), so both `priority() -> u8` and `set_priority()` are generated.
+
+### Vetoing a field
+
+`#[field = false]` on **any** occurrence globally suppresses all methods for that
+virtual field, even in variants where the field is otherwise accessible:
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set)]
+enum State {
+    Normal { value: i32 },
+    Transitioning { value: i32 },
+    Debug {
+        #[field = false]
+        value: i32,
+    },
+}
+```
+
+```rust
+// GENERATED
+# enum State { Normal { value: i32 }, Transitioning { value: i32 }, Debug { value: i32 }, }
+impl State {}
+
+```
+
+`Debug`'s veto on `value` suppresses all `value()` and `set_value()` methods, even
+though `Normal` and `Transitioning` have a perfectly accessible `value` field.
+
+### Vetoing a specific method
+
+`#[field(get = false)]` (or `set = false`, etc.) on any occurrence suppresses that
+method while leaving others intact:
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set)]
+enum Sensor {
+    Active { reading: f32 },
+    Calibrating { reading: f32 },
+    Fault {
+        #[field(get = false)]
+        reading: f32,
+    },
+}
+```
+
+```rust
+// GENERATED
+# enum Sensor { Active { reading: f32 }, Calibrating { reading: f32 }, Fault { reading: f32 }, }
+impl Sensor {
+    pub fn set_reading(&mut self, reading: f32) -> &mut Self {
+        match self {
+            Self::Active { reading: reading_binding, .. } => {
+                *reading_binding = reading;
+            }
+            Self::Calibrating { reading: reading_binding, .. } => {
+                *reading_binding = reading;
+            }
+            Self::Fault { reading: reading_binding, .. } => {
+                *reading_binding = reading;
+            }
+        }
+        self
+    }
+}
+
+```
+
+`set_reading()` is generated with full coverage across all three variants;
+`reading()` is suppressed because the `Fault` variant's reading should not be
+read directly.
+
+### Rules
+
+**One annotation per virtual field.** At most one *substantive* `#[field]`
+annotation (anything beyond a rename) may appear per virtual field. Fieldwork
+reports a compile error if more than one occurrence is annotated.
+
+**Rename annotations are an exception.** `#[field = "name"]` and
+`#[fieldwork(rename = name)]` may appear on all occurrences, since they control
+which variants are grouped into the same virtual field — every occurrence that
+should participate in the renamed virtual field needs to carry the matching rename.
+
+**Type consistency.** If a field has different types across variants, fieldwork
+silently omits all methods for it. Annotating such a field with `#[field]` is a
+compile error that identifies the conflicting types.
+
+---
+
 ## `into_field`
 
 Full-coverage fields generate a method that consumes `self` and returns the
@@ -212,68 +359,3 @@ impl Color {
 
 `r`, `g`, `b`, and `name` are all partial-coverage (not in every variant), so
 `get` returns `Option` for each.
-
----
-
-## `#[variant(...)]`
-
-The `#[variant(...)]` attribute annotates enum variants, analogous to
-`#[field(...)]` on struct fields.
-
-`#[variant(skip)]` excludes a variant from all method generation. Skipped
-variants are still counted in the total when calculating coverage, so they can
-turn otherwise full-coverage fields into partial-coverage fields:
-
-```rust
-
-#[derive(fieldwork::Fieldwork)]
-#[fieldwork(get, set)]
-enum Message {
-    Text { content: String },
-    Image { url: String },
-    #[variant(skip)]
-    Hidden { data: String },
-}
-
-```
-
-```rust
-// GENERATED
-# enum Message { Text { content: String }, Image { url: String }, Hidden { data: String }, }
-impl Message {
-    pub fn content(&self) -> Option<&str> {
-        match self {
-            Self::Text { content, .. } => Some(&**content),
-            _ => None,
-        }
-    }
-    pub fn url(&self) -> Option<&str> {
-        match self {
-            Self::Image { url, .. } => Some(&**url),
-            _ => None,
-        }
-    }
-}
-
-```
-
-`Hidden` contributes to the total variant count (3) but is excluded from method
-generation. `content` and `url` each appear in only one of the three variants each, making them
-partial-coverage: both return `Option<&str>` and no setters are generated.
-
----
-
-## Configuration
-
-Enum configuration follows the same cascade as structs, with `#[variant(...)]`
-slotting between the item-method and field levels. The most specific level wins.
-
-| Level | Syntax | Scope |
-|---|---|---|
-| Item | `#[fieldwork(copy = false)]` | All methods, all variants |
-| Item-method | `#[fieldwork(get(copy = false))]` | One method type, all variants |
-| Variant | `#[variant(skip)]` | All methods for this variant |
-| Field | `#[field(deref = false)]` | All methods for this field occurrence |
-| Field-method | `#[field(get(copy = false))]` | One method on this field occurrence |
-
-See [`configuration`](crate::configuration) for general cascade rules.

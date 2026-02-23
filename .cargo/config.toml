@@ -1,2 +1,2 @@
 [alias]
-docs-gen = "run -p docs-gen"
+docs-gen = "run -p docs-gen -- "
