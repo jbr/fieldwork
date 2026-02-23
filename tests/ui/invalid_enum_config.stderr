@@ -1,0 +1,23 @@
+error: field `x` has type `String` in variant `B`, but type `i32` in variant `A`; fieldwork cannot generate a single accessor method
+ --> tests/ui/invalid_enum_config.rs:8:12
+  |
+8 |         x: String,
+  |            ^^^^^^
+
+error: field `x` type `i32` first seen here
+ --> tests/ui/invalid_enum_config.rs:5:12
+  |
+5 |     A { x: i32 },
+  |            ^^^
+
+error: multiple `#[field]` annotations for virtual field `x`; only one occurrence may be annotated
+  --> tests/ui/invalid_enum_config.rs:22:12
+   |
+22 |         x: i32,
+   |            ^^^
+
+error: first annotation here
+  --> tests/ui/invalid_enum_config.rs:18:12
+   |
+18 |         x: i32,
+   |            ^^^

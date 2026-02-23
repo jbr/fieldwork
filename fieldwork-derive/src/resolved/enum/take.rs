@@ -1,4 +1,4 @@
-use crate::{Query, r#enum::arm_pattern, option_handling::extract_option_type};
+use crate::{Query, arm_pattern, option_handling::extract_option_type};
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 use std::borrow::Cow;
@@ -47,18 +47,17 @@ impl<'a> Take<'a> {
     pub(crate) fn from_query(query: &Query<'a>) -> Option<Self> {
         extract_option_type(query.ty())?;
 
-        let virtual_field = query.virtual_field()?;
+        let fields = query.enum_fields()?;
         let span = query.span();
         let fn_ident = query.fn_ident()?;
         let vis = query.vis();
         let doc = query.docs(false);
         let return_ty = query.ty();
-        let binding = virtual_field.arms.first()?.binding.clone();
+        let binding = fields.first()?.binding().clone();
 
-        let patterns = virtual_field
-            .arms
+        let patterns = fields
             .iter()
-            .map(|arm| arm_pattern(&arm.variant_ident, arm, None))
+            .map(|field| arm_pattern(field, None))
             .collect();
 
         Some(Self {
@@ -69,7 +68,7 @@ impl<'a> Take<'a> {
             return_ty,
             patterns,
             binding,
-            full_coverage: virtual_field.is_full_coverage(),
+            full_coverage: query.is_full_coverage(),
         })
     }
 }

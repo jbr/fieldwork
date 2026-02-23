@@ -108,11 +108,13 @@ enum LogLevel {
     },
 }
 impl LogLevel {
+    ///borrow the warning text
     pub fn message(&self) -> &str {
         match self {
             Self::Debug { message, .. } | Self::Warn { message, .. } => &**message,
         }
     }
+    ///update the warning text
     pub fn set_message(&mut self, message: String) -> &mut Self {
         match self {
             Self::Debug { message: message_binding, .. } => {

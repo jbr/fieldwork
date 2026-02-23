@@ -27,7 +27,8 @@ struct OnlyDerefForMethods {
     deref_for_get_mut_only: OwnedType,
 }
 
-/// Enum: explicit deref target on full-coverage field
+/// Enum: explicit deref target on full-coverage field.
+/// Annotation on one variant; applies to the whole virtual field.
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, get_mut)]
 enum HasDeref {
@@ -36,7 +37,6 @@ enum HasDeref {
         owned: OwnedType,
     },
     Second {
-        #[fieldwork(deref = DerefType)]
         owned: OwnedType,
     },
 }

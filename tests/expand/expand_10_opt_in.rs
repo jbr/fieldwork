@@ -69,7 +69,7 @@ struct MyStruct2 {
     only_get: (),
 }
 
-/// Enum: opt_in — only annotated fields get methods
+/// Enum: opt_in — only annotated fields get methods; annotation on one variant is sufficient.
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(opt_in, get, set)]
 enum OptInEnum {
@@ -81,15 +81,14 @@ enum OptInEnum {
         internal: u32,
     },
     Bar {
-        /// also generated (using #[field])
-        #[field]
+        /// also participates (no annotation needed — Foo's #[fieldwork] opts it in)
         name: String,
         /// not generated
         data: Vec<u8>,
     },
 }
 
-/// Enum: opt_in per-field with method-level opt-in
+/// Enum: opt_in per-field with method-level opt-in; annotation on one variant is sufficient.
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(opt_in, get, set)]
 enum SelectiveMethods {
@@ -100,9 +99,7 @@ enum SelectiveMethods {
         write_only: String,
     },
     Beta {
-        #[fieldwork]
         read_only: String,
-        #[fieldwork]
         write_only: String,
     },
 }

@@ -65,7 +65,6 @@ enum ExplicitNoCopy {
         id: u32,
     },
     B {
-        #[field(copy = false)]
         id: u32,
     },
 }

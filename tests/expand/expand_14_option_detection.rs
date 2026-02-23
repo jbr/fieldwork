@@ -115,7 +115,6 @@ enum SelectiveOption {
         raw: Option<String>,
     },
     Bar {
-        #[fieldwork(option_borrow_inner)]
         detected: Option<String>,
         raw: Option<String>,
     },

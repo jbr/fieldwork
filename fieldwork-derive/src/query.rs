@@ -1,11 +1,10 @@
 use std::borrow::Cow;
 
 use crate::{
-    CommonSettings, Field, FieldAttributes, FieldMethodAttributes, ItemAttributes,
-    ItemMethodAttributes, Method, Resolved,
+    CommonSettings, Field, FieldMethodAttributes, ItemAttributes, ItemMethodAttributes, Method,
+    Resolved,
     copy_detection::{enable_copy_for_type, is_type},
     deref_handling::auto_deref,
-    r#enum::VirtualField,
     option_handling::{extract_option_type, option_type_mut, ref_inner, ref_inner_mut, strip_ref},
 };
 use Method::{Get, GetMut, IntoField, Set, Take, With, Without};
@@ -14,25 +13,20 @@ use syn::{Expr, Ident, Member, Type, TypeArray, Visibility, parse_quote_spanned}
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Query<'a> {
+    /// All field occurrences sharing this name. Single element for struct fields.
+    fields: &'a [Field],
+    /// Representative field (first occurrence): used for type, span, and cascade settings.
     field: &'a Field,
     field_method_attributes: Option<&'a FieldMethodAttributes>,
     method: &'a Method,
     span: &'a Span,
     item_attributes: &'a ItemAttributes,
     item_method_attributes: Option<&'a ItemMethodAttributes>,
-    virtual_field: Option<&'a VirtualField>,
+    /// Total variants in the enum (denominator for coverage). Always 1 for structs.
+    total_variants: usize,
 }
 
 impl<'a> Query<'a> {
-    pub(crate) fn with_virtual_field(mut self, virtual_field: &'a VirtualField) -> Self {
-        self.virtual_field = Some(virtual_field);
-        self
-    }
-
-    pub(crate) fn virtual_field(&self) -> Option<&'a VirtualField> {
-        self.virtual_field
-    }
-
     pub(crate) fn method(&self) -> Method {
         *self.method
     }
@@ -43,9 +37,16 @@ impl<'a> Query<'a> {
 
     pub(crate) fn new(
         method: &'a Method,
-        field: &'a Field,
+        fields: &'a [Field],
         item_attributes: &'a ItemAttributes,
+        total_variants: usize,
     ) -> Self {
+        // Prefer the substantively-annotated occurrence as representative so its configuration
+        // (copy, deref, vis, etc.) is used for the generated method. Fall back to first.
+        let field = fields
+            .iter()
+            .find(|f| f.attributes.is_substantive_annotation())
+            .unwrap_or_else(|| fields.first().expect("Query requires at least one field"));
         let (span, field_method_attributes) = field
             .attributes
             .method_attributes
@@ -55,13 +56,14 @@ impl<'a> Query<'a> {
         let span = span.unwrap_or(&field.span);
 
         Self {
+            fields,
             field,
             field_method_attributes,
             method,
             span,
             item_attributes,
             item_method_attributes,
-            virtual_field: None,
+            total_variants,
         }
     }
 
@@ -79,6 +81,22 @@ impl<'a> Query<'a> {
 
     pub(crate) fn struct_method_attribute(&self) -> Option<&'a ItemMethodAttributes> {
         self.item_method_attributes
+    }
+
+    /// Returns true when this query is for an enum (more than one total variant).
+    pub(crate) fn is_enum(&self) -> bool {
+        self.total_variants > 1
+    }
+
+    /// Returns true when every variant contributes a field occurrence.
+    pub(crate) fn is_full_coverage(&self) -> bool {
+        self.fields.len() == self.total_variants
+    }
+
+    /// For enum resolvers: all field occurrences (each carries its `variant_ident`).
+    /// Returns `None` for struct fields so enum resolvers can early-exit cleanly.
+    pub(crate) fn enum_fields(&self) -> Option<&'a [Field]> {
+        self.is_enum().then_some(self.fields)
     }
 
     pub(crate) fn is_get_copy(&self, ty: &Type) -> bool {
@@ -232,35 +250,50 @@ impl<'a> Query<'a> {
     }
 
     pub(crate) fn enabled(&self) -> bool {
+        let method = *self.method;
         let struct_method_attr = self.struct_method_attribute();
-        let field_method_attr = self.field_method_attribute();
         let ItemAttributes {
             include,
             common_settings: CommonSettings { opt_in, .. },
             ..
         } = self.item_attributes;
-        let FieldAttributes {
-            decorated,
-            common_settings:
-                CommonSettings {
-                    opt_in: field_opt_in,
-                    skip,
-                    ..
-                },
-            ..
-        } = self.field.attributes;
+
+        // Veto: any field occurrence is globally skipped or skips this method specifically.
+        for field in self.fields {
+            if field.attributes.common_settings.skip {
+                return false;
+            }
+            if let Some((_, fma)) = field.attributes.method_attributes.retrieve(method) {
+                if fma.common_settings.skip {
+                    return false;
+                }
+            }
+        }
+
+        // Whether any occurrence has an explicit method-level opt-in (non-skip method attr).
+        let any_method_opt_in = self.fields.iter().any(|f| {
+            f.attributes
+                .method_attributes
+                .retrieve(method)
+                .is_some_and(|(_, fma)| !fma.common_settings.skip)
+        });
+
+        // Whether any occurrence is decorated (has any fieldwork annotation).
+        let any_decorated = self.fields.iter().any(|f| f.attributes.decorated);
+
+        let field_opt_in = self.field.attributes.common_settings.opt_in;
 
         if *opt_in || field_opt_in {
-            decorated
-                && ((self.field.attributes.method_attributes.is_empty()
-                    && include.contains(*self.method))
-                    || field_method_attr.is_some_and(|x| !x.common_settings.skip))
-        } else if !include.contains(*self.method) {
-            field_method_attr.is_some_and(|x| !x.common_settings.skip)
+            let all_method_attrs_empty = self
+                .fields
+                .iter()
+                .all(|f| f.attributes.method_attributes.is_empty());
+            any_decorated
+                && ((all_method_attrs_empty && include.contains(method)) || any_method_opt_in)
+        } else if !include.contains(method) {
+            any_method_opt_in
         } else {
-            field_method_attr.is_none_or(|x| !x.common_settings.skip)
-                && struct_method_attr.is_none_or(|x| !x.common_settings.skip)
-                && !skip
+            struct_method_attr.is_none_or(|x| !x.common_settings.skip)
         }
     }
 
@@ -463,7 +496,13 @@ impl<'a> Query<'a> {
         }
 
         let with_without_pair = self.method == &With && {
-            Query::new(&Without, self.field, self.item_attributes).enabled()
+            Query::new(
+                &Without,
+                self.fields,
+                self.item_attributes,
+                self.total_variants,
+            )
+            .enabled()
         };
 
         let mut option_set_some = self

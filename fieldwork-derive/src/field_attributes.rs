@@ -24,6 +24,24 @@ pub(crate) struct FieldAttributes {
 }
 
 impl FieldAttributes {
+    /// Returns `true` if this annotation carries configuration beyond a pure rename.
+    ///
+    /// A rename-only annotation (`#[field(rename = foo)]`) changes the group binding but carries
+    /// no other settings; it may appear on multiple variant occurrences without conflict. Any
+    /// annotation with method attributes, a deref type, active common settings, or no `fn_ident`
+    /// (e.g. a bare `#[field]`) is considered substantive.
+    pub(crate) fn is_substantive_annotation(&self) -> bool {
+        if !self.decorated {
+            return false;
+        }
+        // Rename-only: sets fn_ident, nothing else
+        !(self.fn_ident.is_some()
+            && self.argument_ident.is_none()
+            && self.method_attributes.is_empty()
+            && self.deref.is_none()
+            && !self.common_settings.any_active())
+    }
+
     const VALID_KEYS: &[&str] = with_methods!(with_common_settings!(
         "argument",
         "name",

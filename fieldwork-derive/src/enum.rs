@@ -21,46 +21,15 @@ pub(crate) struct Enum {
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct EnumVariant {
-    pub(crate) ident: Ident,
     /// Only fields that have a usable name (natural or via `#[field = name]`).
     pub(crate) fields: Vec<Field>,
-}
-
-/// One variant's participation in a virtual field's match arm.
-#[cfg_attr(feature = "debug", derive(Debug))]
-pub(crate) struct VariantArm {
-    /// The variant name, e.g. `Click`.
-    pub(crate) variant_ident: Ident,
-    /// The binding name used in the match pattern (== the field's `fn_ident`).
-    pub(crate) binding: Ident,
-    /// The original member in the variant (Named or Unnamed index), used to
-    /// produce the correct struct/tuple pattern syntax.
-    pub(crate) member: Member,
-}
-
-/// A field name that appears in at least one variant, treated as a single
-/// virtual field for method generation purposes.
-#[cfg_attr(feature = "debug", derive(Debug))]
-pub(crate) struct VirtualField {
-    /// A representative `Field` used to construct a `Query`.
-    pub(crate) field: Field,
-    /// Variants that contain this field.
-    pub(crate) arms: Vec<VariantArm>,
-    /// Total variants in the enum (denominator for coverage).
-    pub(crate) total_variants: usize,
-}
-
-impl VirtualField {
-    pub(crate) fn is_full_coverage(&self) -> bool {
-        self.arms.len() == self.total_variants
-    }
 }
 
 impl EnumVariant {
     fn build(variant: &Variant) -> syn::Result<Self> {
         let ident = variant.ident.clone();
         // Only keep fields that have a usable name: either a natural ident or
-        // an explicit `#[field = name]` override.
+        // an explicit `#[field = name]` override. Set variant_ident on each.
         let fields = variant
             .fields
             .iter()
@@ -69,24 +38,13 @@ impl EnumVariant {
             .collect::<syn::Result<Vec<_>>>()?
             .into_iter()
             .filter(|f| f.attributes.fn_ident.is_some() || matches!(f.member, Member::Named(_)))
+            .map(|mut f| {
+                f.variant_ident = Some(ident.clone());
+                f
+            })
             .collect();
 
-        Ok(Self {
-            ident,
-            fields,
-        })
-    }
-
-    /// The binding ident to use in match patterns for a given field.
-    fn binding_for(&self, field: &Field) -> Ident {
-        field
-            .attributes
-            .fn_ident
-            .clone()
-            .unwrap_or_else(|| match &field.member {
-                Member::Named(ident) => ident.clone(),
-                Member::Unnamed(_) => unreachable!("unnamed field without fn_ident was filtered"),
-            })
+        Ok(Self { fields })
     }
 }
 
@@ -118,68 +76,120 @@ impl Parse for Enum {
 }
 
 impl Enum {
-    /// Collect all virtual fields across variants, with coverage information.
-    pub(crate) fn virtual_fields(&self) -> Vec<VirtualField> {
-
-        let total_variants = self.variants.len();
-
-        // Map field name → (first seen Field, Vec<VariantArm>)
-        let mut by_name: BTreeMap<String, (Field, Vec<VariantArm>)> = BTreeMap::new();
-
+    /// Group fields across variants by binding name. Each group is a `Vec<Field>` where
+    /// every element shares the same method name and each field carries its `variant_ident`.
+    ///
+    /// Returns an error if:
+    /// - More than one occurrence in a group has a `#[field]` annotation (`decorated = true`).
+    /// - Any occurrence is annotated and the group has inconsistent field types.
+    ///
+    /// Silently drops groups where types differ but no occurrence is annotated.
+    pub(crate) fn named_fields(&self) -> syn::Result<Vec<Vec<Field>>> {
+        let mut by_name: BTreeMap<String, Vec<Field>> = BTreeMap::new();
         for variant in &self.variants {
             for field in &variant.fields {
-                let binding = variant.binding_for(field);
-                let key = binding.to_string();
-                let arm = VariantArm {
-                    variant_ident: variant.ident.clone(),
-                    binding: binding.clone(),
-                    member: field.member.clone(),
-                };
-                by_name
-                    .entry(key)
-                    .or_insert_with(|| (field.clone(), Vec::new()))
-                    .1
-                    .push(arm);
+                let key = field.binding().to_string();
+                by_name.entry(key).or_default().push(field.clone());
             }
         }
 
-        by_name
-            .into_values()
-            .map(|(field, arms)| VirtualField {
-                field,
-                arms,
-                total_variants,
-            })
-            .collect()
+        let mut result = Vec::new();
+        for fields in by_name.into_values() {
+            let name = fields[0].binding().to_string();
+
+            // At most one occurrence may have a substantive #[field] annotation.
+            // Rename-only annotations (#[field(rename = foo)]) may appear on multiple occurrences
+            // since they control group membership and carry no other configuration.
+            let substantive: Vec<&Field> = fields
+                .iter()
+                .filter(|f| f.attributes.is_substantive_annotation())
+                .collect();
+            if substantive.len() > 1 {
+                let mut err = syn::Error::new(
+                    substantive[1].span,
+                    format!(
+                        "multiple `#[field]` annotations for virtual field `{name}`; \
+                         only one occurrence may be annotated"
+                    ),
+                );
+                err.combine(syn::Error::new(
+                    substantive[0].span,
+                    "first annotation here",
+                ));
+                for f in substantive.iter().skip(2) {
+                    err.combine(syn::Error::new(f.span, "also annotated here"));
+                }
+                return Err(err);
+            }
+
+            // All occurrences must share the same type.
+            let reference = &fields[0];
+            if let Some(mismatched) = fields.iter().skip(1).find(|f| f.ty != reference.ty) {
+                if fields.iter().any(|f| f.attributes.decorated) {
+                    use quote::ToTokens;
+                    let ref_ty = reference.ty.to_token_stream().to_string();
+                    let mis_ty = mismatched.ty.to_token_stream().to_string();
+                    let ref_variant = reference
+                        .variant_ident
+                        .as_ref()
+                        .map(ToString::to_string)
+                        .unwrap_or_default();
+                    let mis_variant = mismatched
+                        .variant_ident
+                        .as_ref()
+                        .map(ToString::to_string)
+                        .unwrap_or_default();
+                    let mut err = syn::Error::new(
+                        mismatched.span,
+                        format!(
+                            "field `{name}` has type `{mis_ty}` in variant `{mis_variant}`, \
+                             but type `{ref_ty}` in variant `{ref_variant}`; \
+                             fieldwork cannot generate a single accessor method"
+                        ),
+                    );
+                    err.combine(syn::Error::new(
+                        reference.span,
+                        format!("field `{name}` type `{ref_ty}` first seen here"),
+                    ));
+                    return Err(err);
+                }
+                // No annotation: silently skip this group.
+                continue;
+            }
+
+            result.push(fields);
+        }
+        Ok(result)
     }
 
     /// Generate all field accessor methods for this enum.
-    pub(crate) fn generate_methods(&self) -> TokenStream {
-        let virtual_fields = self.virtual_fields();
-        virtual_fields
+    pub(crate) fn generate_methods(&self) -> syn::Result<TokenStream> {
+        let total_variants = self.variants.len();
+        let named_fields = self.named_fields()?;
+        let methods = named_fields
             .iter()
-            .flat_map(|virtual_field| {
+            .flat_map(|fields| {
                 Method::all().iter().filter_map(|method| {
-                    Query::new(method, &virtual_field.field, &self.attributes)
-                        .with_virtual_field(virtual_field)
-                        .resolve()
+                    Query::new(method, fields, &self.attributes, total_variants).resolve()
                 })
             })
             .map(|resolved| resolved.build())
-            .collect()
+            .collect();
+        Ok(methods)
     }
 }
 
-/// Generate the match pattern for one arm, binding the field as `binding`.
+/// Generate the match pattern for one arm, binding the field as its binding ident.
 /// For set/with/without (needing a mutable rebind that doesn't shadow the
 /// argument), pass `Some(override_binding)`.
-pub(crate) fn arm_pattern(
-    variant_ident: &Ident,
-    arm: &VariantArm,
-    override_binding: Option<&Ident>,
-) -> TokenStream {
-    let binding = override_binding.unwrap_or(&arm.binding);
-    match &arm.member {
+pub(crate) fn arm_pattern(field: &Field, override_binding: Option<&Ident>) -> TokenStream {
+    let variant_ident = field
+        .variant_ident
+        .as_ref()
+        .expect("arm_pattern called on non-enum field");
+    let default_binding = field.binding();
+    let binding = override_binding.unwrap_or(default_binding);
+    match &field.member {
         Member::Named(field_ident) => {
             if field_ident == binding {
                 quote! { Self::#variant_ident { #binding, .. } }

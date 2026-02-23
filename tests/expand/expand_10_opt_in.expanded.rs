@@ -180,7 +180,7 @@ impl MyStruct2 {
         &self.only_get
     }
 }
-/// Enum: opt_in — only annotated fields get methods
+/// Enum: opt_in — only annotated fields get methods; annotation on one variant is sufficient.
 #[fieldwork(opt_in, get, set)]
 enum OptInEnum {
     Foo {
@@ -191,8 +191,7 @@ enum OptInEnum {
         internal: u32,
     },
     Bar {
-        /// also generated (using #[field])
-        #[field]
+        /// also participates (no annotation needed — Foo's #[fieldwork] opts it in)
         name: String,
         /// not generated
         data: Vec<u8>,
@@ -218,11 +217,11 @@ impl OptInEnum {
         self
     }
 }
-/// Enum: opt_in per-field with method-level opt-in
+/// Enum: opt_in per-field with method-level opt-in; annotation on one variant is sufficient.
 #[fieldwork(opt_in, get, set)]
 enum SelectiveMethods {
     Alpha { #[fieldwork(get)] read_only: String, #[fieldwork(set)] write_only: String },
-    Beta { #[fieldwork] read_only: String, #[fieldwork] write_only: String },
+    Beta { read_only: String, write_only: String },
 }
 impl SelectiveMethods {
     pub fn read_only(&self) -> &str {

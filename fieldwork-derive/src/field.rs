@@ -1,5 +1,5 @@
 use proc_macro2::Span;
-use syn::{Expr, ExprLit, Field as SynField, Index, Lit, Member, Type, spanned::Spanned};
+use syn::{Expr, ExprLit, Field as SynField, Ident, Index, Lit, Member, Type, spanned::Spanned};
 
 use crate::{FieldAttributes, is_fieldwork_attr};
 
@@ -12,9 +12,23 @@ pub(crate) struct Field {
     pub(crate) ty: Type,
     pub(crate) attributes: FieldAttributes,
     pub(crate) doc: Vec<String>,
+    /// The variant this field belongs to, for enum fields. `None` for struct fields.
+    pub(crate) variant_ident: Option<Ident>,
 }
 
 impl Field {
+    /// The binding name used in match patterns for this field: the explicit rename if set,
+    /// otherwise the field's natural ident. Panics for unnamed fields without a rename.
+    pub(crate) fn binding(&self) -> &Ident {
+        self.attributes
+            .fn_ident
+            .as_ref()
+            .unwrap_or_else(|| match &self.member {
+                Member::Named(ident) => ident,
+                Member::Unnamed(_) => unreachable!("unnamed field without fn_ident"),
+            })
+    }
+
     pub(crate) fn build(field: &SynField, index: usize) -> syn::Result<Field> {
         let member = match field.ident.clone() {
             Some(ident) => Member::Named(ident),
@@ -50,6 +64,7 @@ impl Field {
             ty,
             attributes,
             doc,
+            variant_ident: None,
         })
     }
 }

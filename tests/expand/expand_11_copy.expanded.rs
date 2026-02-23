@@ -179,11 +179,12 @@ impl Coord {
         }
     }
 }
-/// Enum: copy = false on a Copy type → returns &T even for Copy types
+/// Enum: copy = false on a Copy type → returns &T even for Copy types.
+/// Annotation on one variant; applies to the whole virtual field.
 #[fieldwork(get)]
 enum NoCopyEnum {
     A { #[fieldwork(copy = false)] code: u32 },
-    B { #[fieldwork(copy = false)] code: u32 },
+    B { code: u32 },
 }
 impl NoCopyEnum {
     pub fn code(&self) -> &u32 {
@@ -192,11 +193,12 @@ impl NoCopyEnum {
         }
     }
 }
-/// Enum: copy = false at enum level, opting back in per-field
+/// Enum: copy = false at enum level, opting back in per-field.
+/// Annotation on one variant; applies to the whole virtual field.
 #[fieldwork(get, copy = false)]
 enum CopyOverride {
     A { #[fieldwork(copy = true)] id: u32, name: String },
-    B { #[fieldwork(copy = true)] id: u32, name: String },
+    B { id: u32, name: String },
 }
 impl CopyOverride {
     pub fn id(&self) -> u32 {

@@ -61,8 +61,11 @@ enum SkipField {
     },
 }
 
-/// Enum: #[field = false] makes all fields in that variant behave as if absent
-/// → partial coverage (Option return + `_ => None`) even for fields shared with other variants
+/// Enum: #[field = false] on any occurrence globally vetoes the entire virtual field.
+/// Although Active and Inactive both have `value: i32`, Debug's veto suppresses all
+/// generated methods for `value`. `extra` only exists in Debug and is also vetoed.
+/// Use this to suppress accessor generation for a field that is unsuitable in one variant
+/// (e.g. internal debug state that shouldn't be part of the public interface).
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set)]
 enum SkipVariant {
