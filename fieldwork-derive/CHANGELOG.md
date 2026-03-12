@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.8](https://github.com/jbr/fieldwork/compare/fieldwork-derive-v0.4.7...fieldwork-derive-v0.4.8) - 2026-03-12
+
+### Fixed
+
+- u64 and i64 were not detected as Copy, now they are
+
 ## [0.4.7](https://github.com/jbr/fieldwork/compare/fieldwork-derive-v0.4.6...fieldwork-derive-v0.4.7) - 2026-02-23
 
 ### Added
