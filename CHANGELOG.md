@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.9](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.8...fieldwork-v0.4.9) - 2026-03-12
+
+### Fixed
+
+- u64 and i64 were not detected as Copy, now they are
+
+### Other
+
+- Merge pull request #91 from jbr/renovate/prettyplease-0.x-lockfile
+- Merge pull request #92 from jbr/renovate/proc-macro2-1.x-lockfile
+- Merge pull request #93 from jbr/renovate/quote-1.x-lockfile
+- Merge pull request #94 from jbr/renovate/rustversion-1.x-lockfile
+- Merge pull request #95 from jbr/renovate/syn-2.x-lockfile
+- Merge pull request #97 from jbr/renovate/regex-1.x-lockfile
+- *(deps)* update taiki-e/cache-cargo-install-action action to v3
+
 ## [0.4.8](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.7...fieldwork-v0.4.8) - 2026-02-23
 
 ### Added
