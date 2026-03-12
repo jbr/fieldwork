@@ -212,3 +212,12 @@ impl CopyOverride {
         }
     }
 }
+#[fieldwork(get)]
+struct SomeOptionU64 {
+    field: Option<u64>,
+}
+impl SomeOptionU64 {
+    pub fn field(&self) -> Option<u64> {
+        self.field
+    }
+}

@@ -115,3 +115,9 @@ enum CopyOverride {
         name: String,
     },
 }
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get)]
+struct SomeOptionU64 {
+    field: Option<u64>,
+}

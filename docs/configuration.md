@@ -41,8 +41,8 @@ impl User {
         self.name = name;
         self
     }
-    pub fn id(&self) -> &u64 {
-        &self.id
+    pub fn id(&self) -> u64 {
+        self.id
     }
 }
 
@@ -211,8 +211,8 @@ struct User {
 // GENERATED
 # struct User { internal_id: u64, }
 impl User {
-    pub fn id(&self) -> &u64 {
-        &self.internal_id
+    pub fn id(&self) -> u64 {
+        self.internal_id
     }
     pub fn set_id(&mut self, id: u64) -> &mut Self {
         self.internal_id = id;
