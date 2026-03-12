@@ -36,3 +36,9 @@ enum PartialInto {
         shared: i32,
     },
 }
+
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, set, into, with)]
+struct Test {
+    field: Option<std::borrow::Cow<'static, str>>,
+}

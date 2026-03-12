@@ -61,6 +61,48 @@ impl Server {
 
 ```
 
+## Combining with Options
+
+When the field type is an Option, it's rarely the case that you want `impl Into<Option<SomeType>>` and much
+more likely that you want `Option<impl Into<SomeType>>`, so that's what fieldwork implements.
+
+```rust
+# use std::borrow::Cow;
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(set, with, into)]
+struct User {
+    /// display name
+    display_name: Option<Cow<'static, str>>,
+}
+```
+
+```rust
+// GENERATED
+# use std::borrow::Cow;
+# struct User { display_name: Option<Cow<'static, str>>, }
+impl User {
+    ///Sets display name, returning `&mut Self` for chaining
+    pub fn set_display_name(
+        &mut self,
+        display_name: Option<impl Into<Cow<'static, str>>>,
+    ) -> &mut Self {
+        self.display_name = display_name.map(Into::into);
+        self
+    }
+    ///Owned chainable setter for display name, returning `Self`
+    #[must_use]
+    pub fn with_display_name(
+        mut self,
+        display_name: Option<impl Into<Cow<'static, str>>>,
+    ) -> Self {
+        self.display_name = display_name.map(Into::into);
+        self
+    }
+}
+
+```
+
+
 ## Combining with `option_set_some`
 
 `into` and [`option_set_some`](crate::option_set_some) compose: when both are enabled for an

@@ -528,8 +528,14 @@ impl<'a> Query<'a> {
         let mut assigned_value = parse_quote_spanned!(span => #argument_ident);
 
         if into {
-            argument_ty = Cow::Owned(parse_quote_spanned!(span => impl Into<#argument_ty>));
-            assigned_value = parse_quote_spanned!(span => #assigned_value.into());
+            if let Some(option_inner) = extract_option_type(&argument_ty) {
+                argument_ty =
+                    Cow::Owned(parse_quote_spanned!(span => Option<impl Into<#option_inner>>));
+                assigned_value = parse_quote_spanned!(span => #assigned_value.map(Into::into));
+            } else {
+                argument_ty = Cow::Owned(parse_quote_spanned!(span => impl Into<#argument_ty>));
+                assigned_value = parse_quote_spanned!(span => #assigned_value.into());
+            }
         }
 
         if option_set_some {

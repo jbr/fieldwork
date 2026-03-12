@@ -120,3 +120,27 @@ impl PartialInto {
         self
     }
 }
+#[fieldwork(get, set, into, with)]
+struct Test {
+    field: Option<std::borrow::Cow<'static, str>>,
+}
+impl Test {
+    pub fn field(&self) -> Option<&str> {
+        self.field.as_deref()
+    }
+    pub fn set_field(
+        &mut self,
+        field: Option<impl Into<std::borrow::Cow<'static, str>>>,
+    ) -> &mut Self {
+        self.field = field.map(Into::into);
+        self
+    }
+    #[must_use]
+    pub fn with_field(
+        mut self,
+        field: Option<impl Into<std::borrow::Cow<'static, str>>>,
+    ) -> Self {
+        self.field = field.map(Into::into);
+        self
+    }
+}
