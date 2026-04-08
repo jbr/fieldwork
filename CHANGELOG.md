@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1](https://github.com/jbr/fieldwork/compare/fieldwork-v0.5.0...fieldwork-v0.5.1) - 2026-04-08
+
+### Fixed
+
+- use `where` bounds on structs and enums
+
 ## [0.5.0](https://github.com/jbr/fieldwork/compare/fieldwork-v0.4.8...fieldwork-v0.5.0) - 2026-03-12
 
 ### Added
