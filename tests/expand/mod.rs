@@ -25,3 +25,4 @@ mod expand_23_take;
 mod expand_24_into_field;
 mod expand_25_enum_basic;
 mod expand_26_enum_field_config;
+mod expand_27_where_bounds;

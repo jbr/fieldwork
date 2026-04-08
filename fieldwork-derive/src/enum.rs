@@ -64,7 +64,12 @@ impl Parse for Enum {
             .collect::<syn::Result<Vec<_>>>()?;
 
         let mut generics = input.generics.clone();
-        generics.where_clause = attributes.where_clause.take();
+        if let Some(attr_where) = attributes.where_clause.take() {
+            generics
+                .make_where_clause()
+                .predicates
+                .extend(attr_where.predicates);
+        }
 
         Ok(Self {
             ident,
