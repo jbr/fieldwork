@@ -1,7 +1,7 @@
 use proc_macro2::{Span, TokenStream};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Expr, Ident, Type, Visibility};
+use syn::{Attribute, Expr, Ident, Type, Visibility};
 
 use crate::Query;
 
@@ -13,6 +13,7 @@ pub(crate) struct GetMut<'a> {
     pub(crate) ty: Type,
     pub(crate) vis: Cow<'a, Visibility>,
     pub(crate) access_expr: Expr,
+    pub(crate) deprecation_attr: Option<Attribute>,
 }
 
 impl<'a> GetMut<'a> {
@@ -23,6 +24,7 @@ impl<'a> GetMut<'a> {
         let doc = query.docs(false);
 
         let (access_expr, ty) = query.mut_access_expr_and_type();
+        let deprecation_attr = query.deprecation_attr();
 
         Some(Self {
             doc,
@@ -31,6 +33,7 @@ impl<'a> GetMut<'a> {
             ty,
             vis,
             access_expr,
+            deprecation_attr,
         })
     }
 
@@ -42,10 +45,12 @@ impl<'a> GetMut<'a> {
             ty,
             vis,
             access_expr,
+            deprecation_attr,
         } = self;
         let doc = doc.as_deref().map(|d| quote_spanned!(*span => #[doc = #d]));
         quote_spanned! {*span=>
             #doc
+            #deprecation_attr
             #vis fn #fn_ident(&mut self) -> #ty {
                 #access_expr
             }

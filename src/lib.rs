@@ -106,6 +106,10 @@ pub mod into {}
 pub mod option_set_some {}
 
 #[cfg(doc)]
+#[doc = include_str!("../docs/deprecate.md")]
+pub mod deprecate {}
+
+#[cfg(doc)]
 #[doc = include_str!("../docs/enums.md")]
 pub mod enums {}
 

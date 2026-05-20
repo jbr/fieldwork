@@ -19,6 +19,7 @@ use syn::{Attribute, Data, DeriveInput};
 
 mod common_settings;
 mod copy_detection;
+mod deprecation;
 mod deref_handling;
 mod r#enum;
 mod errors;
@@ -37,6 +38,7 @@ mod r#struct;
 mod coverage_tests;
 
 pub(crate) use common_settings::{CommonSettings, with_common_settings};
+pub(crate) use deprecation::Deprecation;
 pub(crate) use r#enum::{Enum, arm_pattern};
 pub(crate) use field::Field;
 pub(crate) use field_attributes::FieldAttributes;
@@ -84,8 +86,11 @@ fn derive_struct(input: TokenStream2) -> TokenStream2 {
     let impls = fields
         .iter()
         .flat_map(|field| {
-            Method::all().iter().filter_map(|method| {
-                Query::new(method, std::slice::from_ref(field), &attributes, 1).resolve()
+            Method::all().iter().flat_map(|method| {
+                let query = Query::new(method, std::slice::from_ref(field), &attributes, 1);
+                let canonical = query.resolve();
+                let alternate = query.as_alternate().and_then(|q| q.resolve());
+                canonical.into_iter().chain(alternate)
             })
         })
         .map(|resolved| resolved.build())

@@ -2,7 +2,7 @@ use crate::{Query, arm_pattern, option_handling::extract_option_type};
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 use std::borrow::Cow;
-use syn::{Ident, Type, Visibility, parse_quote_spanned};
+use syn::{Attribute, Ident, Type, Visibility, parse_quote_spanned};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Get<'a> {
@@ -16,6 +16,7 @@ pub(crate) struct Get<'a> {
     /// Arm body expression, already wrapped in `Some(...)` for partial coverage if needed.
     arm_expr: TokenStream,
     full_coverage: bool,
+    deprecation_attr: Option<Attribute>,
 }
 
 impl<'a> Get<'a> {
@@ -29,6 +30,7 @@ impl<'a> Get<'a> {
             patterns,
             arm_expr,
             full_coverage,
+            deprecation_attr,
         } = self;
         let doc = doc.as_deref().map(|d| quote_spanned!(*span => #[doc = #d]));
         let match_body = if *full_coverage {
@@ -38,6 +40,7 @@ impl<'a> Get<'a> {
         };
         quote_spanned! {*span=>
             #doc
+            #deprecation_attr
             #vis fn #fn_ident(&self) -> #return_ty {
                 match self { #match_body }
             }
@@ -50,6 +53,7 @@ impl<'a> Get<'a> {
         let fn_ident = query.fn_ident()?;
         let vis = query.vis();
         let doc = query.docs(false);
+        let deprecation_attr = query.deprecation_attr();
 
         let first_binding = fields.first()?.binding();
         let base = parse_quote_spanned!(span => *#first_binding);
@@ -79,6 +83,7 @@ impl<'a> Get<'a> {
             patterns,
             arm_expr,
             full_coverage,
+            deprecation_attr,
         })
     }
 }

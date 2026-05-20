@@ -1,7 +1,7 @@
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Expr, Ident, Member, Type, Visibility};
+use syn::{Attribute, Expr, Ident, Member, Type, Visibility};
 
 use crate::Query;
 
@@ -14,6 +14,7 @@ pub(crate) struct With<'a> {
     pub(crate) span: Span,
     pub(crate) member: &'a Member,
     pub(crate) vis: Cow<'a, Visibility>,
+    pub(crate) deprecation_attr: Option<Attribute>,
 }
 
 impl<'a> With<'a> {
@@ -26,11 +27,13 @@ impl<'a> With<'a> {
             doc,
             assigned_value,
             span,
+            deprecation_attr,
         } = self;
         let doc = doc.as_deref().map(|d| quote_spanned!(*span => #[doc = #d]));
         if let Some((argument_ident, argument_ty)) = argument_ident_and_ty {
             quote_spanned! {*span=>
                 #doc
+                #deprecation_attr
                 #[must_use]
                 #vis fn #fn_ident(mut self, #argument_ident: #argument_ty) -> Self {
                     self.#member = #assigned_value;
@@ -40,6 +43,7 @@ impl<'a> With<'a> {
         } else {
             quote_spanned! {*span=>
                 #doc
+                #deprecation_attr
                 #[must_use]
                 #vis fn #fn_ident(mut self) -> Self {
                     self.#member = #assigned_value;
@@ -58,6 +62,7 @@ impl<'a> With<'a> {
         let (argument_ty, assigned_value) =
             query.determine_argument_ty_and_assigned_value(&argument_ident)?;
         let doc = query.docs(false);
+        let deprecation_attr = query.deprecation_attr();
 
         let argument_ident_and_ty = argument_ty.map(|ty| (argument_ident, ty));
 
@@ -69,6 +74,7 @@ impl<'a> With<'a> {
             span,
             member,
             vis,
+            deprecation_attr,
         })
     }
 }

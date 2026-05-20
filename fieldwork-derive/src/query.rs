@@ -1,17 +1,36 @@
 use std::borrow::Cow;
 
 use crate::{
-    CommonSettings, Field, FieldMethodAttributes, ItemAttributes, ItemMethodAttributes, Method,
-    Resolved,
+    CommonSettings, Deprecation, Field, FieldMethodAttributes, ItemAttributes,
+    ItemMethodAttributes, Method, Resolved,
     copy_detection::{enable_copy_for_type, is_type},
     deref_handling::auto_deref,
     option_handling::{extract_option_type, option_type_mut, ref_inner, ref_inner_mut, strip_ref},
 };
 use Method::{Get, GetMut, IntoField, Set, Take, With, Without};
 use proc_macro2::Span;
-use syn::{Expr, Ident, Member, Type, TypeArray, Visibility, parse_quote_spanned};
+use syn::{Attribute, Expr, Ident, Member, Type, TypeArray, Visibility, parse_quote_spanned};
+
+/// Scope of a deprecation rename: field-level applies the method prefix/template to the old
+/// name, while method-level treats the old name as a literal method ident.
+#[cfg_attr(feature = "debug", derive(Debug))]
+#[derive(Clone, Copy)]
+pub(crate) enum AlternateScope {
+    Field,
+    Method,
+}
+
+/// Captures everything needed to emit the deprecated alternate of a canonical method.
+#[cfg_attr(feature = "debug", derive(Debug))]
+#[derive(Clone)]
+pub(crate) struct Alternate<'a> {
+    pub(crate) scope: AlternateScope,
+    pub(crate) was: &'a Ident,
+    pub(crate) deprecation: &'a Deprecation,
+}
 
 #[cfg_attr(feature = "debug", derive(Debug))]
+#[derive(Clone)]
 pub(crate) struct Query<'a> {
     /// All field occurrences sharing this name. Single element for struct fields.
     fields: &'a [Field],
@@ -24,6 +43,8 @@ pub(crate) struct Query<'a> {
     item_method_attributes: Option<&'a ItemMethodAttributes>,
     /// Total variants in the enum (denominator for coverage). Always 1 for structs.
     total_variants: usize,
+    /// When set, this Query represents the deprecated alternate emission, not the canonical.
+    alternate: Option<Alternate<'a>>,
 }
 
 impl<'a> Query<'a> {
@@ -64,6 +85,60 @@ impl<'a> Query<'a> {
             item_attributes,
             item_method_attributes,
             total_variants,
+            alternate: None,
+        }
+    }
+
+    /// Effective deprecation for this (field, method) pair. Method-level beats field-level.
+    /// Returns the configured Deprecation plus the scope at which it lives.
+    fn effective_deprecation(&self) -> Option<(&'a Deprecation, AlternateScope)> {
+        if let Some(fma) = self.field_method_attributes {
+            if let Some(d) = &fma.deprecate {
+                return Some((d, AlternateScope::Method));
+            }
+        }
+        self.field
+            .attributes
+            .deprecate
+            .as_ref()
+            .map(|d| (d, AlternateScope::Field))
+    }
+
+    /// Returns a sibling Query configured to emit the deprecated alternate method for this
+    /// (field, method) pair, if one is requested. Returns `None` when no deprecation rename
+    /// is in effect (bare-mark cases keep the canonical Query and add `#[deprecated]` to it).
+    pub(crate) fn as_alternate(&self) -> Option<Self> {
+        let (deprecation, scope) = self.effective_deprecation()?;
+        let was = deprecation.was.as_ref()?;
+        let mut alt = self.clone();
+        alt.alternate = Some(Alternate {
+            scope,
+            was,
+            deprecation,
+        });
+        Some(alt)
+    }
+
+    /// The `#[deprecated(...)]` attribute to attach to the method generated from this Query,
+    /// if any. Returns `None` when no deprecation is in effect for this slot.
+    pub(crate) fn deprecation_attr(&self) -> Option<Attribute> {
+        if let Some(alt) = &self.alternate {
+            // We're the alternate; always #[deprecated]. Default note points to the canonical.
+            let mut canonical = self.clone();
+            canonical.alternate = None;
+            let replacement = canonical.fn_ident();
+            return Some(
+                alt.deprecation
+                    .to_attribute(self.span(), replacement.as_deref()),
+            );
+        }
+
+        let (deprecation, _) = self.effective_deprecation()?;
+        if deprecation.was.is_some() {
+            // Alternate emission handles this slot; canonical itself is not marked.
+            None
+        } else {
+            Some(deprecation.to_attribute(self.span(), None))
         }
     }
 
@@ -138,22 +213,34 @@ impl<'a> Query<'a> {
     }
 
     pub(crate) fn fn_ident(&self) -> Option<Cow<'a, Ident>> {
-        if let Some(fn_ident) = self
-            .field_method_attribute()
-            .and_then(|x| x.fn_ident.as_ref())
+        // Method-level alternate: literal old method name, no template/prefix.
+        // Field-level alternate falls through with alt.was as the binding base.
+        if let Some(alt) = &self.alternate
+            && matches!(alt.scope, AlternateScope::Method)
+        {
+            return Some(Cow::Borrowed(alt.was));
+        }
+
+        if self.alternate.is_none()
+            && let Some(fn_ident) = self
+                .field_method_attribute()
+                .and_then(|x| x.fn_ident.as_ref())
         {
             return Some(Cow::Borrowed(fn_ident));
         }
 
-        let ident = self
-            .field
-            .attributes
-            .fn_ident
-            .as_ref()
-            .or(match &self.field.member {
-                Member::Named(ident) => Some(ident),
-                Member::Unnamed(_) => None,
-            })?;
+        let ident = if let Some(alt) = &self.alternate {
+            alt.was
+        } else {
+            self.field
+                .attributes
+                .fn_ident
+                .as_ref()
+                .or(match &self.field.member {
+                    Member::Named(ident) => Some(ident),
+                    Member::Unnamed(_) => None,
+                })?
+        };
 
         if let Some(template) = self
             .struct_method_attribute()
@@ -193,6 +280,14 @@ impl<'a> Query<'a> {
 
         if let Some(argument_ident) = self.field.attributes.argument_ident.as_ref() {
             return Some(Cow::Borrowed(argument_ident));
+        }
+
+        // For a field-level deprecated alternate, default the argument name to the old field
+        // base so the signature reads naturally (e.g. `set_name(name: String)`).
+        if let Some(alt) = &self.alternate
+            && matches!(alt.scope, AlternateScope::Field)
+        {
+            return Some(Cow::Borrowed(alt.was));
         }
 
         if let Some(renamed) = self.field.attributes.fn_ident.as_ref() {

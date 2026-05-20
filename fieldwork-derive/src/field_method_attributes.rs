@@ -1,9 +1,10 @@
-use crate::{CommonSettings, errors::invalid_key, with_common_settings};
+use crate::{CommonSettings, Deprecation, deprecation, errors::invalid_key, with_common_settings};
 use proc_macro2::Span;
+use quote::ToTokens;
 use std::string::ToString;
 use syn::{
-    Error, Expr, ExprAssign, ExprLit, ExprPath, Ident, Lit, LitBool, LitStr, Path, Type, TypePath,
-    punctuated::Punctuated, spanned::Spanned, token::Comma,
+    Error, Expr, ExprAssign, ExprCall, ExprLit, ExprPath, Ident, Lit, LitBool, LitStr, Path, Type,
+    TypePath, punctuated::Punctuated, spanned::Spanned, token::Comma,
 };
 
 // this represents the configuration for the field, for a particular method
@@ -14,13 +15,14 @@ pub(crate) struct FieldMethodAttributes {
     pub(crate) argument_ident: Option<Ident>,
     pub(crate) doc: Option<String>,
     pub(crate) deref: Option<Type>,
+    pub(crate) deprecate: Option<Deprecation>,
 
     pub(crate) common_settings: CommonSettings,
 }
 
 impl FieldMethodAttributes {
     pub(crate) const VALID_KEYS: &[&str] =
-        with_common_settings!("argument", "doc", "name", "rename",);
+        with_common_settings!("argument", "deprecate", "doc", "name", "rename",);
 
     pub(crate) fn build(exprs: &Punctuated<Expr, Comma>) -> syn::Result<FieldMethodAttributes> {
         let mut field_method_attributes = Self::default();
@@ -37,6 +39,18 @@ impl FieldMethodAttributes {
                     &path.require_ident()?.to_string(),
                     true,
                 )?,
+                Expr::Call(ExprCall { func, args, .. }) => match &**func {
+                    Expr::Path(ExprPath { path, .. }) if path.is_ident("deprecate") => {
+                        self.deprecate = Some(Deprecation::parse_list(args)?);
+                    }
+                    func => {
+                        return Err(invalid_key(
+                            func.span(),
+                            &func.to_token_stream().to_string(),
+                            Self::VALID_KEYS,
+                        ));
+                    }
+                },
                 expr => return Err(Error::new(expr.span(), "not recognized")),
             }
         }
@@ -77,6 +91,7 @@ impl FieldMethodAttributes {
                 "argument" => self.argument_ident = Some(rhs.parse()?),
                 "deref" => self.deref = Some(rhs.parse()?),
                 "doc" => self.doc = Some(rhs.value()),
+                "deprecate" => self.deprecate = Some(deprecation::from_str_lit(rhs)?),
                 _ => return Err(invalid_key(span, lhs, Self::VALID_KEYS)),
             }
         }
@@ -85,6 +100,9 @@ impl FieldMethodAttributes {
 
     fn handle_assign_bool_lit(&mut self, span: Span, lhs: &str, value: bool) -> syn::Result<()> {
         if self.common_settings.handle_assign_bool_lit(lhs, value) {
+            Ok(())
+        } else if lhs == "deprecate" {
+            self.deprecate = value.then(deprecation::from_bare);
             Ok(())
         } else {
             Err(invalid_key(span, lhs, Self::VALID_KEYS))
@@ -101,6 +119,7 @@ impl FieldMethodAttributes {
                     path: rhs.clone(),
                 }));
             }
+            "deprecate" => self.deprecate = Some(deprecation::from_path(rhs)?),
             _ => return Err(invalid_key(span, lhs, Self::VALID_KEYS)),
         }
 

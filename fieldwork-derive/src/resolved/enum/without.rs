@@ -2,7 +2,7 @@ use crate::{Query, arm_pattern};
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 use std::borrow::Cow;
-use syn::{Expr, Ident, Visibility};
+use syn::{Attribute, Expr, Ident, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Without<'a> {
@@ -16,6 +16,7 @@ pub(crate) struct Without<'a> {
     field_binding: Ident,
     patterns: Vec<TokenStream>,
     full_coverage: bool,
+    deprecation_attr: Option<Attribute>,
 }
 
 impl<'a> Without<'a> {
@@ -29,6 +30,7 @@ impl<'a> Without<'a> {
             field_binding,
             patterns,
             full_coverage,
+            deprecation_attr,
         } = self;
         let doc = doc.as_deref().map(|d| quote_spanned!(*span => #[doc = #d]));
         let fallthrough = if *full_coverage {
@@ -38,6 +40,7 @@ impl<'a> Without<'a> {
         };
         quote_spanned! {*span=>
             #doc
+            #deprecation_attr
             #[must_use]
             #vis fn #fn_ident(mut self) -> Self {
                 match &mut self {
@@ -58,6 +61,7 @@ impl<'a> Without<'a> {
         let argument_ident = query.argument_ident()?;
         let (_, assigned_value) =
             query.determine_argument_ty_and_assigned_value(&argument_ident)?;
+        let deprecation_attr = query.deprecation_attr();
 
         // `without` takes no function argument, so the field binding can always
         // be the field name itself with no risk of shadowing.
@@ -76,6 +80,7 @@ impl<'a> Without<'a> {
             field_binding,
             patterns,
             full_coverage: query.is_full_coverage(),
+            deprecation_attr,
         })
     }
 }

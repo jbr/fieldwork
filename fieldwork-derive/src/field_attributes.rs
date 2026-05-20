@@ -1,6 +1,6 @@
 use crate::{
-    CommonSettings, FieldMethodAttributes, Method, MethodSettings, errors::invalid_key,
-    with_common_settings, with_methods,
+    CommonSettings, Deprecation, FieldMethodAttributes, Method, MethodSettings, deprecation,
+    errors::invalid_key, with_common_settings, with_methods,
 };
 use proc_macro2::Span;
 use quote::ToTokens;
@@ -19,6 +19,7 @@ pub(crate) struct FieldAttributes {
     pub(crate) argument_ident: Option<Ident>,
     pub(crate) method_attributes: MethodSettings<(Span, FieldMethodAttributes)>,
     pub(crate) deref: Option<Type>,
+    pub(crate) deprecate: Option<Deprecation>,
 
     pub(crate) common_settings: CommonSettings,
 }
@@ -39,11 +40,13 @@ impl FieldAttributes {
             && self.argument_ident.is_none()
             && self.method_attributes.is_empty()
             && self.deref.is_none()
+            && self.deprecate.is_none()
             && !self.common_settings.any_active())
     }
 
     const VALID_KEYS: &[&str] = with_methods!(with_common_settings!(
         "argument",
+        "deprecate",
         "name",
         "option_set_some",
         "rename",
@@ -93,6 +96,9 @@ impl FieldAttributes {
                 )?,
 
                 Expr::Call(ExprCall { func, args, .. }) => match &**func {
+                    Expr::Path(ExprPath { path, .. }) if path.is_ident("deprecate") => {
+                        self.deprecate = Some(Deprecation::parse_list(args)?);
+                    }
                     Expr::Path(ExprPath { path: method, .. }) => {
                         let method = method.try_into().map_err(|_| {
                             invalid_key(
@@ -173,6 +179,7 @@ impl FieldAttributes {
                 "name" | "rename" => self.fn_ident = Some(rhs.parse()?),
                 "deref" => self.deref = Some(rhs.parse()?),
                 "argument" => self.argument_ident = Some(rhs.parse()?),
+                "deprecate" => self.deprecate = Some(deprecation::from_str_lit(rhs)?),
                 _ => {
                     let method = Method::from_str_with_span(lhs, span)
                         .map_err(|_| invalid_key(span, lhs, Self::VALID_KEYS))?;
@@ -199,6 +206,7 @@ impl FieldAttributes {
                     path: rhs.clone(),
                 }));
             }
+            "deprecate" => self.deprecate = Some(deprecation::from_path(rhs)?),
 
             _ => {
                 let method = Method::from_str_with_span(lhs, span)
@@ -216,6 +224,9 @@ impl FieldAttributes {
 
     fn handle_assign_bool_lit(&mut self, span: Span, lhs: &str, value: bool) -> Result<(), Error> {
         if self.common_settings.handle_assign_bool_lit(lhs, value) {
+            Ok(())
+        } else if lhs == "deprecate" {
+            self.deprecate = value.then(deprecation::from_bare);
             Ok(())
         } else {
             let method = Method::from_str_with_span(lhs, span)
