@@ -2,7 +2,7 @@ use crate::{Query, arm_pattern, option_handling::extract_option_type};
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 use std::borrow::Cow;
-use syn::{Ident, Type, Visibility};
+use syn::{Attribute, Ident, Type, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Take<'a> {
@@ -16,6 +16,7 @@ pub(crate) struct Take<'a> {
     /// The binding name shared across all arms (used to call `.take()`).
     binding: Ident,
     full_coverage: bool,
+    deprecation_attr: Option<Attribute>,
 }
 
 impl<'a> Take<'a> {
@@ -29,6 +30,7 @@ impl<'a> Take<'a> {
             patterns,
             binding,
             full_coverage,
+            deprecation_attr,
         } = self;
         let doc = doc.as_deref().map(|d| quote_spanned!(*span => #[doc = #d]));
         let match_body = if *full_coverage {
@@ -38,6 +40,7 @@ impl<'a> Take<'a> {
         };
         quote_spanned! {*span=>
             #doc
+            #deprecation_attr
             #vis fn #fn_ident(&mut self) -> #return_ty {
                 match self { #match_body }
             }
@@ -54,6 +57,7 @@ impl<'a> Take<'a> {
         let doc = query.docs(false);
         let return_ty = query.ty();
         let binding = fields.first()?.binding().clone();
+        let deprecation_attr = query.deprecation_attr();
 
         let patterns = fields
             .iter()
@@ -69,6 +73,7 @@ impl<'a> Take<'a> {
             patterns,
             binding,
             full_coverage: query.is_full_coverage(),
+            deprecation_attr,
         })
     }
 }

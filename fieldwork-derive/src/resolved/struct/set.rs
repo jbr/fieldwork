@@ -1,7 +1,7 @@
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Expr, Ident, Member, Type, Visibility};
+use syn::{Attribute, Expr, Ident, Member, Type, Visibility};
 
 use crate::Query;
 
@@ -16,6 +16,7 @@ pub(crate) struct Set<'a> {
     pub(crate) span: Span,
     pub(crate) member: &'a Member,
     pub(crate) vis: Cow<'a, Visibility>,
+    pub(crate) deprecation_attr: Option<Attribute>,
 }
 impl<'a> Set<'a> {
     pub(crate) fn build(&self) -> TokenStream2 {
@@ -29,6 +30,7 @@ impl<'a> Set<'a> {
             span,
             member,
             vis,
+            deprecation_attr,
         } = self;
 
         let doc = doc.as_deref().map(|d| quote_spanned!(*span => #[doc = #d]));
@@ -36,6 +38,7 @@ impl<'a> Set<'a> {
         if *chainable_set {
             quote_spanned! {*span=>
                 #doc
+                #deprecation_attr
                 #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) -> &mut Self {
                     self.#member = #assigned_value;
                     self
@@ -44,6 +47,7 @@ impl<'a> Set<'a> {
         } else {
             quote_spanned! {*span=>
                 #doc
+                #deprecation_attr
                 #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) {
                     self.#member = #assigned_value;
                 }
@@ -62,6 +66,7 @@ impl<'a> Set<'a> {
             query.determine_argument_ty_and_assigned_value(&argument_ident)?;
         let argument_ty = argument_ty?;
         let doc = query.docs(false);
+        let deprecation_attr = query.deprecation_attr();
 
         Some(Self {
             argument_ident,
@@ -73,6 +78,7 @@ impl<'a> Set<'a> {
             span,
             member,
             vis,
+            deprecation_attr,
         })
     }
 }

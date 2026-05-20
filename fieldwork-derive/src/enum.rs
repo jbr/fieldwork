@@ -174,8 +174,11 @@ impl Enum {
         let methods = named_fields
             .iter()
             .flat_map(|fields| {
-                Method::all().iter().filter_map(|method| {
-                    Query::new(method, fields, &self.attributes, total_variants).resolve()
+                Method::all().iter().flat_map(|method| {
+                    let query = Query::new(method, fields, &self.attributes, total_variants);
+                    let canonical = query.resolve();
+                    let alternate = query.as_alternate().and_then(|q| q.resolve());
+                    canonical.into_iter().chain(alternate)
                 })
             })
             .map(|resolved| resolved.build())

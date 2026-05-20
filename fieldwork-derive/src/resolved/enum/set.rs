@@ -2,7 +2,7 @@ use crate::{Query, arm_pattern};
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 use std::borrow::Cow;
-use syn::{Expr, Ident, Type, Visibility};
+use syn::{Attribute, Expr, Ident, Type, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Set<'a> {
@@ -19,6 +19,7 @@ pub(crate) struct Set<'a> {
     /// argument ident (e.g. field `x` with argument also named `x`).
     field_binding: Ident,
     patterns: Vec<TokenStream>,
+    deprecation_attr: Option<Attribute>,
 }
 
 impl<'a> Set<'a> {
@@ -34,12 +35,14 @@ impl<'a> Set<'a> {
             chainable,
             field_binding,
             patterns,
+            deprecation_attr,
         } = self;
         let doc = doc.as_deref().map(|d| quote_spanned!(*span => #[doc = #d]));
         let match_body = quote! { #(#patterns => { *#field_binding = #assigned_value; })* };
         if *chainable {
             quote_spanned! {*span=>
                 #doc
+                #deprecation_attr
                 #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) -> &mut Self {
                     match self { #match_body }
                     self
@@ -48,6 +51,7 @@ impl<'a> Set<'a> {
         } else {
             quote_spanned! {*span=>
                 #doc
+                #deprecation_attr
                 #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) {
                     match self { #match_body }
                 }
@@ -69,6 +73,7 @@ impl<'a> Set<'a> {
             query.determine_argument_ty_and_assigned_value(&argument_ident)?;
         let argument_ty = argument_ty?;
         let chainable = query.chainable_set();
+        let deprecation_attr = query.deprecation_attr();
 
         let arm_binding = fields.first()?.binding();
         let field_binding: Ident = if arm_binding == &*argument_ident {
@@ -92,6 +97,7 @@ impl<'a> Set<'a> {
             chainable,
             field_binding,
             patterns,
+            deprecation_attr,
         })
     }
 }

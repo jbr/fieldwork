@@ -2,7 +2,7 @@ use crate::{Query, arm_pattern};
 use proc_macro2::{Span, TokenStream};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Ident, Type, Visibility};
+use syn::{Attribute, Ident, Type, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct IntoField<'a> {
@@ -15,6 +15,7 @@ pub(crate) struct IntoField<'a> {
     patterns: Vec<TokenStream>,
     /// The binding name shared across all arms.
     binding: Ident,
+    deprecation_attr: Option<Attribute>,
 }
 
 impl<'a> IntoField<'a> {
@@ -27,10 +28,12 @@ impl<'a> IntoField<'a> {
             return_ty,
             patterns,
             binding,
+            deprecation_attr,
         } = self;
         let doc = doc.as_deref().map(|d| quote_spanned!(*span => #[doc = #d]));
         quote_spanned! {*span=>
             #doc
+            #deprecation_attr
             #vis fn #fn_ident(self) -> #return_ty {
                 match self { #(#patterns)|* => #binding }
             }
@@ -51,6 +54,7 @@ impl<'a> IntoField<'a> {
         let doc = query.docs(false);
         let return_ty = query.ty().clone();
         let binding = fields.first()?.binding().clone();
+        let deprecation_attr = query.deprecation_attr();
 
         let patterns = fields
             .iter()
@@ -65,6 +69,7 @@ impl<'a> IntoField<'a> {
             return_ty,
             patterns,
             binding,
+            deprecation_attr,
         })
     }
 }
