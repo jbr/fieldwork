@@ -22,10 +22,10 @@ name = "docs-gen"
 version = "0.1.0"
 dependencies = [
  "fieldwork",
- "prettyplease",
+ "prettyplease 0.3.0",
  "quote",
  "regex",
- "syn",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -57,7 +57,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "runtime-macros",
- "syn",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -97,11 +97,11 @@ dependencies = [
  "diff",
  "fastrand",
  "glob",
- "prettyplease",
+ "prettyplease 0.2.37",
  "serde",
  "serde_derive",
  "serde_json",
- "syn",
+ "syn 2.0.119",
  "toml",
 ]
 
@@ -118,7 +118,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "479ca8adacdd7ce8f1fb39ce9ecccbfe93a3f1344b3d0d97f20bc0196208f62b"
 dependencies = [
  "proc-macro2",
- "syn",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "prettyplease"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2bfe0f4c752e450fc2faf62654f1c134747922825d5b04ca717b8874f41a40c0"
+dependencies = [
+ "proc-macro2",
+ "syn 3.0.0",
 ]
 
 [[package]]
@@ -176,7 +186,7 @@ checksum = "34bef7b9430b9f9e666d930202e1344765b623203affe2f779bcd1f269384248"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -217,7 +227,7 @@ checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -249,6 +259,16 @@ checksum = "872831b642d1a07999a962a351ed35b955ea2cfc8f3862091e2a240a84f17297"
 dependencies = [
  "proc-macro2",
  "quote",
+ "unicode-ident",
+]
+
+[[package]]
+name = "syn"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2fac314a64dc9a36e61a9eb4261a5e9bbfbc922b27e518af97bc32b926cf967"
+dependencies = [
+ "proc-macro2",
  "unicode-ident",
 ]
 

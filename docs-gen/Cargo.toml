@@ -7,7 +7,7 @@ publish = false
 
 [dependencies]
 fieldwork = { path = ".." }
-prettyplease = "0.2.35"
+prettyplease = "0.3.0"
 quote = "1.0.40"
 regex = "1.11.1"
 syn = { version = "2.0.104", features = ["full", "extra-traits"] }
