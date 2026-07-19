@@ -115,6 +115,7 @@ impl FieldMethodAttributes {
             "argument" => self.argument_ident = Some(rhs.require_ident().cloned()?),
             "deref" => {
                 self.deref = Some(Type::Path(TypePath {
+                    attrs: Vec::new(),
                     qself: None,
                     path: rhs.clone(),
                 }));
