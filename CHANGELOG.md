@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3](https://github.com/jbr/fieldwork/compare/fieldwork-v0.5.2...fieldwork-v0.5.3) - 2026-07-19
+
+### Other
+
+- *(deps)* update syn
+- Merge pull request #113 from jbr/renovate/syn-2.x-lockfile
+- Merge pull request #119 from jbr/renovate/actions-deploy-pages-5.x
+- Merge pull request #117 from jbr/renovate/actions-checkout-7.x
+- Merge pull request #120 from jbr/renovate/actions-upload-pages-artifact-5.x
+- Merge pull request #115 from jbr/renovate/regex-1.x-lockfile
+- Merge pull request #114 from jbr/renovate/trybuild-1.x-lockfile
+
 ## [0.5.2](https://github.com/jbr/fieldwork/compare/fieldwork-v0.5.1...fieldwork-v0.5.2) - 2026-05-20
 
 ### Added
