@@ -2,10 +2,11 @@ use crate::{Query, option_handling::extract_option_type};
 use proc_macro2::{Span, TokenStream};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Attribute, Ident, Member, Type, Visibility};
+use syn::{Attribute, Ident, Member, Token, Type, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Take<'a> {
+    constness: Option<Token![const]>,
     doc: Option<Cow<'a, str>>,
     fn_ident: Cow<'a, Ident>,
     span: Span,
@@ -18,6 +19,7 @@ pub(crate) struct Take<'a> {
 impl<'a> Take<'a> {
     pub(crate) fn build(&self) -> TokenStream {
         let Take {
+            constness,
             doc,
             fn_ident,
             span,
@@ -31,7 +33,7 @@ impl<'a> Take<'a> {
         quote_spanned! {*span=>
             #doc
             #deprecation_attr
-            #vis fn #fn_ident(&mut self) -> #ty {
+            #vis #constness fn #fn_ident(&mut self) -> #ty {
                 self.#member.take()
             }
         }
@@ -42,6 +44,7 @@ impl<'a> Take<'a> {
         extract_option_type(ty)?;
 
         let span = query.span();
+        let constness = query.constness();
         let vis = query.vis();
         let fn_ident = query.fn_ident()?;
         let doc = query.docs(false);
@@ -49,6 +52,7 @@ impl<'a> Take<'a> {
         let deprecation_attr = query.deprecation_attr();
 
         Some(Self {
+            constness,
             doc,
             fn_ident,
             span,

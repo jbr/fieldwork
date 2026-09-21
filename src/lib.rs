@@ -39,7 +39,8 @@
 //! See [`configuration`] for a full explanation.
 //!
 //! Options shared across setter methods ([`into`], [`option_set_some`]) are documented at the
-//! top level since they apply equally to [`set`] and [`with`].
+//! top level since they apply equally to [`set`] and [`with`], as is
+//! [`const_fn`], which applies to every method.
 
 pub use fieldwork_derive::Fieldwork;
 
@@ -104,6 +105,10 @@ pub mod into {}
 #[cfg(doc)]
 #[doc = include_str!("../docs/option_set_some.md")]
 pub mod option_set_some {}
+
+#[cfg(doc)]
+#[doc = include_str!("../docs/const_fn.md")]
+pub mod const_fn {}
 
 #[cfg(doc)]
 #[doc = include_str!("../docs/deprecate.md")]

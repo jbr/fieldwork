@@ -9,7 +9,10 @@ use crate::{
 };
 use Method::{Get, GetMut, IntoField, Set, Take, With, Without};
 use proc_macro2::Span;
-use syn::{Attribute, Expr, Ident, Member, Type, TypeArray, Visibility, parse_quote_spanned};
+use syn::{
+    Attribute, Expr, Ident, Member, Token, Type, TypeArray, Visibility, parse_quote_spanned,
+    token::Const,
+};
 
 /// Scope of a deprecation rename: field-level applies the method prefix/template to the old
 /// name, while method-level treats the old name as a literal method ident.
@@ -192,6 +195,13 @@ impl<'a> Query<'a> {
 
     pub(crate) fn chainable_set(&self) -> bool {
         self.method == &Set && self.common_setting(|x| x.chainable_set)
+    }
+
+    /// The `const` token this method is generated with, if the field or item
+    /// asked for one. `None` leaves the method as an ordinary `fn`.
+    pub(crate) fn constness(&self) -> Option<Token![const]> {
+        self.common_setting(|x| x.const_fn)
+            .then(|| Const(self.span()))
     }
 
     pub(crate) fn vis(&self) -> Cow<'a, Visibility> {

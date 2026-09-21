@@ -1,12 +1,13 @@
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Attribute, Expr, Ident, Member, Type, Visibility};
+use syn::{Attribute, Expr, Ident, Member, Token, Type, Visibility};
 
 use crate::Query;
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Set<'a> {
+    constness: Option<Token![const]>,
     pub(crate) argument_ident: Cow<'a, Ident>,
     pub(crate) argument_ty: Cow<'a, Type>,
     pub(crate) assigned_value: Expr,
@@ -21,6 +22,7 @@ pub(crate) struct Set<'a> {
 impl<'a> Set<'a> {
     pub(crate) fn build(&self) -> TokenStream2 {
         let Set {
+            constness,
             argument_ident,
             argument_ty,
             assigned_value,
@@ -39,7 +41,7 @@ impl<'a> Set<'a> {
             quote_spanned! {*span=>
                 #doc
                 #deprecation_attr
-                #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) -> &mut Self {
+                #vis #constness fn #fn_ident(&mut self, #argument_ident: #argument_ty) -> &mut Self {
                     self.#member = #assigned_value;
                     self
                 }
@@ -48,7 +50,7 @@ impl<'a> Set<'a> {
             quote_spanned! {*span=>
                 #doc
                 #deprecation_attr
-                #vis fn #fn_ident(&mut self, #argument_ident: #argument_ty) {
+                #vis #constness fn #fn_ident(&mut self, #argument_ident: #argument_ty) {
                     self.#member = #assigned_value;
                 }
             }
@@ -57,6 +59,7 @@ impl<'a> Set<'a> {
 
     pub(crate) fn from_query(query: &Query<'a>) -> Option<Self> {
         let span = query.span();
+        let constness = query.constness();
         let vis = query.vis();
         let fn_ident = query.fn_ident()?;
         let member = query.member();
@@ -69,6 +72,7 @@ impl<'a> Set<'a> {
         let deprecation_attr = query.deprecation_attr();
 
         Some(Self {
+            constness,
             argument_ident,
             argument_ty,
             assigned_value,

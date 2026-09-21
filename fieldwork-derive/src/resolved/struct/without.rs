@@ -1,12 +1,13 @@
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Attribute, Expr, Ident, Member, Visibility};
+use syn::{Attribute, Expr, Ident, Member, Token, Visibility};
 
 use crate::Query;
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Without<'a> {
+    constness: Option<Token![const]>,
     pub(crate) assigned_value: Expr,
     pub(crate) doc: Option<Cow<'a, str>>,
     pub(crate) fn_ident: Cow<'a, Ident>,
@@ -19,6 +20,7 @@ pub(crate) struct Without<'a> {
 impl<'a> Without<'a> {
     pub(crate) fn build(&self) -> TokenStream2 {
         let Without {
+            constness,
             vis,
             fn_ident,
             member,
@@ -33,7 +35,7 @@ impl<'a> Without<'a> {
             #doc
             #deprecation_attr
             #[must_use]
-            #vis fn #fn_ident(mut self) -> Self {
+            #vis #constness fn #fn_ident(mut self) -> Self {
                 self.#member = #assigned_value;
                 self
             }
@@ -42,6 +44,7 @@ impl<'a> Without<'a> {
 
     pub(crate) fn from_query(query: &Query<'a>) -> Option<Self> {
         let span = query.span();
+        let constness = query.constness();
         let vis = query.vis();
         let fn_ident = query.fn_ident()?;
         let member = query.member();
@@ -52,6 +55,7 @@ impl<'a> Without<'a> {
         let deprecation_attr = query.deprecation_attr();
 
         Some(Self {
+            constness,
             assigned_value,
             doc,
             fn_ident,
