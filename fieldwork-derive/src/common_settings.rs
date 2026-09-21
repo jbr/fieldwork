@@ -7,6 +7,7 @@ use syn::{Error, LitStr, Visibility, token::Pub};
 pub(crate) struct CommonSettings {
     pub(crate) auto_deref: Option<bool>,
     pub(crate) chainable_set: Option<bool>,
+    pub(crate) const_fn: Option<bool>,
     pub(crate) get_copy: Option<bool>,
     pub(crate) option_borrow_inner: Option<bool>,
     pub(crate) option_set_some: Option<bool>,
@@ -36,6 +37,7 @@ macro_rules! with_common_settings {
     ($($key:literal,)+) => {
         &[
             "chain",
+            "const_fn",
             "copy",
             "debug",
             "deref",
@@ -57,6 +59,7 @@ pub(crate) use with_common_settings;
 impl CommonSettings {
     pub const DEFAULTS: &'static Self = &Self {
         chainable_set: Some(true),
+        const_fn: Some(false),
         option_borrow_inner: Some(true),
         auto_deref: Some(true),
         get_copy: Some(true),
@@ -81,6 +84,7 @@ impl CommonSettings {
     pub(crate) fn any_active(&self) -> bool {
         self.auto_deref.is_some()
             || self.chainable_set.is_some()
+            || self.const_fn.is_some()
             || self.get_copy.is_some()
             || self.option_borrow_inner.is_some()
             || self.option_set_some.is_some()
@@ -94,6 +98,7 @@ impl CommonSettings {
     pub(crate) fn handle_assign_bool_lit(&mut self, lhs: &str, value: bool) -> bool {
         match lhs {
             "chain" => self.chainable_set = Some(value),
+            "const_fn" => self.const_fn = Some(value),
             "copy" => self.get_copy = Some(value),
             "deref" => self.auto_deref = Some(value),
             "into" => self.into = Some(value),

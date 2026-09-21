@@ -1,12 +1,13 @@
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Attribute, Expr, Ident, Member, Type, Visibility};
+use syn::{Attribute, Expr, Ident, Member, Token, Type, Visibility};
 
 use crate::Query;
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct With<'a> {
+    constness: Option<Token![const]>,
     pub(crate) argument_ident_and_ty: Option<(Cow<'a, Ident>, Cow<'a, Type>)>,
     pub(crate) assigned_value: Expr,
     pub(crate) doc: Option<Cow<'a, str>>,
@@ -20,6 +21,7 @@ pub(crate) struct With<'a> {
 impl<'a> With<'a> {
     pub(crate) fn build(&self) -> TokenStream2 {
         let With {
+            constness,
             vis,
             fn_ident,
             member,
@@ -35,7 +37,7 @@ impl<'a> With<'a> {
                 #doc
                 #deprecation_attr
                 #[must_use]
-                #vis fn #fn_ident(mut self, #argument_ident: #argument_ty) -> Self {
+                #vis #constness fn #fn_ident(mut self, #argument_ident: #argument_ty) -> Self {
                     self.#member = #assigned_value;
                     self
                 }
@@ -45,7 +47,7 @@ impl<'a> With<'a> {
                 #doc
                 #deprecation_attr
                 #[must_use]
-                #vis fn #fn_ident(mut self) -> Self {
+                #vis #constness fn #fn_ident(mut self) -> Self {
                     self.#member = #assigned_value;
                     self
                 }
@@ -55,6 +57,7 @@ impl<'a> With<'a> {
 
     pub(crate) fn from_query(query: &Query<'a>) -> Option<Self> {
         let span = query.span();
+        let constness = query.constness();
         let vis = query.vis();
         let fn_ident = query.fn_ident()?;
         let member = query.member();
@@ -67,6 +70,7 @@ impl<'a> With<'a> {
         let argument_ident_and_ty = argument_ty.map(|ty| (argument_ident, ty));
 
         Some(Self {
+            constness,
             argument_ident_and_ty,
             assigned_value,
             doc,

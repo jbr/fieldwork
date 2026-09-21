@@ -2,10 +2,11 @@ use crate::{Query, arm_pattern, option_handling::extract_option_type};
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 use std::borrow::Cow;
-use syn::{Attribute, Ident, Type, Visibility, parse_quote_spanned};
+use syn::{Attribute, Ident, Token, Type, Visibility, parse_quote_spanned};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct GetMut<'a> {
+    constness: Option<Token![const]>,
     doc: Option<Cow<'a, str>>,
     fn_ident: Cow<'a, Ident>,
     span: Span,
@@ -22,6 +23,7 @@ pub(crate) struct GetMut<'a> {
 impl<'a> GetMut<'a> {
     pub(crate) fn build(&self) -> TokenStream {
         let Self {
+            constness,
             doc,
             fn_ident,
             span,
@@ -41,7 +43,7 @@ impl<'a> GetMut<'a> {
         quote_spanned! {*span=>
             #doc
             #deprecation_attr
-            #vis fn #fn_ident(&mut self) -> #return_ty {
+            #vis #constness fn #fn_ident(&mut self) -> #return_ty {
                 match self { #match_body }
             }
         }
@@ -50,6 +52,7 @@ impl<'a> GetMut<'a> {
     pub(crate) fn from_query(query: &Query<'a>) -> Option<Self> {
         let fields = query.enum_fields()?;
         let span = query.span();
+        let constness = query.constness();
         let fn_ident = query.fn_ident()?;
         let vis = query.vis();
         let doc = query.docs(false);
@@ -75,6 +78,7 @@ impl<'a> GetMut<'a> {
             .collect();
 
         Some(Self {
+            constness,
             doc,
             fn_ident,
             span,

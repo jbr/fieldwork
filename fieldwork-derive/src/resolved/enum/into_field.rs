@@ -2,10 +2,11 @@ use crate::{Query, arm_pattern};
 use proc_macro2::{Span, TokenStream};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Attribute, Ident, Type, Visibility};
+use syn::{Attribute, Ident, Token, Type, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct IntoField<'a> {
+    constness: Option<Token![const]>,
     doc: Option<Cow<'a, str>>,
     fn_ident: Cow<'a, Ident>,
     span: Span,
@@ -21,6 +22,7 @@ pub(crate) struct IntoField<'a> {
 impl<'a> IntoField<'a> {
     pub(crate) fn build(&self) -> TokenStream {
         let Self {
+            constness,
             doc,
             fn_ident,
             span,
@@ -34,7 +36,7 @@ impl<'a> IntoField<'a> {
         quote_spanned! {*span=>
             #doc
             #deprecation_attr
-            #vis fn #fn_ident(self) -> #return_ty {
+            #vis #constness fn #fn_ident(self) -> #return_ty {
                 match self { #(#patterns)|* => #binding }
             }
         }
@@ -49,6 +51,7 @@ impl<'a> IntoField<'a> {
             return None;
         }
         let span = query.span();
+        let constness = query.constness();
         let fn_ident = query.fn_ident()?;
         let vis = query.vis();
         let doc = query.docs(false);
@@ -62,6 +65,7 @@ impl<'a> IntoField<'a> {
             .collect();
 
         Some(Self {
+            constness,
             doc,
             fn_ident,
             span,
