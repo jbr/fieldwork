@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.4](https://github.com/jbr/fieldwork/compare/fieldwork-derive-v0.5.3...fieldwork-derive-v0.5.4) - 2026-09-24
+
+### Added
+
+- generate const fn accessors with `const_fn`
+
+### Other
+
+- follow-ups to the const_fn addition
+
 ## [0.5.3](https://github.com/jbr/fieldwork/compare/fieldwork-derive-v0.5.2...fieldwork-derive-v0.5.3) - 2026-07-19
 
 ### Other
