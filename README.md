@@ -116,9 +116,8 @@ for test coverage.
 
 ## Documentation
 
-View the docs for main on github at [docs.md](https://github.com/jbr/fieldwork/blob/main/docs.md),
-or on github pages in [rustdoc format](https://jbr.github.io/fieldwork/fieldwork/).  The most recent
-release can always be viewed at [docs.rs](https://docs.rs/fieldwork).
+View the docs for main on [github pages](https://jbr.github.io/fieldwork/fieldwork/). The most
+recent release can always be viewed at [docs.rs](https://docs.rs/fieldwork).
 
 ## Safety
 This crate uses `#![deny(unsafe_code)]`.

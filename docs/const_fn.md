@@ -71,11 +71,52 @@ impl Config {
 Fieldwork adds the `const`; it does not change what it generates, so the
 method still has to be something Rust accepts as a constant function. A
 generated body reaches outside the language's const subset when it calls a
-trait method — [`deref`](crate::get::deref) calls `Deref::deref`, and
-[`into`](crate::into) calls `Into::into` — and when a setter drops the value
-it overwrites, which const evaluation does not allow for a type with a
-destructor. In those cases the error comes from the compiler, on the
-generated method, naming the call it cannot make.
+trait method — [`deref`](crate::get::deref) calls `Deref::deref` for types
+like `String`, `Vec`, and `PathBuf`, borrowing an array as a slice calls
+`Index`, and [`into`](crate::into) calls `Into::into` — and when a setter
+drops the value it overwrites, which const evaluation does not allow for a
+type with a destructor. The compiler reports these errors on the field in
+your struct, naming the call it cannot make.
 
-Copy getters, borrowing getters, mutable getters, and setters over `Copy`
-fields are all within the subset.
+Dereferencing a `Box` or a `&mut` reference is built into the language, so
+those fields are fine as they are. For the rest, turn off auto-deref
+alongside `const_fn`, at whichever level you set it:
+
+```rust
+#[derive(fieldwork::Fieldwork)]
+#[fieldwork(get, get_mut, const_fn, deref = false)]
+struct Header {
+    /// the magic bytes
+    magic: [u8; 4],
+
+    /// the optional label
+    label: Option<String>,
+}
+```
+
+```rust
+// GENERATED
+# struct Header { magic: [u8; 4], label: Option<String>, }
+impl Header {
+    ///Borrows the magic bytes
+    pub const fn magic(&self) -> &[u8; 4] {
+        &self.magic
+    }
+    ///Mutably borrow the magic bytes
+    pub const fn magic_mut(&mut self) -> &mut [u8; 4] {
+        &mut self.magic
+    }
+    ///Borrows the optional label
+    pub const fn label(&self) -> Option<&String> {
+        self.label.as_ref()
+    }
+    ///Mutably borrow the optional label
+    pub const fn label_mut(&mut self) -> Option<&mut String> {
+        self.label.as_mut()
+    }
+}
+
+```
+
+Every method type — `get`, `get_mut`, `set`, `with`, `without`, `take`, and
+`into_field` — is within the subset for `Copy` fields and `Option`s of them.
