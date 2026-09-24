@@ -114,19 +114,14 @@ impl Rgb {
         self
     }
 }
-#[automatically_derived]
-#[doc(hidden)]
-unsafe impl ::core::clone::TrivialClone for Rgb {}
-#[automatically_derived]
-impl ::core::clone::Clone for Rgb {
-    #[inline]
-    fn clone(&self) -> Rgb {
-        let _: ::core::clone::AssertParamIsClone<u8>;
+/// Implemented by hand rather than derived because `derive(Clone)` expansion
+/// differs between stable and nightly toolchains.
+impl Clone for Rgb {
+    fn clone(&self) -> Self {
         *self
     }
 }
-#[automatically_derived]
-impl ::core::marker::Copy for Rgb {}
+impl Copy for Rgb {}
 #[fieldwork(get, set, with, get_mut, option_set_some)]
 struct Color(#[fieldwork(name = rgb, copy)] Rgb, #[fieldwork(name = alpha)] Option<u8>);
 impl Color {
