@@ -21,13 +21,22 @@ enum Payload {
     Empty,
 }
 
-#[derive(fieldwork::Fieldwork, Clone, Copy)]
+#[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set, with, get_mut)]
 struct Rgb(
     #[fieldwork(name = red)] u8,
     #[fieldwork(name = blue)] u8,
     #[fieldwork(name = green)] u8,
 );
+
+/// Implemented by hand rather than derived because `derive(Clone)` expansion
+/// differs between stable and nightly toolchains.
+impl Clone for Rgb {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+impl Copy for Rgb {}
 
 #[derive(fieldwork::Fieldwork)]
 #[fieldwork(get, set, with, get_mut, option_set_some)]
