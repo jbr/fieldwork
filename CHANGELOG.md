@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.4](https://github.com/jbr/fieldwork/compare/fieldwork-v0.5.3...fieldwork-v0.5.4) - 2026-09-24
+
+### Added
+
+- generate const fn accessors with `const_fn`
+
+### Fixed
+
+- address Clone discrepancy between rust versions
+
+### Other
+
+- follow-ups to the const_fn addition
+- remove readme = "README.md"
+
 ## [0.5.3](https://github.com/jbr/fieldwork/compare/fieldwork-v0.5.2...fieldwork-v0.5.3) - 2026-07-19
 
 ### Other
