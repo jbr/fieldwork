@@ -8,7 +8,6 @@ edition = "2024"
 description = "derivable accessors for struct fields"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/jbr/fieldwork"
-readme = "README.md"
 keywords = ["macros"]
 categories = ["development-tools"]
 
