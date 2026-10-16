@@ -41,6 +41,7 @@ impl<'a> Set<'a> {
             quote_spanned! {*span=>
                 #doc
                 #deprecation_attr
+                #[inline]
                 #vis #constness fn #fn_ident(&mut self, #argument_ident: #argument_ty) -> &mut Self {
                     self.#member = #assigned_value;
                     self
@@ -50,6 +51,7 @@ impl<'a> Set<'a> {
             quote_spanned! {*span=>
                 #doc
                 #deprecation_attr
+                #[inline]
                 #vis #constness fn #fn_ident(&mut self, #argument_ident: #argument_ty) {
                     self.#member = #assigned_value;
                 }
