@@ -7,14 +7,17 @@ struct MyStruct<T> {
     generic: T,
 }
 impl<T> MyStruct<T> {
+    #[inline]
     pub fn set_number(&mut self, number: usize) -> &mut Self {
         self.number = number;
         self
     }
     ///Sets opting out
+    #[inline]
     pub fn set_enabled(&mut self, enabled: bool) {
         self.enabled = enabled;
     }
+    #[inline]
     pub fn set_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
         self
@@ -33,15 +36,18 @@ struct MyStruct2<T> {
 }
 impl<T> MyStruct2<T> {
     ///Sets opted out at struct-method level
+    #[inline]
     pub fn set_number(&mut self, number: usize) {
         self.number = number;
     }
     ///Sets opting back in, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
     ///Sets opting back in, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
         self
@@ -54,6 +60,7 @@ enum Point {
     ThreeD { x: i32, y: i32, z: i32 },
 }
 impl Point {
+    #[inline]
     pub fn set_x(&mut self, x: i32) {
         match self {
             Self::TwoD { x: x_binding, .. } => {
@@ -64,6 +71,7 @@ impl Point {
             }
         }
     }
+    #[inline]
     pub fn set_y(&mut self, y: i32) {
         match self {
             Self::TwoD { y: y_binding, .. } => {
@@ -82,6 +90,7 @@ enum Mixed {
     B { no_chain: i32, chained: i32 },
 }
 impl Mixed {
+    #[inline]
     pub fn set_chained(&mut self, chained: i32) -> &mut Self {
         match self {
             Self::A { chained: chained_binding, .. } => {
@@ -93,6 +102,7 @@ impl Mixed {
         }
         self
     }
+    #[inline]
     pub fn set_no_chain(&mut self, no_chain: i32) {
         match self {
             Self::A { no_chain: no_chain_binding, .. } => {

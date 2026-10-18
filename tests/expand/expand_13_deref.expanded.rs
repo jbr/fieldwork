@@ -16,12 +16,15 @@ struct User {
     deref_both: OwnedType,
 }
 impl User {
+    #[inline]
     pub fn deref_both(&self) -> &DerefType {
         &*self.deref_both
     }
+    #[inline]
     pub fn deref_both_mut(&mut self) -> &mut DerefType {
         &mut *self.deref_both
     }
+    #[inline]
     pub fn set_deref_both(&mut self, deref_both: OwnedType) -> &mut Self {
         self.deref_both = deref_both;
         self
@@ -34,12 +37,15 @@ struct OnlyDerefForMethods {
     deref_for_get_mut_only: OwnedType,
 }
 impl OnlyDerefForMethods {
+    #[inline]
     pub fn deref_for_get_only(&self) -> &DerefType {
         &*self.deref_for_get_only
     }
+    #[inline]
     pub fn deref_for_get_only_mut(&mut self) -> &mut OwnedType {
         &mut self.deref_for_get_only
     }
+    #[inline]
     pub fn set_deref_for_get_only(
         &mut self,
         deref_for_get_only: OwnedType,
@@ -47,12 +53,15 @@ impl OnlyDerefForMethods {
         self.deref_for_get_only = deref_for_get_only;
         self
     }
+    #[inline]
     pub fn deref_for_get_mut_only(&self) -> &OwnedType {
         &self.deref_for_get_mut_only
     }
+    #[inline]
     pub fn deref_for_get_mut_only_mut(&mut self) -> &mut DerefType {
         &mut *self.deref_for_get_mut_only
     }
+    #[inline]
     pub fn set_deref_for_get_mut_only(
         &mut self,
         deref_for_get_mut_only: OwnedType,
@@ -69,11 +78,13 @@ enum HasDeref {
     Second { owned: OwnedType },
 }
 impl HasDeref {
+    #[inline]
     pub fn owned(&self) -> &DerefType {
         match self {
             Self::First { owned, .. } | Self::Second { owned, .. } => &**owned,
         }
     }
+    #[inline]
     pub fn owned_mut(&mut self) -> &mut DerefType {
         match self {
             Self::First { owned, .. } => &mut **owned,
@@ -88,24 +99,28 @@ enum PartialDeref {
     Empty { other: i32 },
 }
 impl PartialDeref {
+    #[inline]
     pub fn field(&self) -> Option<&DerefType> {
         match self {
             Self::WithValue { field, .. } => Some(&**field),
             _ => None,
         }
     }
+    #[inline]
     pub fn field_mut(&mut self) -> Option<&mut OwnedType> {
         match self {
             Self::WithValue { field, .. } => Some(field),
             _ => None,
         }
     }
+    #[inline]
     pub fn other(&self) -> Option<i32> {
         match self {
             Self::Empty { other, .. } => Some(*other),
             _ => None,
         }
     }
+    #[inline]
     pub fn other_mut(&mut self) -> Option<&mut i32> {
         match self {
             Self::Empty { other, .. } => Some(other),

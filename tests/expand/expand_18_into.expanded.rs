@@ -6,31 +6,39 @@ struct AcceptsAnythingInto {
     option_string: Option<String>,
 }
 impl AcceptsAnythingInto {
+    #[inline]
     pub fn string(&self) -> &str {
         &*self.string
     }
+    #[inline]
     pub fn string_mut(&mut self) -> &mut str {
         &mut *self.string
     }
+    #[inline]
     pub fn set_string(&mut self, string: impl Into<String>) -> &mut Self {
         self.string = string.into();
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_string(mut self, string: impl Into<String>) -> Self {
         self.string = string.into();
         self
     }
+    #[inline]
     pub fn option_string(&self) -> Option<&str> {
         self.option_string.as_deref()
     }
+    #[inline]
     pub fn option_string_mut(&mut self) -> Option<&mut str> {
         self.option_string.as_deref_mut()
     }
+    #[inline]
     pub fn set_option_string(&mut self, option_string: impl Into<String>) -> &mut Self {
         self.option_string = Some(option_string.into());
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_option_string(mut self, option_string: impl Into<String>) -> Self {
         self.option_string = Some(option_string.into());
@@ -44,11 +52,13 @@ enum IntoEnum {
     Beta { name: String, value: i32 },
 }
 impl IntoEnum {
+    #[inline]
     pub fn name(&self) -> &str {
         match self {
             Self::Alpha { name, .. } | Self::Beta { name, .. } => &**name,
         }
     }
+    #[inline]
     pub fn set_name(&mut self, name: impl Into<String>) -> &mut Self {
         match self {
             Self::Alpha { name: name_binding, .. } => {
@@ -60,6 +70,7 @@ impl IntoEnum {
         }
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_name(mut self, name: impl Into<String>) -> Self {
         match &mut self {
@@ -72,11 +83,13 @@ impl IntoEnum {
         }
         self
     }
+    #[inline]
     pub fn value(&self) -> i32 {
         match self {
             Self::Alpha { value, .. } | Self::Beta { value, .. } => *value,
         }
     }
+    #[inline]
     pub fn set_value(&mut self, value: i32) -> &mut Self {
         match self {
             Self::Alpha { value: value_binding, .. } => {
@@ -88,6 +101,7 @@ impl IntoEnum {
         }
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_value(mut self, value: i32) -> Self {
         match &mut self {
@@ -108,6 +122,7 @@ enum PartialInto {
     Minimal { shared: i32 },
 }
 impl PartialInto {
+    #[inline]
     pub fn set_shared(&mut self, shared: i32) -> &mut Self {
         match self {
             Self::Full { shared: shared_binding, .. } => {
@@ -125,9 +140,11 @@ struct Test {
     field: Option<std::borrow::Cow<'static, str>>,
 }
 impl Test {
+    #[inline]
     pub fn field(&self) -> Option<&str> {
         self.field.as_deref()
     }
+    #[inline]
     pub fn set_field(
         &mut self,
         field: Option<impl Into<std::borrow::Cow<'static, str>>>,
@@ -135,6 +152,7 @@ impl Test {
         self.field = field.map(Into::into);
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_field(
         mut self,

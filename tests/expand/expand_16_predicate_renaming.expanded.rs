@@ -4,9 +4,11 @@ struct Bools {
     active: bool,
 }
 impl Bools {
+    #[inline]
     pub fn is_enabled(&self) -> bool {
         self.enabled
     }
+    #[inline]
     pub fn is_active(&self) -> bool {
         self.active
     }
@@ -18,9 +20,11 @@ struct NoPredicateRenaming {
     active: bool,
 }
 impl NoPredicateRenaming {
+    #[inline]
     pub fn enabled(&self) -> bool {
         self.enabled
     }
+    #[inline]
     pub fn is_active(&self) -> bool {
         self.active
     }
@@ -32,11 +36,13 @@ enum FeatureFlags {
     Disabled { active: bool, debug: bool },
 }
 impl FeatureFlags {
+    #[inline]
     pub fn is_active(&self) -> bool {
         match self {
             Self::Enabled { active, .. } | Self::Disabled { active, .. } => *active,
         }
     }
+    #[inline]
     pub fn is_debug(&self) -> bool {
         match self {
             Self::Enabled { debug, .. } | Self::Disabled { debug, .. } => *debug,
@@ -50,11 +56,13 @@ enum MixedFlags {
     Partial { active: bool },
 }
 impl MixedFlags {
+    #[inline]
     pub fn is_active(&self) -> bool {
         match self {
             Self::Full { active, .. } | Self::Partial { active, .. } => *active,
         }
     }
+    #[inline]
     pub fn is_verbose(&self) -> Option<bool> {
         match self {
             Self::Full { verbose, .. } => Some(*verbose),

@@ -13,43 +13,52 @@ struct MyStruct<T> {
 }
 impl<T> MyStruct<T> {
     ///Returns a copy of generated
+    #[inline]
     pub fn enabled(&self) -> bool {
         self.enabled
     }
     ///Mutably borrow generated
+    #[inline]
     pub fn enabled_mut(&mut self) -> &mut bool {
         &mut self.enabled
     }
     ///Sets generated, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
     ///Owned chainable setter for generated, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
     ///Borrows generated
+    #[inline]
     pub fn generic(&self) -> &T {
         &self.generic
     }
     ///Mutably borrow generated
+    #[inline]
     pub fn generic_mut(&mut self) -> &mut T {
         &mut self.generic
     }
     ///Sets generated, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
         self
     }
     ///Owned chainable setter for generated, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_generic(mut self, generic: T) -> Self {
         self.generic = generic;
         self
     }
+    #[inline]
     pub fn only_get(&self) -> &() {
         &self.only_get
     }
@@ -67,38 +76,46 @@ struct FieldworkEqualsTrue<T> {
 }
 impl<T> FieldworkEqualsTrue<T> {
     ///Returns a copy of generated
+    #[inline]
     pub fn enabled(&self) -> bool {
         self.enabled
     }
     ///Mutably borrow generated
+    #[inline]
     pub fn enabled_mut(&mut self) -> &mut bool {
         &mut self.enabled
     }
     ///Sets generated, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
     ///Owned chainable setter for generated, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
     ///Borrows generated
+    #[inline]
     pub fn generic(&self) -> &T {
         &self.generic
     }
     ///Mutably borrow generated
+    #[inline]
     pub fn generic_mut(&mut self) -> &mut T {
         &mut self.generic
     }
     ///Sets generated, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
         self
     }
     ///Owned chainable setter for generated, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_generic(mut self, generic: T) -> Self {
         self.generic = generic;
@@ -118,11 +135,13 @@ struct OptingInPerField<T> {
 }
 impl<T> OptingInPerField<T> {
     ///Sets generated, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
     ///Borrows generated
+    #[inline]
     pub fn generic(&self) -> &T {
         &self.generic
     }
@@ -140,15 +159,18 @@ struct OptingInPerField2<T> {
 }
 impl<T> OptingInPerField2<T> {
     ///Sets generated, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
     ///Borrows generated
+    #[inline]
     pub fn get_generic(&self) -> &T {
         &self.generic
     }
     ///Sets generated, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
         self
@@ -161,21 +183,26 @@ struct MyStruct2 {
     only_get: (),
 }
 impl MyStruct2 {
+    #[inline]
     pub fn number(&self) -> usize {
         self.number
     }
+    #[inline]
     pub fn number_mut(&mut self) -> &mut usize {
         &mut self.number
     }
+    #[inline]
     pub fn set_number(&mut self, number: usize) -> &mut Self {
         self.number = number;
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_number(mut self, number: usize) -> Self {
         self.number = number;
         self
     }
+    #[inline]
     pub fn only_get(&self) -> &() {
         &self.only_get
     }
@@ -199,12 +226,14 @@ enum OptInEnum {
 }
 impl OptInEnum {
     ///Borrows generated
+    #[inline]
     pub fn name(&self) -> &str {
         match self {
             Self::Foo { name, .. } | Self::Bar { name, .. } => &**name,
         }
     }
     ///Sets generated, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         match self {
             Self::Foo { name: name_binding, .. } => {
@@ -224,11 +253,13 @@ enum SelectiveMethods {
     Beta { read_only: String, write_only: String },
 }
 impl SelectiveMethods {
+    #[inline]
     pub fn read_only(&self) -> &str {
         match self {
             Self::Alpha { read_only, .. } | Self::Beta { read_only, .. } => &**read_only,
         }
     }
+    #[inline]
     pub fn set_write_only(&mut self, write_only: String) -> &mut Self {
         match self {
             Self::Alpha { write_only: write_only_binding, .. } => {

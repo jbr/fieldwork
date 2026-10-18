@@ -9,18 +9,23 @@ struct MyStruct<T: Copy> {
     static_str: &'static str,
 }
 impl<T: Copy> MyStruct<T> {
+    #[inline]
     pub fn number(&self) -> usize {
         self.number
     }
+    #[inline]
     pub fn enabled(&self) -> bool {
         self.enabled
     }
+    #[inline]
     pub fn generic(&self) -> T {
         self.generic
     }
+    #[inline]
     pub fn another(&self) -> usize {
         self.another
     }
+    #[inline]
     pub fn static_str(&self) -> &'static str {
         self.static_str
     }
@@ -31,9 +36,11 @@ struct HoldsAReference<'a> {
     mut_ref_not_copy: &'a mut (),
 }
 impl<'a> HoldsAReference<'a> {
+    #[inline]
     pub fn name(&self) -> &'a str {
         self.name
     }
+    #[inline]
     pub fn mut_ref_not_copy(&self) -> &() {
         &*self.mut_ref_not_copy
     }
@@ -56,45 +63,59 @@ struct AllCopyTypes {
     bool: bool,
 }
 impl AllCopyTypes {
+    #[inline]
     pub fn char(&self) -> char {
         self.char
     }
+    #[inline]
     pub fn f32(&self) -> f32 {
         self.f32
     }
+    #[inline]
     pub fn f64(&self) -> f64 {
         self.f64
     }
+    #[inline]
     pub fn i128(&self) -> i128 {
         self.i128
     }
+    #[inline]
     pub fn i16(&self) -> i16 {
         self.i16
     }
+    #[inline]
     pub fn i32(&self) -> i32 {
         self.i32
     }
+    #[inline]
     pub fn i8(&self) -> i8 {
         self.i8
     }
+    #[inline]
     pub fn isize(&self) -> isize {
         self.isize
     }
+    #[inline]
     pub fn u128(&self) -> u128 {
         self.u128
     }
+    #[inline]
     pub fn u16(&self) -> u16 {
         self.u16
     }
+    #[inline]
     pub fn u32(&self) -> u32 {
         self.u32
     }
+    #[inline]
     pub fn u8(&self) -> u8 {
         self.u8
     }
+    #[inline]
     pub fn usize(&self) -> usize {
         self.usize
     }
+    #[inline]
     pub fn bool(&self) -> bool {
         self.bool
     }
@@ -107,9 +128,11 @@ mod x {
         arc_usize: Arc<usize>,
     }
     impl CopyInteractsWithDeref {
+        #[inline]
         pub fn box_bool(&self) -> bool {
             *self.box_bool
         }
+        #[inline]
         pub fn arc_usize(&self) -> usize {
             *self.arc_usize
         }
@@ -123,9 +146,11 @@ struct AllowSpecifyingCopyAtFieldAttribute<T: Copy> {
     another: (T, T),
 }
 impl<T: Copy> AllowSpecifyingCopyAtFieldAttribute<T> {
+    #[inline]
     pub fn generic(&self) -> T {
         self.generic
     }
+    #[inline]
     pub fn another(&self) -> (T, T) {
         self.another
     }
@@ -136,6 +161,7 @@ struct AllowSpecifyingCopyFalseAtFieldAttribute {
     usize: usize,
 }
 impl AllowSpecifyingCopyFalseAtFieldAttribute {
+    #[inline]
     pub fn usize(&self) -> &usize {
         &self.usize
     }
@@ -148,9 +174,11 @@ struct AllowOptingBackInAtFieldAttribute<T: Copy> {
     generic: T,
 }
 impl<T: Copy> AllowOptingBackInAtFieldAttribute<T> {
+    #[inline]
     pub fn usize(&self) -> usize {
         self.usize
     }
+    #[inline]
     pub fn generic(&self) -> T {
         self.generic
     }
@@ -162,16 +190,19 @@ enum Coord {
     ThreeD { x: f64, y: f64, z: f64 },
 }
 impl Coord {
+    #[inline]
     pub fn x(&self) -> f64 {
         match self {
             Self::TwoD { x, .. } | Self::ThreeD { x, .. } => *x,
         }
     }
+    #[inline]
     pub fn y(&self) -> f64 {
         match self {
             Self::TwoD { y, .. } | Self::ThreeD { y, .. } => *y,
         }
     }
+    #[inline]
     pub fn z(&self) -> Option<f64> {
         match self {
             Self::ThreeD { z, .. } => Some(*z),
@@ -187,6 +218,7 @@ enum NoCopyEnum {
     B { code: u32 },
 }
 impl NoCopyEnum {
+    #[inline]
     pub fn code(&self) -> &u32 {
         match self {
             Self::A { code, .. } | Self::B { code, .. } => code,
@@ -201,11 +233,13 @@ enum CopyOverride {
     B { id: u32, name: String },
 }
 impl CopyOverride {
+    #[inline]
     pub fn id(&self) -> u32 {
         match self {
             Self::A { id, .. } | Self::B { id, .. } => *id,
         }
     }
+    #[inline]
     pub fn name(&self) -> &str {
         match self {
             Self::A { name, .. } | Self::B { name, .. } => &**name,
@@ -217,6 +251,7 @@ struct SomeOptionU64 {
     field: Option<u64>,
 }
 impl SomeOptionU64 {
+    #[inline]
     pub fn field(&self) -> Option<u64> {
         self.field
     }

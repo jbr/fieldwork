@@ -21,6 +21,7 @@ impl User {
 
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
+    #[inline]
     pub fn is_admin(&self) -> bool {
         self.admin
     }
@@ -28,6 +29,7 @@ for historical reasons*/
 
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
+    #[inline]
     pub fn is_admin_mut(&mut self) -> &mut bool {
         &mut self.admin
     }
@@ -35,6 +37,7 @@ for historical reasons*/
 
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
+    #[inline]
     pub fn set_admin(&mut self, is_admin: bool) -> &mut Self {
         self.admin = is_admin;
         self
@@ -43,50 +46,60 @@ for historical reasons*/
 
 Note that this is distinct from the notion of group administration,
 for historical reasons*/
+    #[inline]
     #[must_use]
     pub fn with_admin(mut self, is_admin: bool) -> Self {
         self.admin = is_admin;
         self
     }
     ///Borrows the user's name
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.name
     }
     ///Mutably borrow the user's name
+    #[inline]
     pub fn name_mut(&mut self) -> &mut str {
         &mut *self.name
     }
     ///Sets the user's name, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self
     }
     ///Owned chainable setter for the user's name, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_name(mut self, name: String) -> Self {
         self.name = name;
         self
     }
     ///Borrows the user's favorite color, if set
+    #[inline]
     pub fn favorite_color(&self) -> Option<&str> {
         self.favorite_color.as_deref()
     }
     ///Mutably borrow the user's favorite color, if set
+    #[inline]
     pub fn favorite_color_mut(&mut self) -> Option<&mut str> {
         self.favorite_color.as_deref_mut()
     }
     ///Sets the user's favorite color, if set, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_favorite_color(&mut self, favorite_color: Option<String>) -> &mut Self {
         self.favorite_color = favorite_color;
         self
     }
     ///Owned chainable setter for the user's favorite color, if set, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_favorite_color(mut self, favorite_color: Option<String>) -> Self {
         self.favorite_color = favorite_color;
         self
     }
     ///Borrows read-only unique identifier
+    #[inline]
     pub fn id(&self) -> &[u8] {
         &*self.id
     }

@@ -19,38 +19,46 @@ struct MyStruct<T> {
 }
 impl<T> MyStruct<T> {
     ///Returns a copy of this number is cool
+    #[inline]
     pub fn number_in_seconds(&self) -> usize {
         self.number
     }
     ///Mutably borrow this number is cool
+    #[inline]
     pub fn number_in_seconds_mut(&mut self) -> &mut usize {
         &mut self.number
     }
     ///Sets this number is cool, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_number_in_seconds(&mut self, number_in_seconds: usize) -> &mut Self {
         self.number = number_in_seconds;
         self
     }
     ///Owned chainable setter for this number is cool, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_number_in_seconds(mut self, number_in_seconds: usize) -> Self {
         self.number = number_in_seconds;
         self
     }
     ///get whether it's enabled
+    #[inline]
     pub fn enabled(&self) -> bool {
         self.enabled
     }
     ///mutably borrow enabled
+    #[inline]
     pub fn enabled_mut(&mut self) -> &mut bool {
         &mut self.enabled
     }
     ///assign enabled
+    #[inline]
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
     ///chainable setter for enabled
+    #[inline]
     #[must_use]
     pub fn with_enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
@@ -61,6 +69,7 @@ impl<T> MyStruct<T> {
 Some more information about this type:
 - it could really be anything
 - we don't know much more than that*/
+    #[inline]
     pub fn generic(&self) -> &T {
         &self.generic
     }
@@ -69,6 +78,7 @@ Some more information about this type:
 Some more information about this type:
 - it could really be anything
 - we don't know much more than that*/
+    #[inline]
     pub fn generic_mut(&mut self) -> &mut T {
         &mut self.generic
     }
@@ -77,6 +87,7 @@ Some more information about this type:
 Some more information about this type:
 - it could really be anything
 - we don't know much more than that*/
+    #[inline]
     pub fn set_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
         self
@@ -86,6 +97,7 @@ Some more information about this type:
 Some more information about this type:
 - it could really be anything
 - we don't know much more than that*/
+    #[inline]
     #[must_use]
     pub fn with_generic(mut self, generic: T) -> Self {
         self.generic = generic;
@@ -109,12 +121,14 @@ enum LogLevel {
 }
 impl LogLevel {
     ///borrow the warning text
+    #[inline]
     pub fn message(&self) -> &str {
         match self {
             Self::Debug { message, .. } | Self::Warn { message, .. } => &**message,
         }
     }
     ///update the warning text
+    #[inline]
     pub fn set_message(&mut self, message: String) -> &mut Self {
         match self {
             Self::Debug { message: message_binding, .. } => {
@@ -143,12 +157,14 @@ enum Documented {
 }
 impl Documented {
     ///# gets the value field from this variant
+    #[inline]
     pub fn value(&self) -> &str {
         match self {
             Self::First { value, .. } | Self::Second { value, .. } => &**value,
         }
     }
     ///# sets the value field on this variant
+    #[inline]
     pub fn set_value(&mut self, value: String) -> &mut Self {
         match self {
             Self::First { value: value_binding, .. } => {
@@ -186,40 +202,48 @@ struct DocTemplates<T> {
 }
 impl<T> DocTemplates<T> {
     ///# ggggets the cool number
+    #[inline]
     pub fn number(&self) -> usize {
         self.number
     }
     ///# gmut the cool number
+    #[inline]
     pub fn number_mut(&mut self) -> &mut usize {
         &mut self.number
     }
     /** # ssssets the cool number
 
 extra info here*/
+    #[inline]
     pub fn set_number(&mut self, number: usize) -> &mut Self {
         self.number = number;
         self
     }
     ///# width the cool number
+    #[inline]
     #[must_use]
     pub fn with_number(mut self, number: usize) -> Self {
         self.number = number;
         self
     }
     ///get whether it's enabled
+    #[inline]
     pub fn enabled(&self) -> bool {
         self.enabled
     }
     ///mutably borrow enabled
+    #[inline]
     pub fn enabled_mut(&mut self) -> &mut bool {
         &mut self.enabled
     }
     ///assign enabled
+    #[inline]
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
     ///chainable setter for enabled
+    #[inline]
     #[must_use]
     pub fn with_enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
@@ -228,12 +252,14 @@ extra info here*/
     /**# ggggets the generic
 
 Some further info*/
+    #[inline]
     pub fn generic(&self) -> &T {
         &self.generic
     }
     /**# gmut the generic
 
 Some further info*/
+    #[inline]
     pub fn generic_mut(&mut self) -> &mut T {
         &mut self.generic
     }
@@ -242,6 +268,7 @@ Some further info*/
 extra info here
 
 Some further info*/
+    #[inline]
     pub fn set_generic(&mut self, generic: T) -> &mut Self {
         self.generic = generic;
         self
@@ -249,6 +276,7 @@ Some further info*/
     /**# width the generic
 
 Some further info*/
+    #[inline]
     #[must_use]
     pub fn with_generic(mut self, generic: T) -> Self {
         self.generic = generic;

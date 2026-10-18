@@ -9,41 +9,53 @@ struct DebugStruct {
     option_arc_box_array: Option<Arc<Box<[u8; 10]>>>,
 }
 impl DebugStruct {
+    #[inline]
     pub fn array(&self) -> &[u8] {
         &self.array[..]
     }
+    #[inline]
     pub fn array_mut(&mut self) -> &mut [u8] {
         &mut self.array[..]
     }
+    #[inline]
     pub fn box_array(&self) -> &[u8] {
         &self.box_array[..]
     }
+    #[inline]
     pub fn box_array_mut(&mut self) -> &mut [u8] {
         &mut self.box_array[..]
     }
+    #[inline]
     pub fn arc_box_array(&self) -> &[u8] {
         &self.arc_box_array[..]
     }
+    #[inline]
     pub fn arc_box_array_mut(&mut self) -> &mut Arc<Box<[u8; 10]>> {
         &mut self.arc_box_array
     }
+    #[inline]
     pub fn option_array(&self) -> Option<&[u8]> {
         self.option_array.as_ref().map(|option_array| &option_array[..])
     }
+    #[inline]
     pub fn option_array_mut(&mut self) -> Option<&mut [u8]> {
         self.option_array.as_mut().map(|option_array| &mut option_array[..])
     }
+    #[inline]
     pub fn option_box_array(&self) -> Option<&[u8]> {
         self.option_box_array.as_ref().map(|option_box_array| &option_box_array[..])
     }
+    #[inline]
     pub fn option_box_array_mut(&mut self) -> Option<&mut [u8]> {
         self.option_box_array.as_mut().map(|option_box_array| &mut option_box_array[..])
     }
+    #[inline]
     pub fn option_arc_box_array(&self) -> Option<&[u8]> {
         self.option_arc_box_array
             .as_ref()
             .map(|option_arc_box_array| &option_arc_box_array[..])
     }
+    #[inline]
     pub fn option_arc_box_array_mut(&mut self) -> Option<&mut Arc<Box<[u8; 10]>>> {
         self.option_arc_box_array.as_mut()
     }
@@ -55,23 +67,27 @@ enum WithArrays {
     Large { data: [u8; 16] },
 }
 impl WithArrays {
+    #[inline]
     pub fn data(&self) -> &[u8] {
         match self {
             Self::Fixed { data, .. } | Self::Large { data, .. } => &data[..],
         }
     }
+    #[inline]
     pub fn data_mut(&mut self) -> &mut [u8] {
         match self {
             Self::Fixed { data, .. } => &mut data[..],
             Self::Large { data, .. } => &mut data[..],
         }
     }
+    #[inline]
     pub fn extra(&self) -> Option<&[u8]> {
         match self {
             Self::Fixed { extra, .. } => Some(&extra[..]),
             _ => None,
         }
     }
+    #[inline]
     pub fn extra_mut(&mut self) -> Option<&mut [u8]> {
         match self {
             Self::Fixed { extra, .. } => Some(&mut extra[..]),

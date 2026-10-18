@@ -6,35 +6,41 @@ enum Event {
     Scroll { x: i32, y: i32, delta: f32 },
 }
 impl Event {
+    #[inline]
     pub fn button(&self) -> Option<u8> {
         match self {
             Self::Click { button, .. } => Some(*button),
             _ => None,
         }
     }
+    #[inline]
     pub fn button_mut(&mut self) -> Option<&mut u8> {
         match self {
             Self::Click { button, .. } => Some(button),
             _ => None,
         }
     }
+    #[inline]
     pub fn delta(&self) -> Option<f32> {
         match self {
             Self::Scroll { delta, .. } => Some(*delta),
             _ => None,
         }
     }
+    #[inline]
     pub fn delta_mut(&mut self) -> Option<&mut f32> {
         match self {
             Self::Scroll { delta, .. } => Some(delta),
             _ => None,
         }
     }
+    #[inline]
     pub fn x(&self) -> i32 {
         match self {
             Self::Click { x, .. } | Self::Move { x, .. } | Self::Scroll { x, .. } => *x,
         }
     }
+    #[inline]
     pub fn x_mut(&mut self) -> &mut i32 {
         match self {
             Self::Click { x, .. } => x,
@@ -42,6 +48,7 @@ impl Event {
             Self::Scroll { x, .. } => x,
         }
     }
+    #[inline]
     pub fn set_x(&mut self, x: i32) -> &mut Self {
         match self {
             Self::Click { x: x_binding, .. } => {
@@ -56,6 +63,7 @@ impl Event {
         }
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_x(mut self, x: i32) -> Self {
         match &mut self {
@@ -71,11 +79,13 @@ impl Event {
         }
         self
     }
+    #[inline]
     pub fn y(&self) -> i32 {
         match self {
             Self::Click { y, .. } | Self::Move { y, .. } | Self::Scroll { y, .. } => *y,
         }
     }
+    #[inline]
     pub fn y_mut(&mut self) -> &mut i32 {
         match self {
             Self::Click { y, .. } => y,
@@ -83,6 +93,7 @@ impl Event {
             Self::Scroll { y, .. } => y,
         }
     }
+    #[inline]
     pub fn set_y(&mut self, y: i32) -> &mut Self {
         match self {
             Self::Click { y: y_binding, .. } => {
@@ -97,6 +108,7 @@ impl Event {
         }
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_y(mut self, y: i32) -> Self {
         match &mut self {
@@ -120,11 +132,13 @@ enum Status {
     Inactive { name: String },
 }
 impl Status {
+    #[inline]
     pub fn name(&self) -> &str {
         match self {
             Self::Active { name, .. } | Self::Inactive { name, .. } => &**name,
         }
     }
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         match self {
             Self::Active { name: name_binding, .. } => {
@@ -136,6 +150,7 @@ impl Status {
         }
         self
     }
+    #[inline]
     pub fn into_name(self) -> String {
         match self {
             Self::Active { name, .. } | Self::Inactive { name, .. } => name,
@@ -149,6 +164,7 @@ enum Session {
     Anonymous { token: Option<String> },
 }
 impl Session {
+    #[inline]
     pub fn token(&self) -> Option<&str> {
         match self {
             Self::Authenticated { token, .. } | Self::Anonymous { token, .. } => {
@@ -156,6 +172,7 @@ impl Session {
             }
         }
     }
+    #[inline]
     #[must_use]
     pub fn without_token(mut self) -> Self {
         match &mut self {
@@ -168,6 +185,7 @@ impl Session {
         }
         self
     }
+    #[inline]
     pub fn take_token(&mut self) -> Option<String> {
         match self {
             Self::Authenticated { token, .. } | Self::Anonymous { token, .. } => {
@@ -175,6 +193,7 @@ impl Session {
             }
         }
     }
+    #[inline]
     pub fn user_id(&self) -> Option<u32> {
         match self {
             Self::Authenticated { user_id, .. } => Some(*user_id),

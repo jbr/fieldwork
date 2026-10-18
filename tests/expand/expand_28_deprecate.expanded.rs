@@ -10,26 +10,31 @@ struct RenamedField {
 }
 impl RenamedField {
     ///Borrows the user's display name
+    #[inline]
     pub fn display_name(&self) -> &str {
         &*self.display_name
     }
     ///Borrows the user's display name
     #[deprecated(note = "use `display_name` instead")]
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.display_name
     }
     ///Sets the user's display name, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_display_name(&mut self, display_name: String) -> &mut Self {
         self.display_name = display_name;
         self
     }
     ///Sets the user's display name, returning `&mut Self` for chaining
     #[deprecated(note = "use `set_display_name` instead")]
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         self.display_name = name;
         self
     }
     ///Owned chainable setter for the user's display name, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_display_name(mut self, display_name: String) -> Self {
         self.display_name = display_name;
@@ -37,6 +42,7 @@ impl RenamedField {
     }
     ///Owned chainable setter for the user's display name, returning `Self`
     #[deprecated(note = "use `with_display_name` instead")]
+    #[inline]
     #[must_use]
     pub fn with_name(mut self, name: String) -> Self {
         self.display_name = name;
@@ -51,10 +57,12 @@ struct BareMark {
 }
 impl BareMark {
     #[deprecated]
+    #[inline]
     pub fn legacy(&self) -> bool {
         self.legacy
     }
     #[deprecated]
+    #[inline]
     pub fn set_legacy(&mut self, legacy: bool) -> &mut Self {
         self.legacy = legacy;
         self
@@ -67,13 +75,16 @@ struct MethodLevel {
     admin: bool,
 }
 impl MethodLevel {
+    #[inline]
     pub fn admin(&self) -> bool {
         self.admin
     }
     #[deprecated(note = "use `admin` instead")]
+    #[inline]
     pub fn is_admin(&self) -> bool {
         self.admin
     }
+    #[inline]
     pub fn set_admin(&mut self, admin: bool) -> &mut Self {
         self.admin = admin;
         self
@@ -87,28 +98,34 @@ struct WithSinceAndNote {
     score: u32,
 }
 impl WithSinceAndNote {
+    #[inline]
     pub fn score(&self) -> u32 {
         self.score
     }
     #[deprecated(since = "1.2.0", note = "use score() instead")]
+    #[inline]
     pub fn old_score(&self) -> u32 {
         self.score
     }
+    #[inline]
     pub fn set_score(&mut self, score: u32) -> &mut Self {
         self.score = score;
         self
     }
     #[deprecated(since = "1.2.0", note = "use score() instead")]
+    #[inline]
     pub fn set_old_score(&mut self, old_score: u32) -> &mut Self {
         self.score = old_score;
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_score(mut self, score: u32) -> Self {
         self.score = score;
         self
     }
     #[deprecated(since = "1.2.0", note = "use score() instead")]
+    #[inline]
     #[must_use]
     pub fn with_old_score(mut self, old_score: u32) -> Self {
         self.score = old_score;
@@ -122,10 +139,12 @@ struct MethodLevelBare {
     counter: u32,
 }
 impl MethodLevelBare {
+    #[inline]
     pub fn counter(&self) -> u32 {
         self.counter
     }
     #[deprecated]
+    #[inline]
     pub fn set_counter(&mut self, counter: u32) -> &mut Self {
         self.counter = counter;
         self
@@ -141,21 +160,25 @@ struct RenameAndDeprecate {
 }
 impl RenameAndDeprecate {
     ///Borrows the field's stored value
+    #[inline]
     pub fn new_name(&self) -> &str {
         &*self.stored
     }
     ///Borrows the field's stored value
     #[deprecated(note = "use `new_name` instead")]
+    #[inline]
     pub fn old_name(&self) -> &str {
         &*self.stored
     }
     ///Sets the field's stored value, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_new_name(&mut self, new_name: String) -> &mut Self {
         self.stored = new_name;
         self
     }
     ///Sets the field's stored value, returning `&mut Self` for chaining
     #[deprecated(note = "use `set_new_name` instead")]
+    #[inline]
     pub fn set_old_name(&mut self, old_name: String) -> &mut Self {
         self.stored = old_name;
         self
@@ -168,17 +191,20 @@ enum Packet {
     Heartbeat { id: u32 },
 }
 impl Packet {
+    #[inline]
     pub fn id(&self) -> u32 {
         match self {
             Self::Data { id, .. } | Self::Heartbeat { id, .. } => *id,
         }
     }
     #[deprecated(note = "use `id` instead")]
+    #[inline]
     pub fn ident(&self) -> u32 {
         match self {
             Self::Data { id, .. } | Self::Heartbeat { id, .. } => *id,
         }
     }
+    #[inline]
     pub fn set_id(&mut self, id: u32) -> &mut Self {
         match self {
             Self::Data { id: id_binding, .. } => {
@@ -191,6 +217,7 @@ impl Packet {
         self
     }
     #[deprecated(note = "use `set_id` instead")]
+    #[inline]
     pub fn set_ident(&mut self, ident: u32) -> &mut Self {
         match self {
             Self::Data { id, .. } => {
@@ -202,6 +229,7 @@ impl Packet {
         }
         self
     }
+    #[inline]
     pub fn payload(&self) -> Option<&str> {
         match self {
             Self::Data { payload, .. } => Some(&**payload),

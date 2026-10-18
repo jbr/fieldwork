@@ -24,33 +24,43 @@ struct OptionBehavior {
     nothing_fancy_for_get_mut: Option<()>,
 }
 impl OptionBehavior {
+    #[inline]
     pub fn option_deref(&self) -> Option<&str> {
         self.option_deref.as_deref()
     }
+    #[inline]
     pub fn option_deref_mut(&mut self) -> Option<&mut str> {
         self.option_deref.as_deref_mut()
     }
+    #[inline]
     pub fn option_deref_other_style(&self) -> Option<&str> {
         self.option_deref_other_style.as_deref()
     }
+    #[inline]
     pub fn option_deref_other_style_mut(&mut self) -> Option<&mut str> {
         self.option_deref_other_style.as_deref_mut()
     }
+    #[inline]
     pub fn no_option_detection(&self) -> &Option<String> {
         &self.no_option_detection
     }
+    #[inline]
     pub fn no_option_detection_mut(&mut self) -> &mut Option<String> {
         &mut self.no_option_detection
     }
+    #[inline]
     pub fn option_detection(&self) -> Option<&()> {
         self.option_detection.as_ref()
     }
+    #[inline]
     pub fn option_detection_mut(&mut self) -> Option<&mut ()> {
         self.option_detection.as_mut()
     }
+    #[inline]
     pub fn nothing_fancy_for_get_mut(&self) -> Option<&()> {
         self.nothing_fancy_for_get_mut.as_ref()
     }
+    #[inline]
     pub fn nothing_fancy_for_get_mut_mut(&mut self) -> &mut Option<()> {
         &mut self.nothing_fancy_for_get_mut
     }
@@ -68,33 +78,43 @@ struct OptInOption {
     option_detection_only_get_mut: Option<()>,
 }
 impl OptInOption {
+    #[inline]
     pub fn option_deref(&self) -> Option<&str> {
         self.option_deref.as_deref()
     }
+    #[inline]
     pub fn option_deref_mut(&mut self) -> Option<&mut str> {
         self.option_deref.as_deref_mut()
     }
+    #[inline]
     pub fn option_deref_other_style(&self) -> Option<&str> {
         self.option_deref_other_style.as_deref()
     }
+    #[inline]
     pub fn option_deref_other_style_mut(&mut self) -> Option<&mut str> {
         self.option_deref_other_style.as_deref_mut()
     }
+    #[inline]
     pub fn option_detection(&self) -> Option<&str> {
         self.option_detection.as_deref()
     }
+    #[inline]
     pub fn option_detection_mut(&mut self) -> Option<&mut str> {
         self.option_detection.as_deref_mut()
     }
+    #[inline]
     pub fn no_option_detection(&self) -> &Option<()> {
         &self.no_option_detection
     }
+    #[inline]
     pub fn no_option_detection_mut(&mut self) -> &mut Option<()> {
         &mut self.no_option_detection
     }
+    #[inline]
     pub fn option_detection_only_get_mut(&self) -> &Option<()> {
         &self.option_detection_only_get_mut
     }
+    #[inline]
     pub fn option_detection_only_get_mut_mut(&mut self) -> Option<&mut ()> {
         self.option_detection_only_get_mut.as_mut()
     }
@@ -112,33 +132,43 @@ struct OptionOnlyForGet {
     option_detection_only_get_mut: Option<()>,
 }
 impl OptionOnlyForGet {
+    #[inline]
     pub fn no_option_detection(&self) -> &Option<()> {
         &self.no_option_detection
     }
+    #[inline]
     pub fn no_option_detection_mut(&mut self) -> &mut Option<()> {
         &mut self.no_option_detection
     }
+    #[inline]
     pub fn option_deref(&self) -> Option<&str> {
         self.option_deref.as_deref()
     }
+    #[inline]
     pub fn option_deref_mut(&mut self) -> &mut Option<String> {
         &mut self.option_deref
     }
+    #[inline]
     pub fn field_overrides(&self) -> Option<&str> {
         self.field_overrides.as_deref()
     }
+    #[inline]
     pub fn field_overrides_mut(&mut self) -> Option<&mut str> {
         self.field_overrides.as_deref_mut()
     }
+    #[inline]
     pub fn option_only_for_get(&self) -> Option<&()> {
         self.option_only_for_get.as_ref()
     }
+    #[inline]
     pub fn option_only_for_get_mut(&mut self) -> &mut Option<()> {
         &mut self.option_only_for_get
     }
+    #[inline]
     pub fn option_detection_only_get_mut(&self) -> &Option<()> {
         &self.option_detection_only_get_mut
     }
+    #[inline]
     pub fn option_detection_only_get_mut_mut(&mut self) -> Option<&mut ()> {
         self.option_detection_only_get_mut.as_mut()
     }
@@ -156,33 +186,43 @@ struct OptionAndDerefInteraction {
     e: Option<OwnedType>,
 }
 impl OptionAndDerefInteraction {
+    #[inline]
     pub fn a(&self) -> &Option<String> {
         &self.a
     }
+    #[inline]
     pub fn a_mut(&mut self) -> &mut Option<String> {
         &mut self.a
     }
+    #[inline]
     pub fn b(&self) -> Option<&String> {
         self.b.as_ref()
     }
+    #[inline]
     pub fn b_mut(&mut self) -> Option<&mut String> {
         self.b.as_mut()
     }
+    #[inline]
     pub fn c(&self) -> Option<&str> {
         self.c.as_deref()
     }
+    #[inline]
     pub fn c_mut(&mut self) -> Option<&mut str> {
         self.c.as_deref_mut()
     }
+    #[inline]
     pub fn d(&self) -> &Option<String> {
         &self.d
     }
+    #[inline]
     pub fn d_mut(&mut self) -> &mut Option<String> {
         &mut self.d
     }
+    #[inline]
     pub fn e(&self) -> Option<&DerefType> {
         self.e.as_deref()
     }
+    #[inline]
     pub fn e_mut(&mut self) -> Option<&mut DerefType> {
         self.e.as_deref_mut()
     }
@@ -194,9 +234,11 @@ struct BackwardsCompat {
     not_borrow_inner: Option<String>,
 }
 impl BackwardsCompat {
+    #[inline]
     pub fn borrow_inner(&self) -> Option<&()> {
         self.borrow_inner.as_ref()
     }
+    #[inline]
     pub fn not_borrow_inner(&self) -> &Option<String> {
         &self.not_borrow_inner
     }
@@ -208,23 +250,27 @@ enum WithOptions {
     Bar { token: Option<String> },
 }
 impl WithOptions {
+    #[inline]
     pub fn id(&self) -> Option<u32> {
         match self {
             Self::Foo { id, .. } => Some(*id),
             _ => None,
         }
     }
+    #[inline]
     pub fn id_mut(&mut self) -> Option<&mut u32> {
         match self {
             Self::Foo { id, .. } => Some(id),
             _ => None,
         }
     }
+    #[inline]
     pub fn token(&self) -> Option<&str> {
         match self {
             Self::Foo { token, .. } | Self::Bar { token, .. } => token.as_deref(),
         }
     }
+    #[inline]
     pub fn token_mut(&mut self) -> Option<&mut str> {
         match self {
             Self::Foo { token, .. } => token.as_deref_mut(),
@@ -239,11 +285,13 @@ enum NoOptionDetection {
     Bar { data: Option<String> },
 }
 impl NoOptionDetection {
+    #[inline]
     pub fn data(&self) -> &Option<String> {
         match self {
             Self::Foo { data, .. } | Self::Bar { data, .. } => data,
         }
     }
+    #[inline]
     pub fn data_mut(&mut self) -> &mut Option<String> {
         match self {
             Self::Foo { data, .. } => data,
@@ -262,6 +310,7 @@ enum SelectiveOption {
     Bar { detected: Option<String>, raw: Option<String> },
 }
 impl SelectiveOption {
+    #[inline]
     pub fn detected(&self) -> Option<&str> {
         match self {
             Self::Foo { detected, .. } | Self::Bar { detected, .. } => {
@@ -269,6 +318,7 @@ impl SelectiveOption {
             }
         }
     }
+    #[inline]
     pub fn raw(&self) -> &Option<String> {
         match self {
             Self::Foo { raw, .. } | Self::Bar { raw, .. } => raw,
