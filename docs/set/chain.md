@@ -22,10 +22,12 @@ struct Config {
 # struct Config { host: String, port: u16, }
 impl Config {
     ///Sets server hostname
+    #[inline]
     pub fn set_host(&mut self, host: String) {
         self.host = host;
     }
     ///Sets port number
+    #[inline]
     pub fn set_port(&mut self, port: u16) {
         self.port = port;
     }
@@ -52,9 +54,11 @@ struct Config {
 // GENERATED
 # struct Config { host: String, port: u16, }
 impl Config {
+    #[inline]
     pub fn set_host(&mut self, host: String) {
         self.host = host;
     }
+    #[inline]
     pub fn set_port(&mut self, port: u16) -> &mut Self {
         self.port = port;
         self

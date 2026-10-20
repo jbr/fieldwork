@@ -23,10 +23,12 @@ struct Session {
 # struct Session { token: Option<String>, cached_response: Option<Vec<u8>>, }
 impl Session {
     ///Takes auth token, consumed on first use, leaving a None in its place
+    #[inline]
     pub fn take_token(&mut self) -> Option<String> {
         self.token.take()
     }
     ///Takes cached response, cleared after reading, leaving a None in its place
+    #[inline]
     pub fn take_cached_response(&mut self) -> Option<Vec<u8>> {
         self.cached_response.take()
     }

@@ -24,10 +24,12 @@ const BLOCK: u32 = Limits { block_frames: 512, enforced: true }.block_frames();
 # struct Limits { block_frames: u32, enforced: bool, }
 impl Limits {
     ///Returns a copy of how many frames fit in one block
+    #[inline]
     pub const fn block_frames(&self) -> u32 {
         self.block_frames
     }
     ///Returns a copy of whether the limit is enforced
+    #[inline]
     pub const fn enforced(&self) -> bool {
         self.enforced
     }
@@ -55,10 +57,12 @@ struct Config {
 # struct Config { name: String, port: u16, }
 impl Config {
     ///Borrows read at runtime like any other borrow
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.name
     }
     ///Returns a copy of read while building a constant
+    #[inline]
     pub const fn port(&self) -> u16 {
         self.port
     }
@@ -99,18 +103,22 @@ struct Header {
 # struct Header { magic: [u8; 4], label: Option<String>, }
 impl Header {
     ///Borrows the magic bytes
+    #[inline]
     pub const fn magic(&self) -> &[u8; 4] {
         &self.magic
     }
     ///Mutably borrow the magic bytes
+    #[inline]
     pub const fn magic_mut(&mut self) -> &mut [u8; 4] {
         &mut self.magic
     }
     ///Borrows the optional label
+    #[inline]
     pub const fn label(&self) -> Option<&String> {
         self.label.as_ref()
     }
     ///Mutably borrow the optional label
+    #[inline]
     pub const fn label_mut(&mut self) -> Option<&mut String> {
         self.label.as_mut()
     }

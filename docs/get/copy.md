@@ -27,10 +27,12 @@ struct Counters {
 # struct Counters { hits: usize, active: bool, }
 impl Counters {
     ///Borrows total hits
+    #[inline]
     pub fn hits(&self) -> &usize {
         &self.hits
     }
     ///Borrows whether counting is active
+    #[inline]
     pub fn active(&self) -> &bool {
         &self.active
     }
@@ -56,6 +58,7 @@ struct Counters {
 # struct Counters { hits: usize, }
 impl Counters {
     ///Returns a copy of total hits
+    #[inline]
     pub fn hits(&self) -> usize {
         self.hits
     }

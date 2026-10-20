@@ -18,11 +18,13 @@ enum Status {
 // GENERATED
 # enum Status { Active { name: String }, Inactive { name: String }, }
 impl Status {
+    #[inline]
     pub fn name(&self) -> &str {
         match self {
             Self::Active { name, .. } | Self::Inactive { name, .. } => &**name,
         }
     }
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         match self {
             Self::Active { name: name_binding, .. } => {
@@ -34,6 +36,7 @@ impl Status {
         }
         self
     }
+    #[inline]
     pub fn into_name(self) -> String {
         match self {
             Self::Active { name, .. } | Self::Inactive { name, .. } => name,
@@ -69,23 +72,27 @@ enum Event {
 // GENERATED
 # enum Event { Click { x: i32, y: i32, button: u8 }, Move { x: i32, y: i32 }, Scroll { x: i32, y: i32, delta: f32 }, }
 impl Event {
+    #[inline]
     pub fn button(&self) -> Option<u8> {
         match self {
             Self::Click { button, .. } => Some(*button),
             _ => None,
         }
     }
+    #[inline]
     pub fn delta(&self) -> Option<f32> {
         match self {
             Self::Scroll { delta, .. } => Some(*delta),
             _ => None,
         }
     }
+    #[inline]
     pub fn x(&self) -> i32 {
         match self {
             Self::Click { x, .. } | Self::Move { x, .. } | Self::Scroll { x, .. } => *x,
         }
     }
+    #[inline]
     pub fn set_x(&mut self, x: i32) -> &mut Self {
         match self {
             Self::Click { x: x_binding, .. } => {
@@ -100,11 +107,13 @@ impl Event {
         }
         self
     }
+    #[inline]
     pub fn y(&self) -> i32 {
         match self {
             Self::Click { y, .. } | Self::Move { y, .. } | Self::Scroll { y, .. } => *y,
         }
     }
+    #[inline]
     pub fn set_y(&mut self, y: i32) -> &mut Self {
         match self {
             Self::Click { y: y_binding, .. } => {
@@ -163,6 +172,7 @@ enum Message {
 // GENERATED
 # enum Message { Request { id: u64, priority: u8 }, Response { id: u64, priority: u8 }, Heartbeat { id: u64, priority: u8 }, }
 impl Message {
+    #[inline]
     pub fn priority(&self) -> u8 {
         match self {
             Self::Request { priority, .. }
@@ -170,6 +180,7 @@ impl Message {
             | Self::Heartbeat { priority, .. } => *priority,
         }
     }
+    #[inline]
     pub fn set_priority(&mut self, priority: u8) -> &mut Self {
         match self {
             Self::Request { priority: priority_binding, .. } => {
@@ -241,6 +252,7 @@ enum Sensor {
 // GENERATED
 # enum Sensor { Active { reading: f32 }, Calibrating { reading: f32 }, Fault { reading: f32 }, }
 impl Sensor {
+    #[inline]
     pub fn set_reading(&mut self, reading: f32) -> &mut Self {
         match self {
             Self::Active { reading: reading_binding, .. } => {
@@ -299,6 +311,7 @@ enum Status {
 // GENERATED
 # enum Status { Active { name: String }, Inactive { name: String }, }
 impl Status {
+    #[inline]
     pub fn into_name(self) -> String {
         match self {
             Self::Active { name, .. } | Self::Inactive { name, .. } => name,
@@ -329,24 +342,28 @@ enum Color {
 // GENERATED
 # enum Color { Rgb (u8, u8, u8), Named (String), Transparent, }
 impl Color {
+    #[inline]
     pub fn b(&self) -> Option<u8> {
         match self {
             Self::Rgb(_, _, b, ..) => Some(*b),
             _ => None,
         }
     }
+    #[inline]
     pub fn g(&self) -> Option<u8> {
         match self {
             Self::Rgb(_, g, ..) => Some(*g),
             _ => None,
         }
     }
+    #[inline]
     pub fn name(&self) -> Option<&str> {
         match self {
             Self::Named(name, ..) => Some(&**name),
             _ => None,
         }
     }
+    #[inline]
     pub fn r(&self) -> Option<u8> {
         match self {
             Self::Rgb(r, ..) => Some(*r),

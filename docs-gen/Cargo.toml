@@ -6,7 +6,6 @@ description = "Documentation generation tool for fieldwork"
 publish = false
 
 [dependencies]
-fieldwork = { path = ".." }
 prettyplease = "0.3.0"
 quote = "1.0.47"
 regex = "1.13.1"

@@ -18,21 +18,27 @@ struct Connection {
 // GENERATED
 # struct Connection { active: bool, verified: bool, name: String, }
 impl Connection {
+    #[inline]
     pub fn is_active(&self) -> bool {
         self.active
     }
+    #[inline]
     pub fn active_mut(&mut self) -> &mut bool {
         &mut self.active
     }
+    #[inline]
     pub fn is_verified(&self) -> bool {
         self.verified
     }
+    #[inline]
     pub fn verified_mut(&mut self) -> &mut bool {
         &mut self.verified
     }
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.name
     }
+    #[inline]
     pub fn name_mut(&mut self) -> &mut str {
         &mut *self.name
     }
@@ -61,9 +67,11 @@ struct Connection {
 // GENERATED
 # struct Connection { active: bool, verified: bool, }
 impl Connection {
+    #[inline]
     pub fn is_active(&self) -> bool {
         self.active
     }
+    #[inline]
     pub fn verified(&self) -> bool {
         self.verified
     }

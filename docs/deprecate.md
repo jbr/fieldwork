@@ -25,10 +25,12 @@ struct User {
 # struct User { legacy_flag: bool, }
 impl User {
     #[deprecated]
+    #[inline]
     pub fn legacy_flag(&self) -> bool {
         self.legacy_flag
     }
     #[deprecated]
+    #[inline]
     pub fn set_legacy_flag(&mut self, legacy_flag: bool) -> &mut Self {
         self.legacy_flag = legacy_flag;
         self
@@ -61,21 +63,25 @@ struct User {
 # struct User { display_name: String, }
 impl User {
     ///Borrows the user's display name
+    #[inline]
     pub fn display_name(&self) -> &str {
         &*self.display_name
     }
     ///Borrows the user's display name
     #[deprecated(note = "use `display_name` instead")]
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.display_name
     }
     ///Sets the user's display name, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_display_name(&mut self, display_name: String) -> &mut Self {
         self.display_name = display_name;
         self
     }
     ///Sets the user's display name, returning `&mut Self` for chaining
     #[deprecated(note = "use `set_display_name` instead")]
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         self.display_name = name;
         self
@@ -102,14 +108,17 @@ struct User {
 // GENERATED
 # struct User { name: String, }
 impl User {
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.name
     }
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self
     }
     #[deprecated(note = "use `set_name` instead")]
+    #[inline]
     pub fn assign_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self
@@ -135,18 +144,22 @@ struct Telemetry {
 // GENERATED
 # struct Telemetry { score: u32, }
 impl Telemetry {
+    #[inline]
     pub fn score(&self) -> u32 {
         self.score
     }
     #[deprecated(since = "1.2.0", note = "use score() instead")]
+    #[inline]
     pub fn old_score(&self) -> u32 {
         self.score
     }
+    #[inline]
     pub fn set_score(&mut self, score: u32) -> &mut Self {
         self.score = score;
         self
     }
     #[deprecated(since = "1.2.0", note = "use score() instead")]
+    #[inline]
     pub fn set_old_score(&mut self, old_score: u32) -> &mut Self {
         self.score = old_score;
         self
@@ -196,17 +209,20 @@ enum Packet {
 // GENERATED
 # enum Packet { Data { id: u32, payload: String }, Heartbeat { id: u32 }, }
 impl Packet {
+    #[inline]
     pub fn id(&self) -> u32 {
         match self {
             Self::Data { id, .. } | Self::Heartbeat { id, .. } => *id,
         }
     }
     #[deprecated(note = "use `id` instead")]
+    #[inline]
     pub fn ident(&self) -> u32 {
         match self {
             Self::Data { id, .. } | Self::Heartbeat { id, .. } => *id,
         }
     }
+    #[inline]
     pub fn set_id(&mut self, id: u32) -> &mut Self {
         match self {
             Self::Data { id: id_binding, .. } => {
@@ -219,6 +235,7 @@ impl Packet {
         self
     }
     #[deprecated(note = "use `set_id` instead")]
+    #[inline]
     pub fn set_ident(&mut self, ident: u32) -> &mut Self {
         match self {
             Self::Data { id, .. } => {
@@ -230,6 +247,7 @@ impl Packet {
         }
         self
     }
+    #[inline]
     pub fn payload(&self) -> Option<&str> {
         match self {
             Self::Data { payload, .. } => Some(&**payload),

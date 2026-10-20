@@ -27,31 +27,37 @@ struct Server {
 # struct Server { host: String, config_path: PathBuf, port: u16, }
 impl Server {
     ///Sets server hostname, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_host(&mut self, host: impl Into<String>) -> &mut Self {
         self.host = host.into();
         self
     }
     ///Owned chainable setter for server hostname, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_host(mut self, host: impl Into<String>) -> Self {
         self.host = host.into();
         self
     }
     ///Sets path to config file, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_config_path(&mut self, config_path: impl Into<PathBuf>) -> &mut Self {
         self.config_path = config_path.into();
         self
     }
     ///Owned chainable setter for path to config file, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_config_path(mut self, config_path: impl Into<PathBuf>) -> Self {
         self.config_path = config_path.into();
         self
     }
+    #[inline]
     pub fn set_port(&mut self, port: u16) -> &mut Self {
         self.port = port;
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_port(mut self, port: u16) -> Self {
         self.port = port;
@@ -82,6 +88,7 @@ struct User {
 # struct User { display_name: Option<Cow<'static, str>>, }
 impl User {
     ///Sets display name, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_display_name(
         &mut self,
         display_name: Option<impl Into<Cow<'static, str>>>,
@@ -90,6 +97,7 @@ impl User {
         self
     }
     ///Owned chainable setter for display name, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_display_name(
         mut self,
@@ -122,11 +130,13 @@ struct User {
 # struct User { display_name: Option<String>, }
 impl User {
     ///Sets display name, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_display_name(&mut self, display_name: impl Into<String>) -> &mut Self {
         self.display_name = Some(display_name.into());
         self
     }
     ///Owned chainable setter for display name, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_display_name(mut self, display_name: impl Into<String>) -> Self {
         self.display_name = Some(display_name.into());
