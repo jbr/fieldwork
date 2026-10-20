@@ -22,22 +22,26 @@ struct User {
 # struct User { display_name: Option<String>, avatar_url: Option<String>, }
 impl User {
     ///Sets display name, if provided, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_display_name(&mut self, display_name: String) -> &mut Self {
         self.display_name = Some(display_name);
         self
     }
     ///Owned chainable setter for display name, if provided, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_display_name(mut self, display_name: String) -> Self {
         self.display_name = Some(display_name);
         self
     }
     ///Sets profile photo URL, if uploaded, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_avatar_url(&mut self, avatar_url: String) -> &mut Self {
         self.avatar_url = Some(avatar_url);
         self
     }
     ///Owned chainable setter for profile photo URL, if uploaded, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_avatar_url(mut self, avatar_url: String) -> Self {
         self.avatar_url = Some(avatar_url);
@@ -70,11 +74,13 @@ struct User {
 # struct User { nickname: Option<String>, }
 impl User {
     ///Sets nickname, if provided, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_nickname(&mut self, nickname: String) -> &mut Self {
         self.nickname = Some(nickname);
         self
     }
     ///Owned chainable setter for nickname, if provided, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_nickname(mut self, nickname: Option<String>) -> Self {
         self.nickname = nickname;

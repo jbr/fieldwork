@@ -39,16 +39,25 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let example_file = env::current_dir()?.join("examples/docs-expansion.rs");
     let mut any_changed = false;
+    let mut any_failed = false;
 
     for path in &md_files {
-        let changed = process_file(path, &example_file, verbose, verify)?;
-        if changed {
-            any_changed = true;
+        match process_file(path, &example_file, verbose, verify) {
+            Ok(changed) => any_changed |= changed,
+            Err(e) => {
+                eprintln!("❌ {e}");
+                any_failed = true;
+            }
         }
     }
 
+    if any_failed {
+        eprintln!("❌ Some examples could not be processed; see errors above.");
+        std::process::exit(1);
+    }
+
     if verify && any_changed {
-        eprintln!("❌ Documentation is out of date! Run `cargo run --bin docs-gen` to update.");
+        eprintln!("❌ Documentation is out of date! Run `cargo docs-gen` to update.");
         std::process::exit(1);
     } else if verify {
         println!("✅ Documentation is up to date.");
@@ -100,6 +109,7 @@ fn process_file(
 
     let mut new_content = content.clone();
     let mut updated_count = 0;
+    let mut failed_count = 0;
 
     for (i, example) in examples.iter().rev().enumerate() {
         println!("🔄 Processing example {i} of {}...", examples.len());
@@ -155,7 +165,7 @@ fn process_file(
                 if verbose {
                     eprintln!("Input code was:\n{}", example.input_code);
                 }
-                continue;
+                failed_count += 1;
             }
         }
     }
@@ -165,6 +175,10 @@ fn process_file(
     if !verify && updated_count > 0 {
         fs::write(path, new_content)?;
         println!("📝 Updated {updated_count} examples in {display}");
+    }
+
+    if failed_count > 0 {
+        return Err(format!("{failed_count} examples failed to process in {display}").into());
     }
 
     Ok(changed)
@@ -305,10 +319,7 @@ fn format_extracted_code(extracted: &ExtractedCode) -> Result<String, Box<dyn Er
     for use_statement in &extracted.use_statements {
         let formatted_use = concise_format(&use_statement.to_token_stream().to_string());
         for line in formatted_use.lines() {
-            if !line.trim().is_empty()
-                && !line.starts_with("#[prelude_import]")
-                && line != "use fieldwork::Fieldwork;"
-            {
+            if !line.trim().is_empty() && !line.starts_with("#[prelude_import]") {
                 result.push(format!("# {line}"));
             }
         }
@@ -389,8 +400,7 @@ fn concise_format(s: &str) -> String {
 }
 
 fn expand_single_example(input: &str, example_file: &Path) -> Result<String, Box<dyn Error>> {
-    let file_content = format!("use fieldwork::Fieldwork;\n\n{input}");
-    fs::write(example_file, file_content)?;
+    fs::write(example_file, input)?;
 
     let output = Command::new("cargo")
         .current_dir(env::current_dir()?)

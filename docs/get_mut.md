@@ -24,14 +24,17 @@ struct User {
 # struct User { name: String, age: Option<u8>, favorite_color: Option<String>, }
 impl User {
     ///Mutably borrow the user's name
+    #[inline]
     pub fn name_mut(&mut self) -> &mut str {
         &mut *self.name
     }
     ///Mutably borrow the user's age, if known
+    #[inline]
     pub fn age_mut(&mut self) -> Option<&mut u8> {
         self.age.as_mut()
     }
     ///Mutably borrow favorite color, if set
+    #[inline]
     pub fn favorite_color_mut(&mut self) -> Option<&mut str> {
         self.favorite_color.as_deref_mut()
     }

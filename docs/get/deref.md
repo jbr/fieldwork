@@ -40,18 +40,22 @@ struct Image {
 # struct Image { pixels: Vec<u8>, label: String, }
 impl Image {
     ///Borrows raw pixel data
+    #[inline]
     pub fn pixels(&self) -> &[u8] {
         &*self.pixels
     }
     ///Mutably borrow raw pixel data
+    #[inline]
     pub fn pixels_mut(&mut self) -> &mut [u8] {
         &mut *self.pixels
     }
     ///Borrows image label
+    #[inline]
     pub fn label(&self) -> &str {
         &*self.label
     }
     ///Mutably borrow image label
+    #[inline]
     pub fn label_mut(&mut self) -> &mut str {
         &mut *self.label
     }
@@ -81,9 +85,11 @@ struct Cache {
 # use std::sync::Arc;
 # struct Cache { handle: Arc<()>, name: String, }
 impl Cache {
+    #[inline]
     pub fn handle(&self) -> &Arc<()> {
         &self.handle
     }
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.name
     }

@@ -21,10 +21,12 @@ struct User {
 # struct User { nickname: Option<String>, avatar: Option<Vec<u8>>, }
 impl User {
     ///Borrows nickname, if set
+    #[inline]
     pub fn nickname(&self) -> Option<&str> {
         self.nickname.as_deref()
     }
     ///Borrows profile image bytes, if uploaded
+    #[inline]
     pub fn avatar(&self) -> Option<&[u8]> {
         self.avatar.as_deref()
     }
@@ -51,9 +53,11 @@ struct User {
 // GENERATED
 # struct User { nickname: Option<String>, }
 impl User {
+    #[inline]
     pub fn nickname(&self) -> Option<&str> {
         self.nickname.as_deref()
     }
+    #[inline]
     pub fn nickname_mut(&mut self) -> &mut Option<String> {
         &mut self.nickname
     }

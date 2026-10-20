@@ -27,10 +27,12 @@ struct Config {
 # struct Config { address: String, max_connections: u32, cert_path: Option<String>, }
 impl Config {
     ///Consumes self, returning the server address
+    #[inline]
     pub fn into_address(self) -> String {
         self.address
     }
     ///Consumes self, returning optional TLS certificate path
+    #[inline]
     pub fn into_cert_path(self) -> Option<String> {
         self.cert_path
     }
@@ -59,6 +61,7 @@ enum Status {
 // GENERATED
 # enum Status { Active { name: String }, Inactive { name: String }, }
 impl Status {
+    #[inline]
     pub fn into_name(self) -> String {
         match self {
             Self::Active { name, .. } | Self::Inactive { name, .. } => name,
@@ -83,6 +86,7 @@ struct Token(#[field = "inner"] String);
 // GENERATED
 # struct Token (String);
 impl Token {
+    #[inline]
     pub fn into_inner(self) -> String {
         self.0
     }

@@ -28,30 +28,35 @@ struct Config {
 # struct Config { debug: bool, log_file: Option<String>, name: String, }
 impl Config {
     ///Owned chainable setter for whether debug mode is on, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_debug(mut self) -> Self {
         self.debug = true;
         self
     }
     ///Owned chainable setter for whether debug mode is on, returning `Self`
+    #[inline]
     #[must_use]
     pub fn without_debug(mut self) -> Self {
         self.debug = false;
         self
     }
     ///Owned chainable setter for optional log file path, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_log_file(mut self, log_file: String) -> Self {
         self.log_file = Some(log_file);
         self
     }
     ///Owned chainable setter for optional log file path, returning `Self`
+    #[inline]
     #[must_use]
     pub fn without_log_file(mut self) -> Self {
         self.log_file = None;
         self
     }
     ///Owned chainable setter for application name (no without generated), returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_name(mut self, name: String) -> Self {
         self.name = name;

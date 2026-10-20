@@ -23,16 +23,19 @@ struct Server {
 # struct Server { host: String, port: u16, tls_required: bool, }
 impl Server {
     ///Sets server hostname, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_host(&mut self, host: String) -> &mut Self {
         self.host = host;
         self
     }
     ///Sets port number, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_port(&mut self, port: u16) -> &mut Self {
         self.port = port;
         self
     }
     ///Sets whether TLS is required, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_tls_required(&mut self, tls_required: bool) -> &mut Self {
         self.tls_required = tls_required;
         self

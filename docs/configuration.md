@@ -34,13 +34,16 @@ struct User {
 // GENERATED
 # struct User { name: String, id: u64, }
 impl User {
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.name
     }
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self
     }
+    #[inline]
     pub fn id(&self) -> u64 {
         self.id
     }
@@ -75,13 +78,16 @@ struct User {
 // GENERATED
 # struct User { name: String, role: String, internal_id: u64, }
 impl User {
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.name
     }
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self
     }
+    #[inline]
     pub fn set_role(&mut self, role: String) -> &mut Self {
         self.role = role;
         self
@@ -109,9 +115,11 @@ struct User {
 // GENERATED
 # struct User { name: String, _marker: (), }
 impl User {
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.name
     }
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self
@@ -140,16 +148,20 @@ struct Internal {
 // GENERATED
 # struct Internal { name: String, version: u32, }
 impl Internal {
+    #[inline]
     pub(crate) fn name(&self) -> &str {
         &*self.name
     }
+    #[inline]
     pub(crate) fn set_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self
     }
+    #[inline]
     pub fn version(&self) -> u32 {
         self.version
     }
+    #[inline]
     pub fn set_version(&mut self, version: u32) -> &mut Self {
         self.version = version;
         self
@@ -181,10 +193,12 @@ where
     T: Validate,
 {
     ///Borrows the wrapped value
+    #[inline]
     pub fn value(&self) -> &T {
         &self.value
     }
     ///Sets the wrapped value, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_value(&mut self, value: T) -> &mut Self {
         self.value = value;
         self
@@ -211,9 +225,11 @@ struct User {
 // GENERATED
 # struct User { internal_id: u64, }
 impl User {
+    #[inline]
     pub fn id(&self) -> u64 {
         self.internal_id
     }
+    #[inline]
     pub fn set_id(&mut self, id: u64) -> &mut Self {
         self.internal_id = id;
         self
@@ -237,9 +253,11 @@ struct User {
 // GENERATED
 # struct User { admin: bool, }
 impl User {
+    #[inline]
     pub fn is_admin(&self) -> bool {
         self.admin
     }
+    #[inline]
     pub fn set_admin(&mut self, admin: bool) -> &mut Self {
         self.admin = admin;
         self
@@ -263,10 +281,12 @@ struct Form {
 // GENERATED
 # struct Form { name: String, email: String, }
 impl Form {
+    #[inline]
     pub fn assign_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self
     }
+    #[inline]
     pub fn assign_email(&mut self, email: String) -> &mut Self {
         self.email = email;
         self
@@ -290,6 +310,7 @@ struct Connection {
 // GENERATED
 # struct Connection { secure: bool, }
 impl Connection {
+    #[inline]
     pub fn set_secure(&mut self, is_secure: bool) -> &mut Self {
         self.secure = is_secure;
         self
@@ -317,6 +338,7 @@ struct User {
 # struct User { name: String, }
 impl User {
     ///Set the name shown in the UI
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self
@@ -344,11 +366,13 @@ struct User {
 # struct User { name: String, role: String, }
 impl User {
     ///Assigns the user's name
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self
     }
     ///Assigns the user's role
+    #[inline]
     pub fn set_role(&mut self, role: String) -> &mut Self {
         self.role = role;
         self

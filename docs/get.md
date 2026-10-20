@@ -32,18 +32,22 @@ struct User {
 # struct User { admin: bool, name: String, age: Option<u8>, favorite_color: Option<String>, }
 impl User {
     ///Returns a copy of whether this user is an admin
+    #[inline]
     pub fn admin(&self) -> bool {
         self.admin
     }
     ///Borrows the user's name
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.name
     }
     ///Returns a copy of the user's age, if known
+    #[inline]
     pub fn age(&self) -> Option<u8> {
         self.age
     }
     ///Borrows favorite color, if set
+    #[inline]
     pub fn favorite_color(&self) -> Option<&str> {
         self.favorite_color.as_deref()
     }
@@ -69,11 +73,13 @@ enum Packet {
 // GENERATED
 # enum Packet { Data { id: u32, payload: String }, Heartbeat { id: u32 }, }
 impl Packet {
+    #[inline]
     pub fn id(&self) -> u32 {
         match self {
             Self::Data { id, .. } | Self::Heartbeat { id, .. } => *id,
         }
     }
+    #[inline]
     pub fn payload(&self) -> Option<&str> {
         match self {
             Self::Data { payload, .. } => Some(&**payload),

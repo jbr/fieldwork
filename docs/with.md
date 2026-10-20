@@ -28,18 +28,21 @@ struct Request {
 # struct Request { url: String, token: Option<String>, follow_redirects: bool, }
 impl Request {
     ///Owned chainable setter for request URL, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_url(mut self, url: String) -> Self {
         self.url = url;
         self
     }
     ///Owned chainable setter for optional auth token, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_token(mut self, token: Option<String>) -> Self {
         self.token = token;
         self
     }
     ///Owned chainable setter for whether to follow redirects, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_follow_redirects(mut self, follow_redirects: bool) -> Self {
         self.follow_redirects = follow_redirects;
