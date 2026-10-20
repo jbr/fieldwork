@@ -43,6 +43,7 @@ impl<'a> Take<'a> {
         quote_spanned! {*span=>
             #doc
             #deprecation_attr
+            #[inline]
             #vis #constness fn #fn_ident(&mut self) -> #return_ty {
                 match self { #match_body }
             }

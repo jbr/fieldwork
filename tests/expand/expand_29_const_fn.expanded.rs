@@ -7,18 +7,22 @@ struct Counters {
 }
 impl Counters {
     ///Returns a copy of how many times this has happened
+    #[inline]
     pub const fn count(&self) -> usize {
         self.count
     }
     ///Mutably borrow how many times this has happened
+    #[inline]
     pub const fn count_mut(&mut self) -> &mut usize {
         &mut self.count
     }
     ///Returns a copy of whether the thing is on
+    #[inline]
     pub const fn enabled(&self) -> bool {
         self.enabled
     }
     ///Mutably borrow whether the thing is on
+    #[inline]
     pub const fn enabled_mut(&mut self) -> &mut bool {
         &mut self.enabled
     }
@@ -33,10 +37,12 @@ struct Mixed {
 }
 impl Mixed {
     ///Borrows borrowed by an ordinary getter
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.name
     }
     ///Returns a copy of read in a const context
+    #[inline]
     pub const fn port(&self) -> u16 {
         self.port
     }
@@ -51,19 +57,23 @@ struct Override {
 }
 impl Override {
     ///Returns a copy of read in a const context
+    #[inline]
     pub const fn port(&self) -> u16 {
         self.port
     }
     ///Sets read in a const context, returning `&mut Self` for chaining
+    #[inline]
     pub const fn set_port(&mut self, port: u16) -> &mut Self {
         self.port = port;
         self
     }
     ///Borrows opted back out of const
+    #[inline]
     pub fn name(&self) -> &str {
         &*self.name
     }
     ///Sets opted back out of const, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self
@@ -78,18 +88,22 @@ struct NoDeref {
 }
 impl NoDeref {
     ///Borrows borrowed without auto-deref
+    #[inline]
     pub const fn bytes(&self) -> &[u8; 4] {
         &self.bytes
     }
     ///Mutably borrow borrowed without auto-deref
+    #[inline]
     pub const fn bytes_mut(&mut self) -> &mut [u8; 4] {
         &mut self.bytes
     }
     ///Borrows borrowed without auto-deref
+    #[inline]
     pub const fn label(&self) -> Option<&String> {
         self.label.as_ref()
     }
     ///Mutably borrow borrowed without auto-deref
+    #[inline]
     pub const fn label_mut(&mut self) -> Option<&mut String> {
         self.label.as_mut()
     }
@@ -103,48 +117,57 @@ struct MethodLevel {
 }
 impl MethodLevel {
     ///Returns a copy of only the getter is const
+    #[inline]
     pub const fn enabled(&self) -> bool {
         self.enabled
     }
     ///Sets only the getter is const, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
     ///Owned chainable setter for only the getter is const, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_enabled(mut self) -> Self {
         self.enabled = true;
         self
     }
     ///Owned chainable setter for only the getter is const, returning `Self`
+    #[inline]
     #[must_use]
     pub fn without_enabled(mut self) -> Self {
         self.enabled = false;
         self
     }
     ///Returns a copy of only the getter is const
+    #[inline]
     pub const fn retries(&self) -> Option<u8> {
         self.retries
     }
     ///Sets only the getter is const, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_retries(&mut self, retries: Option<u8>) -> &mut Self {
         self.retries = retries;
         self
     }
     ///Owned chainable setter for only the getter is const, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_retries(mut self, retries: u8) -> Self {
         self.retries = Some(retries);
         self
     }
     ///Owned chainable setter for only the getter is const, returning `Self`
+    #[inline]
     #[must_use]
     pub fn without_retries(mut self) -> Self {
         self.retries = None;
         self
     }
     ///Takes only the getter is const, leaving a None in its place
+    #[inline]
     pub fn take_retries(&mut self) -> Option<u8> {
         self.retries.take()
     }

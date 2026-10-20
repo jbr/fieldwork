@@ -34,6 +34,7 @@ impl<'a> Without<'a> {
         quote_spanned! {*span=>
             #doc
             #deprecation_attr
+            #[inline]
             #[must_use]
             #vis #constness fn #fn_ident(mut self) -> Self {
                 self.#member = #assigned_value;

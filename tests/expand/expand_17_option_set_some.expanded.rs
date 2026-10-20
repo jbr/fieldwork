@@ -9,27 +9,34 @@ struct OptionBehavior {
     nothing_fancy_for_set: Option<String>,
 }
 impl OptionBehavior {
+    #[inline]
     pub fn option_deref(&self) -> Option<&str> {
         self.option_deref.as_deref()
     }
+    #[inline]
     pub fn option_deref_mut(&mut self) -> Option<&mut str> {
         self.option_deref.as_deref_mut()
     }
+    #[inline]
     pub fn set_option_deref(&mut self, option_deref: String) -> &mut Self {
         self.option_deref = Some(option_deref);
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_option_deref(mut self, option_deref: String) -> Self {
         self.option_deref = Some(option_deref);
         self
     }
+    #[inline]
     pub fn no_option_detection(&self) -> Option<bool> {
         self.no_option_detection
     }
+    #[inline]
     pub fn no_option_detection_mut(&mut self) -> Option<&mut bool> {
         self.no_option_detection.as_mut()
     }
+    #[inline]
     pub fn set_no_option_detection(
         &mut self,
         no_option_detection: Option<bool>,
@@ -37,6 +44,7 @@ impl OptionBehavior {
         self.no_option_detection = no_option_detection;
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_no_option_detection(
         mut self,
@@ -45,27 +53,34 @@ impl OptionBehavior {
         self.no_option_detection = no_option_detection;
         self
     }
+    #[inline]
     pub fn option_detection(&self) -> Option<&()> {
         self.option_detection.as_ref()
     }
+    #[inline]
     pub fn option_detection_mut(&mut self) -> Option<&mut ()> {
         self.option_detection.as_mut()
     }
+    #[inline]
     pub fn set_option_detection(&mut self, option_detection: ()) -> &mut Self {
         self.option_detection = Some(option_detection);
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_option_detection(mut self, option_detection: ()) -> Self {
         self.option_detection = Some(option_detection);
         self
     }
+    #[inline]
     pub fn nothing_fancy_for_set(&self) -> Option<&str> {
         self.nothing_fancy_for_set.as_deref()
     }
+    #[inline]
     pub fn nothing_fancy_for_set_mut(&mut self) -> Option<&mut str> {
         self.nothing_fancy_for_set.as_deref_mut()
     }
+    #[inline]
     pub fn set_nothing_fancy_for_set(
         &mut self,
         nothing_fancy_for_set: Option<String>,
@@ -73,6 +88,7 @@ impl OptionBehavior {
         self.nothing_fancy_for_set = nothing_fancy_for_set;
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_nothing_fancy_for_set(mut self, nothing_fancy_for_set: String) -> Self {
         self.nothing_fancy_for_set = Some(nothing_fancy_for_set);
@@ -85,11 +101,13 @@ struct BobTheBuilder {
     bool: Option<bool>,
 }
 impl BobTheBuilder {
+    #[inline]
     #[must_use]
     pub fn with_string(mut self, string: String) -> Self {
         self.string = Some(string);
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_bool(mut self, bool: bool) -> Self {
         self.bool = Some(bool);
@@ -102,31 +120,39 @@ struct HandlesNonOptionTypes {
     bool: bool,
 }
 impl HandlesNonOptionTypes {
+    #[inline]
     pub fn string(&self) -> &str {
         &*self.string
     }
+    #[inline]
     pub fn string_mut(&mut self) -> &mut str {
         &mut *self.string
     }
+    #[inline]
     pub fn set_string(&mut self, string: String) -> &mut Self {
         self.string = string;
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_string(mut self, string: String) -> Self {
         self.string = string;
         self
     }
+    #[inline]
     pub fn bool(&self) -> bool {
         self.bool
     }
+    #[inline]
     pub fn bool_mut(&mut self) -> &mut bool {
         &mut self.bool
     }
+    #[inline]
     pub fn set_bool(&mut self, bool: bool) -> &mut Self {
         self.bool = bool;
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_bool(mut self, bool: bool) -> Self {
         self.bool = bool;
@@ -140,11 +166,13 @@ enum EnumWithOptions {
     HasName { name: Option<String>, tag: Option<u32> },
 }
 impl EnumWithOptions {
+    #[inline]
     pub fn name(&self) -> Option<&str> {
         match self {
             Self::HasBoth { name, .. } | Self::HasName { name, .. } => name.as_deref(),
         }
     }
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         match self {
             Self::HasBoth { name: name_binding, .. } => {
@@ -156,6 +184,7 @@ impl EnumWithOptions {
         }
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_name(mut self, name: String) -> Self {
         match &mut self {
@@ -168,11 +197,13 @@ impl EnumWithOptions {
         }
         self
     }
+    #[inline]
     pub fn tag(&self) -> Option<u32> {
         match self {
             Self::HasBoth { tag, .. } | Self::HasName { tag, .. } => *tag,
         }
     }
+    #[inline]
     pub fn set_tag(&mut self, tag: u32) -> &mut Self {
         match self {
             Self::HasBoth { tag: tag_binding, .. } => {
@@ -184,6 +215,7 @@ impl EnumWithOptions {
         }
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_tag(mut self, tag: u32) -> Self {
         match &mut self {
@@ -208,6 +240,7 @@ enum SelectiveOptionSet {
     B { no_some: Option<String>, with_some: Option<u32> },
 }
 impl SelectiveOptionSet {
+    #[inline]
     pub fn set_no_some(&mut self, no_some: Option<String>) -> &mut Self {
         match self {
             Self::A { no_some: no_some_binding, .. } => {
@@ -219,6 +252,7 @@ impl SelectiveOptionSet {
         }
         self
     }
+    #[inline]
     pub fn set_with_some(&mut self, with_some: u32) -> &mut Self {
         match self {
             Self::A { with_some: with_some_binding, .. } => {

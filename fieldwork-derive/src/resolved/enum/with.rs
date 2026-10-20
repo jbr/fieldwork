@@ -41,6 +41,7 @@ impl<'a> With<'a> {
             quote_spanned! {*span=>
                 #doc
                 #deprecation_attr
+                #[inline]
                 #[must_use]
                 #vis #constness fn #fn_ident(mut self, #argument_ident: #argument_ty) -> Self {
                     match &mut self { #match_body }
@@ -51,6 +52,7 @@ impl<'a> With<'a> {
             quote_spanned! {*span=>
                 #doc
                 #deprecation_attr
+                #[inline]
                 #[must_use]
                 #vis #constness fn #fn_ident(mut self) -> Self {
                     match &mut self { #match_body }

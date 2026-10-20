@@ -33,6 +33,7 @@ impl<'a> Get<'a> {
         quote_spanned! {*span=>
             #doc
             #deprecation_attr
+            #[inline]
             #vis #constness fn #fn_ident(&self) -> #ty {
                 #expr
             }

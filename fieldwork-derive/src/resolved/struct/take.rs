@@ -33,6 +33,7 @@ impl<'a> Take<'a> {
         quote_spanned! {*span=>
             #doc
             #deprecation_attr
+            #[inline]
             #vis #constness fn #fn_ident(&mut self) -> #ty {
                 self.#member.take()
             }

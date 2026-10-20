@@ -31,63 +31,83 @@ impl<'a, T: Clone> Detection<'a, T>
 where
     T: Clone,
 {
+    #[inline]
     pub fn string(&self) -> &str {
         &*self.string
     }
+    #[inline]
     pub fn string_mut(&mut self) -> &mut str {
         &mut *self.string
     }
+    #[inline]
     pub fn vec(&self) -> &[u8] {
         &*self.vec
     }
+    #[inline]
     pub fn vec_mut(&mut self) -> &mut [u8] {
         &mut *self.vec
     }
+    #[inline]
     pub fn boxed(&self) -> &T {
         &*self.boxed
     }
+    #[inline]
     pub fn boxed_mut(&mut self) -> &mut T {
         &mut *self.boxed
     }
+    #[inline]
     pub fn boxed_dyn(&self) -> &dyn Display {
         &*self.boxed_dyn
     }
+    #[inline]
     pub fn boxed_dyn_mut(&mut self) -> &mut dyn Display {
         &mut *self.boxed_dyn
     }
+    #[inline]
     pub fn arc(&self) -> &T {
         &*self.arc
     }
+    #[inline]
     pub fn arc_mut(&mut self) -> &mut std::sync::Arc<T> {
         &mut self.arc
     }
+    #[inline]
     pub fn rc(&self) -> &T {
         &*self.rc
     }
+    #[inline]
     pub fn rc_mut(&mut self) -> &mut std::rc::Rc<T> {
         &mut self.rc
     }
+    #[inline]
     pub fn cow(&self) -> &T {
         &*self.cow
     }
+    #[inline]
     pub fn cow_mut(&mut self) -> &mut Cow<'a, T> {
         &mut self.cow
     }
+    #[inline]
     pub fn path(&self) -> &std::path::Path {
         &*self.path
     }
+    #[inline]
     pub fn path_mut(&mut self) -> &mut std::path::Path {
         &mut *self.path
     }
+    #[inline]
     pub fn os_string(&self) -> &std::ffi::OsStr {
         &*self.os_string
     }
+    #[inline]
     pub fn os_string_mut(&mut self) -> &mut std::ffi::OsStr {
         &mut *self.os_string
     }
+    #[inline]
     pub fn arr(&self) -> &[u8] {
         &self.arr[..]
     }
+    #[inline]
     pub fn arr_mut(&mut self) -> &mut [u8] {
         &mut self.arr[..]
     }
@@ -99,15 +119,19 @@ struct DerefFalseAtStruct {
     field_deref_true: Vec<u8>,
 }
 impl DerefFalseAtStruct {
+    #[inline]
     pub fn baseline_no_auto_deref(&self) -> &String {
         &self.baseline_no_auto_deref
     }
+    #[inline]
     pub fn baseline_no_auto_deref_mut(&mut self) -> &mut String {
         &mut self.baseline_no_auto_deref
     }
+    #[inline]
     pub fn field_deref_true(&self) -> &[u8] {
         &*self.field_deref_true
     }
+    #[inline]
     pub fn field_deref_true_mut(&mut self) -> &mut [u8] {
         &mut *self.field_deref_true
     }
@@ -121,21 +145,27 @@ struct DerefFalseForGetMut {
     also_deref_both: Vec<u8>,
 }
 impl DerefFalseForGetMut {
+    #[inline]
     pub fn baseline_deref_for_get_but_not_for_get_mut(&self) -> &[()] {
         &*self.baseline_deref_for_get_but_not_for_get_mut
     }
+    #[inline]
     pub fn baseline_deref_for_get_but_not_for_get_mut_mut(&mut self) -> &mut Vec<()> {
         &mut self.baseline_deref_for_get_but_not_for_get_mut
     }
+    #[inline]
     pub fn deref_both(&self) -> &str {
         &*self.deref_both
     }
+    #[inline]
     pub fn deref_both_mut(&mut self) -> &mut str {
         &mut *self.deref_both
     }
+    #[inline]
     pub fn also_deref_both(&self) -> &[u8] {
         &*self.also_deref_both
     }
+    #[inline]
     pub fn also_deref_both_mut(&mut self) -> &mut [u8] {
         &mut *self.also_deref_both
     }
@@ -149,21 +179,27 @@ struct SpecifyingTypeStillWorksWithDerefFalse {
     deref_to_specified_type: OwnedType,
 }
 impl SpecifyingTypeStillWorksWithDerefFalse {
+    #[inline]
     pub fn baseline_no_auto_deref(&self) -> &Vec<()> {
         &self.baseline_no_auto_deref
     }
+    #[inline]
     pub fn baseline_no_auto_deref_mut(&mut self) -> &mut Vec<()> {
         &mut self.baseline_no_auto_deref
     }
+    #[inline]
     pub fn deref_get_to_specified_type(&self) -> &DerefType {
         &*self.deref_get_to_specified_type
     }
+    #[inline]
     pub fn deref_get_to_specified_type_mut(&mut self) -> &mut OwnedType {
         &mut self.deref_get_to_specified_type
     }
+    #[inline]
     pub fn deref_to_specified_type(&self) -> &DerefType {
         &*self.deref_to_specified_type
     }
+    #[inline]
     pub fn deref_to_specified_type_mut(&mut self) -> &mut DerefType {
         &mut *self.deref_to_specified_type
     }
@@ -185,63 +221,83 @@ impl<'a, T: Clone> OptionDeref<'a, T>
 where
     T: Clone,
 {
+    #[inline]
     pub fn string(&self) -> Option<&str> {
         self.string.as_deref()
     }
+    #[inline]
     pub fn string_mut(&mut self) -> Option<&mut str> {
         self.string.as_deref_mut()
     }
+    #[inline]
     pub fn vec(&self) -> Option<&[u8]> {
         self.vec.as_deref()
     }
+    #[inline]
     pub fn vec_mut(&mut self) -> Option<&mut [u8]> {
         self.vec.as_deref_mut()
     }
+    #[inline]
     pub fn boxed(&self) -> Option<&T> {
         self.boxed.as_deref()
     }
+    #[inline]
     pub fn boxed_mut(&mut self) -> Option<&mut T> {
         self.boxed.as_deref_mut()
     }
+    #[inline]
     pub fn boxed_dyn(&self) -> Option<&(dyn Display + 'static)> {
         self.boxed_dyn.as_deref()
     }
+    #[inline]
     pub fn boxed_dyn_mut(&mut self) -> Option<&mut (dyn Display + 'static)> {
         self.boxed_dyn.as_deref_mut()
     }
+    #[inline]
     pub fn arc(&self) -> Option<&T> {
         self.arc.as_deref()
     }
+    #[inline]
     pub fn arc_mut(&mut self) -> Option<&mut std::sync::Arc<T>> {
         self.arc.as_mut()
     }
+    #[inline]
     pub fn rc(&self) -> Option<&T> {
         self.rc.as_deref()
     }
+    #[inline]
     pub fn rc_mut(&mut self) -> Option<&mut std::rc::Rc<T>> {
         self.rc.as_mut()
     }
+    #[inline]
     pub fn cow(&self) -> Option<&T> {
         self.cow.as_deref()
     }
+    #[inline]
     pub fn cow_mut(&mut self) -> Option<&mut Cow<'a, T>> {
         self.cow.as_mut()
     }
+    #[inline]
     pub fn path(&self) -> Option<&std::path::Path> {
         self.path.as_deref()
     }
+    #[inline]
     pub fn path_mut(&mut self) -> Option<&mut std::path::Path> {
         self.path.as_deref_mut()
     }
+    #[inline]
     pub fn os_string(&self) -> Option<&std::ffi::OsStr> {
         self.os_string.as_deref()
     }
+    #[inline]
     pub fn os_string_mut(&mut self) -> Option<&mut std::ffi::OsStr> {
         self.os_string.as_deref_mut()
     }
+    #[inline]
     pub fn arr(&self) -> Option<&[u8]> {
         self.arr.as_ref().map(|arr| &arr[..])
     }
+    #[inline]
     pub fn arr_mut(&mut self) -> Option<&mut [u8]> {
         self.arr.as_mut().map(|arr| &mut arr[..])
     }
@@ -264,33 +320,43 @@ mod x {
     where
         T: Deref + DerefMut + Clone,
     {
+        #[inline]
         pub fn a(&self) -> Option<&std::path::Path> {
             self.a.as_ref().map(|a| &***a)
         }
+        #[inline]
         pub fn a_mut(&mut self) -> Option<&mut std::rc::Rc<PathBuf>> {
             self.a.as_mut()
         }
+        #[inline]
         pub fn b(&self) -> Option<&T> {
             self.b.as_ref().map(|b| &****b)
         }
+        #[inline]
         pub fn b_mut(&mut self) -> Option<&mut Arc<Cow<'a, T>>> {
             self.b.as_deref_mut()
         }
+        #[inline]
         pub fn c(&self) -> Option<&[u8]> {
             self.c.as_ref().map(|c| &***c)
         }
+        #[inline]
         pub fn c_mut(&mut self) -> Option<&mut Arc<Vec<u8>>> {
             self.c.as_mut()
         }
+        #[inline]
         pub fn d(&self) -> Option<&[T]> {
             self.d.as_ref().map(|d| &***d)
         }
+        #[inline]
         pub fn d_mut(&mut self) -> Option<&mut [T]> {
             self.d.as_mut().map(|d| &mut ***d)
         }
+        #[inline]
         pub fn e(&self) -> Option<&T::Target> {
             self.e.as_ref().map(|e| &***e)
         }
+        #[inline]
         pub fn e_mut(&mut self) -> Option<&mut T::Target> {
             self.e.as_mut().map(|e| &mut ***e)
         }
@@ -303,22 +369,26 @@ enum AutoDerefEnum {
     Second { name: String, path: std::path::PathBuf },
 }
 impl AutoDerefEnum {
+    #[inline]
     pub fn name(&self) -> &str {
         match self {
             Self::First { name, .. } | Self::Second { name, .. } => &**name,
         }
     }
+    #[inline]
     pub fn name_mut(&mut self) -> &mut str {
         match self {
             Self::First { name, .. } => &mut **name,
             Self::Second { name, .. } => &mut **name,
         }
     }
+    #[inline]
     pub fn path(&self) -> &std::path::Path {
         match self {
             Self::First { path, .. } | Self::Second { path, .. } => &**path,
         }
     }
+    #[inline]
     pub fn path_mut(&mut self) -> &mut std::path::Path {
         match self {
             Self::First { path, .. } => &mut **path,
@@ -333,11 +403,13 @@ enum PartialAutoDeref {
     WithoutLabel { id: u32 },
 }
 impl PartialAutoDeref {
+    #[inline]
     pub fn id(&self) -> u32 {
         match self {
             Self::WithLabel { id, .. } | Self::WithoutLabel { id, .. } => *id,
         }
     }
+    #[inline]
     pub fn label(&self) -> Option<&str> {
         match self {
             Self::WithLabel { label, .. } => Some(&**label),
@@ -352,11 +424,13 @@ enum NoAutoDeref {
     B { name: String },
 }
 impl NoAutoDeref {
+    #[inline]
     pub fn name(&self) -> &String {
         match self {
             Self::A { name, .. } | Self::B { name, .. } => name,
         }
     }
+    #[inline]
     pub fn name_mut(&mut self) -> &mut String {
         match self {
             Self::A { name, .. } => name,
@@ -373,23 +447,27 @@ enum DeepDeref {
     Partial { single: Option<Vec<u8>> },
 }
 impl DeepDeref {
+    #[inline]
     pub fn multi(&self) -> Option<&[u8]> {
         match self {
             Self::Full { multi, .. } => multi.as_ref().map(|multi| &***multi),
             _ => None,
         }
     }
+    #[inline]
     pub fn multi_mut(&mut self) -> Option<&mut std::sync::Arc<Vec<u8>>> {
         match self {
             Self::Full { multi, .. } => multi.as_mut(),
             _ => None,
         }
     }
+    #[inline]
     pub fn single(&self) -> Option<&[u8]> {
         match self {
             Self::Full { single, .. } | Self::Partial { single, .. } => single.as_deref(),
         }
     }
+    #[inline]
     pub fn single_mut(&mut self) -> Option<&mut [u8]> {
         match self {
             Self::Full { single, .. } => single.as_deref_mut(),

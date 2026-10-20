@@ -11,19 +11,23 @@ struct MyStruct<T> {
 }
 impl<T> MyStruct<T> {
     ///Returns a copy of this number is cool
+    #[inline]
     pub fn number(&self) -> usize {
         self.number
     }
     ///Mutably borrow this number is cool
+    #[inline]
     pub fn number_mut(&mut self) -> &mut usize {
         &mut self.number
     }
     ///Sets this number is cool, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_number(&mut self, number: usize) -> &mut Self {
         self.number = number;
         self
     }
     ///Owned chainable setter for this number is cool, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_number(mut self, number: usize) -> Self {
         self.number = number;
@@ -37,16 +41,20 @@ struct AnotherInterface {
     enabled: bool,
 }
 impl AnotherInterface {
+    #[inline]
     pub fn number(&self) -> usize {
         self.number
     }
+    #[inline]
     pub fn number_mut(&mut self) -> &mut usize {
         &mut self.number
     }
+    #[inline]
     pub fn set_number(&mut self, number: usize) -> &mut Self {
         self.number = number;
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_number(mut self, number: usize) -> Self {
         self.number = number;
@@ -66,20 +74,24 @@ struct SetAndGet<T> {
 }
 impl<T> SetAndGet<T> {
     ///Returns a copy of this number is cool
+    #[inline]
     pub fn number(&self) -> usize {
         self.number
     }
     ///Sets this number is cool, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_number(&mut self, number: usize) -> &mut Self {
         self.number = number;
         self
     }
     ///Sets is this struct on or not, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
     ///Borrows it's really whatever you want
+    #[inline]
     pub fn generic(&self) -> &T {
         &self.generic
     }
@@ -92,23 +104,29 @@ struct SkipWithAssignment<T> {
     no_get: T,
 }
 impl<T> SkipWithAssignment<T> {
+    #[inline]
     pub fn no_with(&self) -> bool {
         self.no_with
     }
+    #[inline]
     pub fn no_with_mut(&mut self) -> &mut bool {
         &mut self.no_with
     }
+    #[inline]
     pub fn set_no_with(&mut self, no_with: bool) -> &mut Self {
         self.no_with = no_with;
         self
     }
+    #[inline]
     pub fn no_get_mut(&mut self) -> &mut T {
         &mut self.no_get
     }
+    #[inline]
     pub fn set_no_get(&mut self, no_get: T) -> &mut Self {
         self.no_get = no_get;
         self
     }
+    #[inline]
     #[must_use]
     pub fn with_no_get(mut self, no_get: T) -> Self {
         self.no_get = no_get;
@@ -120,6 +138,7 @@ struct GetMutEqualsFalseDoesNothing<T> {
     field: T,
 }
 impl<T> GetMutEqualsFalseDoesNothing<T> {
+    #[inline]
     pub fn field(&self) -> &T {
         &self.field
     }
@@ -131,11 +150,13 @@ enum SkipField {
     Beta { name: String },
 }
 impl SkipField {
+    #[inline]
     pub fn name(&self) -> &str {
         match self {
             Self::Alpha { name, .. } | Self::Beta { name, .. } => &**name,
         }
     }
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         match self {
             Self::Alpha { name: name_binding, .. } => {
@@ -172,11 +193,13 @@ enum PerMethodSkip {
     Bar { write_only: i32, read_only: i32 },
 }
 impl PerMethodSkip {
+    #[inline]
     pub fn read_only(&self) -> i32 {
         match self {
             Self::Foo { read_only, .. } | Self::Bar { read_only, .. } => *read_only,
         }
     }
+    #[inline]
     pub fn set_write_only(&mut self, write_only: i32) -> &mut Self {
         match self {
             Self::Foo { write_only: write_only_binding, .. } => {

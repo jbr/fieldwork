@@ -36,6 +36,7 @@ impl<'a> IntoField<'a> {
         quote_spanned! {*span=>
             #doc
             #deprecation_attr
+            #[inline]
             #vis #constness fn #fn_ident(self) -> #return_ty {
                 match self { #(#patterns)|* => #binding }
             }

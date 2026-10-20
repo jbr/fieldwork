@@ -12,57 +12,69 @@ struct MyStruct<T> {
 }
 impl<T> MyStruct<T> {
     ///Returns a copy of the number
+    #[inline]
     pub fn number(&self) -> usize {
         self.number
     }
     ///Mutably borrow the number
+    #[inline]
     pub fn number_mut(&mut self) -> &mut usize {
         &mut self.number
     }
     ///Sets the number, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_number(&mut self, the_number: usize) -> &mut Self {
         self.number = the_number;
         self
     }
     ///Owned chainable setter for the number, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_number(mut self, the_number: usize) -> Self {
         self.number = the_number;
         self
     }
     ///Returns a copy of whether something is enabled
+    #[inline]
     pub fn enabled(&self) -> bool {
         self.enabled
     }
     ///Mutably borrow whether something is enabled
+    #[inline]
     pub fn enabled_mut(&mut self) -> &mut bool {
         &mut self.enabled
     }
     ///Sets whether something is enabled, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_enabled(&mut self, is_enabled_as_a_boolean: bool) -> &mut Self {
         self.enabled = is_enabled_as_a_boolean;
         self
     }
     ///Owned chainable setter for whether something is enabled, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
     ///Borrows the generic
+    #[inline]
     pub fn generic(&self) -> &T {
         &self.generic
     }
     ///Mutably borrow the generic
+    #[inline]
     pub fn generic_mut(&mut self) -> &mut T {
         &mut self.generic
     }
     ///Sets the generic, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_generic(&mut self, the_generic: T) -> &mut Self {
         self.generic = the_generic;
         self
     }
     ///Owned chainable setter for the generic, returning `Self`
+    #[inline]
     #[must_use]
     pub fn with_generic(mut self, the_gen: T) -> Self {
         self.generic = the_gen;
@@ -81,11 +93,13 @@ enum Item {
     Gadget { name: String, price: f64 },
 }
 impl Item {
+    #[inline]
     pub fn name(&self) -> &str {
         match self {
             Self::Widget { name, .. } | Self::Gadget { name, .. } => &**name,
         }
     }
+    #[inline]
     pub fn set_name(&mut self, the_name: String) -> &mut Self {
         match self {
             Self::Widget { name, .. } => {
@@ -97,11 +111,13 @@ impl Item {
         }
         self
     }
+    #[inline]
     pub fn price(&self) -> f64 {
         match self {
             Self::Widget { price, .. } | Self::Gadget { price, .. } => *price,
         }
     }
+    #[inline]
     pub fn set_price(&mut self, new_price: f64) -> &mut Self {
         match self {
             Self::Widget { price, .. } => {

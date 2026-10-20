@@ -7,6 +7,7 @@ struct Mixed {
     name: String,
 }
 impl Mixed {
+    #[inline]
     pub fn into_name(self) -> String {
         self.name
     }
@@ -15,6 +16,7 @@ impl Mixed {
 #[fieldwork(into_field)]
 struct Wrapper(#[field = "inner"] String);
 impl Wrapper {
+    #[inline]
     pub fn into_inner(self) -> String {
         self.0
     }
@@ -26,6 +28,7 @@ struct OptIn {
     id: u32,
 }
 impl OptIn {
+    #[inline]
     pub fn into_name(self) -> String {
         self.name
     }
@@ -38,6 +41,7 @@ struct ExplicitCopyOnString {
     value: String,
 }
 impl ExplicitCopyOnString {
+    #[inline]
     pub fn into_value(self) -> String {
         self.value
     }
@@ -50,9 +54,11 @@ struct ExplicitNoCopyOnU8 {
     name: String,
 }
 impl ExplicitNoCopyOnU8 {
+    #[inline]
     pub fn into_id(self) -> u32 {
         self.id
     }
+    #[inline]
     pub fn into_name(self) -> String {
         self.name
     }
@@ -65,6 +71,7 @@ struct OptionFields {
     opt_string: Option<String>,
 }
 impl OptionFields {
+    #[inline]
     pub fn into_opt_string(self) -> Option<String> {
         self.opt_string
     }
@@ -83,6 +90,7 @@ enum ExplicitNoCopy {
     B { id: u32 },
 }
 impl ExplicitNoCopy {
+    #[inline]
     pub fn into_id(self) -> u32 {
         match self {
             Self::A { id, .. } | Self::B { id, .. } => id,
@@ -96,6 +104,7 @@ enum Messages {
     Detailed { text: String, code: u32 },
 }
 impl Messages {
+    #[inline]
     pub fn into_text(self) -> String {
         match self {
             Self::Simple { text, .. } | Self::Detailed { text, .. } => text,

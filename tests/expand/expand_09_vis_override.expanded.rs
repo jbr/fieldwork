@@ -15,42 +15,52 @@ struct MyStruct {
 }
 impl MyStruct {
     ///Returns a copy of default visibility (should be `pub(crate)`)
+    #[inline]
     pub(crate) fn number(&self) -> usize {
         self.number
     }
     ///Sets default visibility (should be `pub(crate)`), returning `&mut Self` for chaining
+    #[inline]
     pub(crate) fn set_number(&mut self, number: usize) -> &mut Self {
         self.number = number;
         self
     }
     ///Returns a copy of this one overrides only the getter to be fully pub
+    #[inline]
     pub fn enabled(&self) -> bool {
         self.enabled
     }
     ///Sets this one overrides only the getter to be fully pub, returning `&mut Self` for chaining
+    #[inline]
     pub(crate) fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
     ///Returns a copy of this one overrides only the getter to be private (no `pub`)
+    #[inline]
     fn active(&self) -> bool {
         self.active
     }
     ///Sets this one overrides only the getter to be private (no `pub`), returning `&mut Self` for chaining
+    #[inline]
     pub(crate) fn set_active(&mut self, active: bool) -> &mut Self {
         self.active = active;
         self
     }
+    #[inline]
     pub fn other(&self) -> &() {
         &self.other
     }
+    #[inline]
     pub fn set_other(&mut self, other: ()) -> &mut Self {
         self.other = other;
         self
     }
+    #[inline]
     fn double_override(&self) -> &() {
         &self.double_override
     }
+    #[inline]
     pub fn set_double_override(&mut self, double_override: ()) -> &mut Self {
         self.double_override = double_override;
         self
@@ -73,42 +83,52 @@ struct MyStruct2 {
 }
 impl MyStruct2 {
     ///Returns a copy of default visibility
+    #[inline]
     pub fn number(&self) -> usize {
         self.number
     }
     ///Sets default visibility, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_number(&mut self, number: usize) -> &mut Self {
         self.number = number;
         self
     }
     ///Returns a copy of this one overrides only the getter to be fully pub
+    #[inline]
     pub(crate) fn enabled(&self) -> bool {
         self.enabled
     }
     ///Sets this one overrides only the getter to be fully pub, returning `&mut Self` for chaining
+    #[inline]
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.enabled = enabled;
         self
     }
     ///Returns a copy of this one overrides only the getter to be private (no `pub`)
+    #[inline]
     fn active(&self) -> bool {
         self.active
     }
     ///Sets this one overrides only the getter to be private (no `pub`), returning `&mut Self` for chaining
+    #[inline]
     pub fn set_active(&mut self, active: bool) -> &mut Self {
         self.active = active;
         self
     }
+    #[inline]
     pub(crate) fn other(&self) -> &() {
         &self.other
     }
+    #[inline]
     pub(crate) fn set_other(&mut self, other: ()) -> &mut Self {
         self.other = other;
         self
     }
+    #[inline]
     fn method_override_field(&self) -> &() {
         &self.method_override_field
     }
+    #[inline]
     pub(crate) fn set_method_override_field(
         &mut self,
         method_override_field: (),
@@ -124,11 +144,13 @@ enum State {
     Inactive { value: i32 },
 }
 impl State {
+    #[inline]
     pub(crate) fn value(&self) -> i32 {
         match self {
             Self::Active { value, .. } | Self::Inactive { value, .. } => *value,
         }
     }
+    #[inline]
     pub(crate) fn set_value(&mut self, value: i32) -> &mut Self {
         match self {
             Self::Active { value: value_binding, .. } => {
@@ -148,16 +170,20 @@ struct MethodVis {
     name: String,
 }
 impl MethodVis {
+    #[inline]
     pub(crate) fn value(&self) -> i32 {
         self.value
     }
+    #[inline]
     pub fn set_value(&mut self, value: i32) -> &mut Self {
         self.value = value;
         self
     }
+    #[inline]
     pub(crate) fn name(&self) -> &str {
         &*self.name
     }
+    #[inline]
     pub fn set_name(&mut self, name: String) -> &mut Self {
         self.name = name;
         self
@@ -178,12 +204,14 @@ enum Mixed {
 }
 impl Mixed {
     ///Borrows getter is pub; setter remains pub(crate)
+    #[inline]
     pub fn prominent(&self) -> &str {
         match self {
             Self::Alpha { prominent, .. } | Self::Beta { prominent, .. } => &**prominent,
         }
     }
     ///Sets getter is pub; setter remains pub(crate), returning `&mut Self` for chaining
+    #[inline]
     pub(crate) fn set_prominent(&mut self, prominent: String) -> &mut Self {
         match self {
             Self::Alpha { prominent: prominent_binding, .. } => {
@@ -196,12 +224,14 @@ impl Mixed {
         self
     }
     ///Borrows pub(crate) by default
+    #[inline]
     pub(crate) fn shared(&self) -> i32 {
         match self {
             Self::Alpha { shared, .. } | Self::Beta { shared, .. } => *shared,
         }
     }
     ///Sets pub(crate) by default, returning `&mut Self` for chaining
+    #[inline]
     pub(crate) fn set_shared(&mut self, shared: i32) -> &mut Self {
         match self {
             Self::Alpha { shared: shared_binding, .. } => {

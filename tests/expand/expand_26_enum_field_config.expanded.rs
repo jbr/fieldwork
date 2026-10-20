@@ -17,6 +17,7 @@ enum GetVeto {
     C { x: i32 },
 }
 impl GetVeto {
+    #[inline]
     pub fn set_x(&mut self, x: i32) -> &mut Self {
         match self {
             Self::A { x: x_binding, .. } => {
@@ -41,11 +42,13 @@ enum PerMethodSkipAnnotatedLast {
     Foo { #[field(get = false)] write_only: i32, #[field(set = false)] read_only: i32 },
 }
 impl PerMethodSkipAnnotatedLast {
+    #[inline]
     pub fn read_only(&self) -> i32 {
         match self {
             Self::Bar { read_only, .. } | Self::Foo { read_only, .. } => *read_only,
         }
     }
+    #[inline]
     pub fn set_write_only(&mut self, write_only: i32) -> &mut Self {
         match self {
             Self::Bar { write_only: write_only_binding, .. } => {
@@ -67,6 +70,7 @@ enum OptInFull {
     C { x: i32 },
 }
 impl OptInFull {
+    #[inline]
     pub fn x(&self) -> i32 {
         match self {
             Self::A { x, .. } | Self::B { x, .. } | Self::C { x, .. } => *x,
@@ -81,6 +85,7 @@ enum OptInPartial {
     C { id: u32, data: String },
 }
 impl OptInPartial {
+    #[inline]
     pub fn data(&self) -> Option<&str> {
         match self {
             Self::B { data, .. } => Some(&**data),
@@ -97,11 +102,13 @@ enum TypeMismatchSilent {
     B { id: u32, x: String },
 }
 impl TypeMismatchSilent {
+    #[inline]
     pub fn id(&self) -> u32 {
         match self {
             Self::A { id, .. } | Self::B { id, .. } => *id,
         }
     }
+    #[inline]
     pub fn set_id(&mut self, id: u32) -> &mut Self {
         match self {
             Self::A { id: id_binding, .. } => {
