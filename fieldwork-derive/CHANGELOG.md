@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.5](https://github.com/jbr/fieldwork/compare/fieldwork-derive-v0.5.4...fieldwork-derive-v0.5.5) - 2026-10-21
+
+### Added
+
+- delegation
+- inline methods
+
 ## [0.5.4](https://github.com/jbr/fieldwork/compare/fieldwork-derive-v0.5.3...fieldwork-derive-v0.5.4) - 2026-09-24
 
 ### Added
