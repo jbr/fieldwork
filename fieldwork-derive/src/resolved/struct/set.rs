@@ -1,7 +1,7 @@
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Attribute, Expr, Ident, Member, Token, Type, Visibility};
+use syn::{Attribute, Expr, Ident, Token, Type, Visibility};
 
 use crate::Query;
 
@@ -15,7 +15,7 @@ pub(crate) struct Set<'a> {
     pub(crate) doc: Option<Cow<'a, str>>,
     pub(crate) fn_ident: Cow<'a, Ident>,
     pub(crate) span: Span,
-    pub(crate) member: &'a Member,
+    pub(crate) place: Expr,
     pub(crate) vis: Cow<'a, Visibility>,
     pub(crate) deprecation_attr: Option<Attribute>,
 }
@@ -30,7 +30,7 @@ impl<'a> Set<'a> {
             doc,
             fn_ident,
             span,
-            member,
+            place,
             vis,
             deprecation_attr,
         } = self;
@@ -43,7 +43,7 @@ impl<'a> Set<'a> {
                 #deprecation_attr
                 #[inline]
                 #vis #constness fn #fn_ident(&mut self, #argument_ident: #argument_ty) -> &mut Self {
-                    self.#member = #assigned_value;
+                    #place = #assigned_value;
                     self
                 }
             }
@@ -53,7 +53,7 @@ impl<'a> Set<'a> {
                 #deprecation_attr
                 #[inline]
                 #vis #constness fn #fn_ident(&mut self, #argument_ident: #argument_ty) {
-                    self.#member = #assigned_value;
+                    #place = #assigned_value;
                 }
             }
         }
@@ -64,7 +64,7 @@ impl<'a> Set<'a> {
         let constness = query.constness();
         let vis = query.vis();
         let fn_ident = query.fn_ident()?;
-        let member = query.member();
+        let place = query.place();
         let argument_ident = query.argument_ident()?;
         let chainable_set = query.chainable_set();
         let (argument_ty, assigned_value) =
@@ -82,7 +82,7 @@ impl<'a> Set<'a> {
             doc,
             fn_ident,
             span,
-            member,
+            place,
             vis,
             deprecation_attr,
         })

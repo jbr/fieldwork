@@ -2,7 +2,7 @@ use crate::{Query, option_handling::extract_option_type};
 use proc_macro2::{Span, TokenStream};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Attribute, Ident, Member, Token, Type, Visibility};
+use syn::{Attribute, Expr, Ident, Token, Type, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct Take<'a> {
@@ -11,7 +11,7 @@ pub(crate) struct Take<'a> {
     fn_ident: Cow<'a, Ident>,
     span: Span,
     ty: &'a Type,
-    member: &'a Member,
+    place: Expr,
     vis: Cow<'a, Visibility>,
     deprecation_attr: Option<Attribute>,
 }
@@ -25,7 +25,7 @@ impl<'a> Take<'a> {
             span,
             ty,
             vis,
-            member,
+            place,
             deprecation_attr,
         } = self;
         let doc = doc.as_deref().map(|d| quote_spanned!(*span => #[doc = #d]));
@@ -35,7 +35,7 @@ impl<'a> Take<'a> {
             #deprecation_attr
             #[inline]
             #vis #constness fn #fn_ident(&mut self) -> #ty {
-                self.#member.take()
+                #place.take()
             }
         }
     }
@@ -49,7 +49,7 @@ impl<'a> Take<'a> {
         let vis = query.vis();
         let fn_ident = query.fn_ident()?;
         let doc = query.docs(false);
-        let member = query.member();
+        let place = query.place();
         let deprecation_attr = query.deprecation_attr();
 
         Some(Self {
@@ -58,7 +58,7 @@ impl<'a> Take<'a> {
             fn_ident,
             span,
             ty,
-            member,
+            place,
             vis,
             deprecation_attr,
         })

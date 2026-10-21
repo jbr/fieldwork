@@ -48,6 +48,9 @@ pub(crate) struct Query<'a> {
     total_variants: usize,
     /// When set, this Query represents the deprecated alternate emission, not the canonical.
     alternate: Option<Alternate<'a>>,
+    /// When set, the field is reached through this member of `self`, for methods emitted on a
+    /// type that delegates to this struct.
+    via: Option<&'a Ident>,
 }
 
 impl<'a> Query<'a> {
@@ -89,7 +92,14 @@ impl<'a> Query<'a> {
             item_method_attributes,
             total_variants,
             alternate: None,
+            via: None,
         }
+    }
+
+    /// Reach the field through `self.#via` instead of `self`.
+    pub(crate) fn with_via(mut self, via: Option<&'a Ident>) -> Self {
+        self.via = via;
+        self
     }
 
     /// Effective deprecation for this (field, method) pair. Method-level beats field-level.
@@ -280,6 +290,16 @@ impl<'a> Query<'a> {
         &self.field.member
     }
 
+    /// The place expression naming this field from the method's `self`.
+    pub(crate) fn place(&self) -> Expr {
+        let span = self.span();
+        let member = self.member();
+        match self.via {
+            Some(via) => parse_quote_spanned!(span => self.#via.#member),
+            None => parse_quote_spanned!(span => self.#member),
+        }
+    }
+
     pub(crate) fn argument_ident(&self) -> Option<Cow<'a, Ident>> {
         if let Some(argument_ident) = self
             .field_method_attributes
@@ -461,9 +481,7 @@ impl<'a> Query<'a> {
     }
 
     pub(crate) fn mut_access_expr_and_type(&self) -> (Expr, Type) {
-        let member = self.member();
-        let span = self.span();
-        self.apply_mut_transforms(parse_quote_spanned!(span => self.#member))
+        self.apply_mut_transforms(self.place())
     }
 
     /// Apply mutable borrow transforms (deref, option unwrap) to an arbitrary base expression.
@@ -516,9 +534,7 @@ impl<'a> Query<'a> {
     }
 
     pub(crate) fn get_access_expr_type_and_copy(&self) -> (Expr, Type, bool) {
-        let span = self.span();
-        let member = self.member();
-        self.apply_get_transforms(parse_quote_spanned!(span => self.#member))
+        self.apply_get_transforms(self.place())
     }
 
     /// Apply immutable borrow/copy transforms (deref, option unwrap, copy) to an arbitrary base

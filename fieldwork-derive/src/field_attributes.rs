@@ -1,6 +1,6 @@
 use crate::{
-    CommonSettings, Deprecation, FieldMethodAttributes, Method, MethodSettings, deprecation,
-    errors::invalid_key, with_common_settings, with_methods,
+    CommonSettings, Deprecation, FieldMethodAttributes, Method, MethodSettings,
+    delegation::Delegate, deprecation, errors::invalid_key, with_common_settings, with_methods,
 };
 use proc_macro2::Span;
 use quote::ToTokens;
@@ -20,6 +20,7 @@ pub(crate) struct FieldAttributes {
     pub(crate) method_attributes: MethodSettings<(Span, FieldMethodAttributes)>,
     pub(crate) deref: Option<Type>,
     pub(crate) deprecate: Option<Deprecation>,
+    pub(crate) delegate: Option<Delegate>,
 
     pub(crate) common_settings: CommonSettings,
 }
@@ -46,6 +47,7 @@ impl FieldAttributes {
 
     const VALID_KEYS: &[&str] = with_methods!(with_common_settings!(
         "argument",
+        "delegate",
         "deprecate",
         "name",
         "option_set_some",
@@ -180,6 +182,12 @@ impl FieldAttributes {
                 "deref" => self.deref = Some(rhs.parse()?),
                 "argument" => self.argument_ident = Some(rhs.parse()?),
                 "deprecate" => self.deprecate = Some(deprecation::from_str_lit(rhs)?),
+                "delegate" => {
+                    self.delegate = Some(Delegate {
+                        path: Some(rhs.parse()?),
+                        span,
+                    });
+                }
                 _ => {
                     let method = Method::from_str_with_span(lhs, span)
                         .map_err(|_| invalid_key(span, lhs, Self::VALID_KEYS))?;
@@ -208,6 +216,12 @@ impl FieldAttributes {
                 }));
             }
             "deprecate" => self.deprecate = Some(deprecation::from_path(rhs)?),
+            "delegate" => {
+                self.delegate = Some(Delegate {
+                    path: Some(rhs.clone()),
+                    span,
+                });
+            }
 
             _ => {
                 let method = Method::from_str_with_span(lhs, span)
@@ -228,6 +242,9 @@ impl FieldAttributes {
             Ok(())
         } else if lhs == "deprecate" {
             self.deprecate = value.then(deprecation::from_bare);
+            Ok(())
+        } else if lhs == "delegate" {
+            self.delegate = value.then_some(Delegate { path: None, span });
             Ok(())
         } else {
             let method = Method::from_str_with_span(lhs, span)

@@ -28,3 +28,6 @@ mod expand_26_enum_field_config;
 mod expand_27_where_bounds;
 mod expand_28_deprecate;
 mod expand_29_const_fn;
+mod expand_30_delegate;
+mod expand_31_delegate_conn;
+mod expand_32_delegate_upgrade;
