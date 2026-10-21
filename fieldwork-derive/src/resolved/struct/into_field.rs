@@ -2,7 +2,7 @@ use crate::Query;
 use proc_macro2::{Span, TokenStream};
 use quote::quote_spanned;
 use std::borrow::Cow;
-use syn::{Attribute, Ident, Member, Token, Type, Visibility};
+use syn::{Attribute, Expr, Ident, Token, Type, Visibility};
 
 #[cfg_attr(feature = "debug", derive(Debug))]
 pub(crate) struct IntoField<'a> {
@@ -11,7 +11,7 @@ pub(crate) struct IntoField<'a> {
     fn_ident: Cow<'a, Ident>,
     span: Span,
     ty: Type,
-    member: &'a Member,
+    place: Expr,
     vis: Cow<'a, Visibility>,
     deprecation_attr: Option<Attribute>,
 }
@@ -24,7 +24,7 @@ impl<'a> IntoField<'a> {
             fn_ident,
             span,
             ty,
-            member,
+            place,
             vis,
             deprecation_attr,
         } = self;
@@ -35,7 +35,7 @@ impl<'a> IntoField<'a> {
             #deprecation_attr
             #[inline]
             #vis #constness fn #fn_ident(self) -> #ty {
-                self.#member
+                #place
             }
         }
     }
@@ -49,7 +49,7 @@ impl<'a> IntoField<'a> {
         let constness = query.constness();
         let vis = query.vis();
         let fn_ident = query.fn_ident()?;
-        let member = query.member();
+        let place = query.place();
         let ty = query.ty().clone();
         let doc = query.docs(false);
         let deprecation_attr = query.deprecation_attr();
@@ -60,7 +60,7 @@ impl<'a> IntoField<'a> {
             fn_ident,
             span,
             ty,
-            member,
+            place,
             vis,
             deprecation_attr,
         })

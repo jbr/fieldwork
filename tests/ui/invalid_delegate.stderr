@@ -1,0 +1,31 @@
+error: cannot determine which struct this field delegates to; name it with `#[field(delegate = path::to::Struct)]`
+  --> tests/ui/invalid_delegate.rs:24:18
+   |
+24 |     delegatable: &'static Delegatable,
+   |                  ^^^^^^^^^^^^^^^^^^^^
+
+error: invalid value for key `delegatable`
+  --> tests/ui/invalid_delegate.rs:28:13
+   |
+28 | #[fieldwork(delegatable = "yes")]
+   |             ^^^^^^^^^^^
+
+error: `delegatable` is not supported on enums
+  --> tests/ui/invalid_delegate.rs:34:18
+   |
+34 | #[fieldwork(get, delegatable)]
+   |                  ^^^^^^^^^^^
+
+error: `delegate` is not supported on enum fields
+  --> tests/ui/invalid_delegate.rs:43:17
+   |
+43 |         #[field(delegate)]
+   |                 ^^^^^^^^
+
+error: cannot find macro `Plain` in this scope
+  --> tests/ui/invalid_delegate.rs:11:12
+   |
+11 |     plain: Plain,
+   |            ^^^^^
+   |
+   = note: `Plain` is in scope, but it is a struct, not a macro

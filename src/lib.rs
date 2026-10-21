@@ -33,6 +33,11 @@
 //! only some determines the return type and whether setters are generated. See
 //! [`enums`] for the full/partial coverage concept and examples.
 //!
+//! ## Delegation
+//!
+//! A struct's methods can also be emitted on a type that holds it, such as a wrapper that keeps
+//! the struct behind a `Box`. See [`delegate`].
+//!
 //! ## Configuration
 //!
 //! Fieldwork has four levels of configuration that cascade from broadest to most specific.
@@ -117,6 +122,10 @@ pub mod deprecate {}
 #[cfg(doc)]
 #[doc = include_str!("../docs/enums.md")]
 pub mod enums {}
+
+#[cfg(doc)]
+#[doc = include_str!("../docs/delegate.md")]
+pub mod delegate {}
 
 #[cfg(doc)]
 #[doc = include_str!("../docs/configuration.md")]

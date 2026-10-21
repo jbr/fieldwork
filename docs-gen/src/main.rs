@@ -6,7 +6,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::{collections::HashSet, env};
 use syn::{
-    Attribute, File, Item, ItemEnum, ItemImpl, ItemStruct, ItemTrait, ItemUse, Type, TypePath,
+    Attribute, File, Item, ItemEnum, ItemImpl, ItemStruct, ItemTrait, ItemType, ItemUse, Type,
+    TypePath, UseRename, UseTree,
 };
 
 #[derive(Debug)]
@@ -20,6 +21,7 @@ struct CodeExample {
 struct ExtractedCode {
     use_statements: Vec<ItemUse>,
     trait_definitions: Vec<ItemTrait>,
+    type_aliases: Vec<ItemType>,
     struct_definitions: Vec<ItemStruct>,
     enum_definitions: Vec<ItemEnum>,
     fieldwork_impls: Vec<ItemImpl>,
@@ -258,17 +260,21 @@ fn extract_fieldwork_code(
 
     let mut use_statements = vec![];
     let mut trait_definitions = vec![];
+    let mut type_aliases = vec![];
     let mut struct_definitions = vec![];
     let mut enum_definitions = vec![];
     let mut fieldwork_impls = vec![];
 
     for item in parsed.items {
         match item {
-            Item::Use(use_item) => {
+            Item::Use(use_item) if !is_delegation_reexport(&use_item) => {
                 use_statements.push(use_item);
             }
             Item::Trait(item_trait) => {
                 trait_definitions.push(item_trait);
+            }
+            Item::Type(item_type) => {
+                type_aliases.push(item_type);
             }
             Item::Struct(item_struct) => {
                 if target_items.contains(&item_struct.ident.to_string()) {
@@ -291,11 +297,22 @@ fn extract_fieldwork_code(
 
     Ok(ExtractedCode {
         trait_definitions,
+        type_aliases,
         struct_definitions,
         enum_definitions,
         fieldwork_impls,
         use_statements,
     })
+}
+
+/// The re-export of a `delegatable` struct's hidden delegation macro. The `macro_rules!` itself
+/// is dropped from the extracted code, so its re-export must be too.
+fn is_delegation_reexport(use_item: &ItemUse) -> bool {
+    matches!(
+        &use_item.tree,
+        UseTree::Rename(UseRename { ident, .. })
+            if ident.to_string().starts_with("__fieldwork_delegate_")
+    )
 }
 
 fn is_fieldwork_impl(item_impl: &ItemImpl, target_items: &HashSet<String>) -> bool {
@@ -332,6 +349,11 @@ fn format_extracted_code(extracted: &ExtractedCode) -> Result<String, Box<dyn Er
                 result.push(format!("# {line}"));
             }
         }
+    }
+
+    for type_alias in &extracted.type_aliases {
+        let formatted_alias = concise_format(&type_alias.to_token_stream().to_string());
+        result.push(format!("# {formatted_alias}"));
     }
 
     for struct_def in &extracted.struct_definitions {

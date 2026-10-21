@@ -19,12 +19,19 @@ pub(crate) struct ItemAttributes {
     pub(crate) methods: MethodSettings<ItemMethodAttributes>,
     pub(crate) include: MethodSettings<bool>,
     pub(crate) where_clause: Option<WhereClause>,
+    /// Set by `#[fieldwork(delegatable)]`: also emit this struct's methods for any type that
+    /// holds it in a `#[field(delegate)]` field.
+    pub(crate) delegatable: Option<Span>,
 
     pub(crate) common_settings: CommonSettings,
 }
 
 impl ItemAttributes {
-    const VALID_KEYS: &[&str] = with_methods!(with_common_settings!("where_clause", "bounds",));
+    const VALID_KEYS: &[&str] = with_methods!(with_common_settings!(
+        "where_clause",
+        "bounds",
+        "delegatable",
+    ));
 
     pub(crate) fn build(attributes: &[Attribute]) -> syn::Result<Self> {
         let mut item_attributes = Self::default();
@@ -132,6 +139,9 @@ impl ItemAttributes {
 
     fn handle_assign_bool_lit(&mut self, span: Span, lhs: &str, value: bool) -> Result<(), Error> {
         if self.common_settings.handle_assign_bool_lit(lhs, value) {
+            Ok(())
+        } else if lhs == "delegatable" {
+            self.delegatable = value.then_some(span);
             Ok(())
         } else {
             let method = Method::from_str_with_span(lhs, span)

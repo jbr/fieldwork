@@ -15,10 +15,11 @@
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
-use syn::{Attribute, Data, DeriveInput};
+use syn::{Attribute, Data, DeriveInput, Ident};
 
 mod common_settings;
 mod copy_detection;
+mod delegation;
 mod deprecation;
 mod deref_handling;
 mod r#enum;
@@ -83,25 +84,46 @@ fn derive_struct(input: TokenStream2) -> TokenStream2 {
         Err(e) => return e.to_compile_error(),
     };
 
-    let impls = fields
-        .iter()
-        .flat_map(|field| {
-            Method::all().iter().flat_map(|method| {
-                let query = Query::new(method, std::slice::from_ref(field), &attributes, 1);
-                let canonical = query.resolve();
-                let alternate = query.as_alternate().and_then(|q| q.resolve());
-                canonical.into_iter().chain(alternate)
-            })
+    let impls = struct_methods(&fields, &attributes, None);
+    let invocations = match delegation::invocations(&ident, &generics, &fields) {
+        Ok(invocations) => invocations,
+        Err(e) => return e.to_compile_error(),
+    };
+    let delegation_macro = attributes.delegatable.is_some().then(|| {
+        delegation::delegation_macro(&ident, |via| {
+            struct_methods(&fields, &attributes, Some(via))
         })
-        .map(|resolved| resolved.build())
-        .collect::<TokenStream2>();
+    });
 
     let (impl_generics, type_generics, where_clause) = generics.split_for_impl();
     quote! {
         impl #impl_generics #ident #type_generics #where_clause {
             #impls
         }
+        #invocations
+        #delegation_macro
     }
+}
+
+/// Every method generated for a struct's `fields`, reaching them through `self.#via` when set.
+fn struct_methods(
+    fields: &[Field],
+    attributes: &ItemAttributes,
+    via: Option<&Ident>,
+) -> TokenStream2 {
+    fields
+        .iter()
+        .flat_map(|field| {
+            Method::all().iter().flat_map(move |method| {
+                let query =
+                    Query::new(method, std::slice::from_ref(field), attributes, 1).with_via(via);
+                let canonical = query.resolve();
+                let alternate = query.as_alternate().and_then(|q| q.resolve());
+                canonical.into_iter().chain(alternate)
+            })
+        })
+        .map(|resolved| resolved.build())
+        .collect()
 }
 
 fn derive_enum(input: TokenStream2) -> TokenStream2 {

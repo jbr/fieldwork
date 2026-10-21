@@ -35,7 +35,16 @@ impl EnumVariant {
             .iter()
             .enumerate()
             .map(|(i, f)| Field::build(f, i))
-            .collect::<syn::Result<Vec<_>>>()?
+            .collect::<syn::Result<Vec<_>>>()?;
+
+        if let Some(delegate) = fields.iter().find_map(|f| f.attributes.delegate.as_ref()) {
+            return Err(syn::Error::new(
+                delegate.span,
+                "`delegate` is not supported on enum fields",
+            ));
+        }
+
+        let fields = fields
             .into_iter()
             .filter(|f| f.attributes.fn_ident.is_some() || matches!(f.member, Member::Named(_)))
             .map(|mut f| {
@@ -57,6 +66,12 @@ impl Parse for Enum {
 
         let ident = input.ident.clone();
         let mut attributes = ItemAttributes::build(&input.attrs)?;
+        if let Some(span) = attributes.delegatable {
+            return Err(syn::Error::new(
+                span,
+                "`delegatable` is not supported on enums",
+            ));
+        }
         let variants = de
             .variants
             .iter()
